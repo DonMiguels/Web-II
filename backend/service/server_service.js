@@ -1,9 +1,13 @@
-const express = require("express");
-const session = require("express-session");
-const {sessionRouter} = require("../controller");
-const bodyParser = require("body-parser");
+const express = require('express');
+const session = require('express-session');
+const { sessionRouter } = require('../controller');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const path = require('path');
 
-require('dotenv').config();
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../.env'),
+});
 
 class Server {
   constructor() {
@@ -17,18 +21,30 @@ class Server {
   }
 
   configuration() {
-    this.app.use(express.json());
-    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(
+      cors({
+        origin: ['http://localhost:5173'],
+        credentials: true,
+      }),
+    );
     this.app.use(bodyParser.json());
-    this.app.use(session({
-      secret: process.env.SECRET,
-      resave: false,
-      saveUninitialized: true
-    }));
+    this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(
+      session({
+        secret: process.env.SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+          secure: false,
+          httpOnly: true,
+          maxAge: 5 * 60 * 1000, // 5 minutes
+        },
+      }),
+    );
   }
 
   routes() {
-    this.app.use("/", sessionRouter);
+    this.app.use('/', sessionRouter);
   }
 
   start() {
