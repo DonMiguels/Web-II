@@ -5,7 +5,6 @@ const sessionConfig = new SessionService();
 
 sessionRouter.post('/login', (req, res) => {
   sessionConfig.setSession(req, { user: { id: 1, name: 'Marcelo' } });
-  console.log(req.body, req.session);
   res.json({ ok: true });
 });
 
