@@ -1,0 +1,12 @@
+{
+  "login_success": "Login successful",
+  "logout_success": "Logout successful",
+  "session_closed_success": "Session closed successfully",
+
+  "login_failure": "Invalid username or password",
+  "session_expired": "Session expired, please log in again",
+  "session_required": "Session required to access this resource",
+  "invalid_session": "Invalid session, please log in again",
+  "user_not_found": "User not found",
+  "server_error": "An error occurred on the server, please try again later"
+}

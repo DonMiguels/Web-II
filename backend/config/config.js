@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import yaml from 'js-yaml';
 
 export default class Config {
   constructor() {
@@ -11,6 +10,9 @@ export default class Config {
       this.SERVER_IP = process.env.IP || 'localhost';
       this.PROTOCOL = process.env.PROTOCOL || 'http';
       this.SERVER_URL = `${this.PROTOCOL}://${this.SERVER_IP}:${this.PORT}`;
+
+      this.MESSAGES = {};
+      this.LANGUAGE = process.env.LANGUAGE || 'en';
 
       this.ERROR_CODES = {
         BAD_REQUEST: 400, // El servidor no pudo entender la solicitud debido a una sintaxis inválida
@@ -31,58 +33,52 @@ export default class Config {
     return Config.instance;
   }
 
-  async getMessages() {
-    if (!this.MESSAGES) {
-      await this.mapMessages();
+  getMessages() {
+    if (!this.MESSAGES || Object.keys(this.MESSAGES).length === 0) {
+      this.mapMessages();
     }
     return this.MESSAGES;
   }
 
-  async mapMessages() {
-    const messagesPath = path.resolve(
-      this.__dirname,
-      '../config/messages.yaml',
-    );
-    this.MESSAGES = await new Promise((resolve) => {
-      fs.readFile(messagesPath, 'utf8', (err, data) => {
-        if (err) {
-          console.error(`Error leyendo YAML desde ${messagesPath}:`, err);
-          resolve(null);
-        } else {
-          try {
-            // El archivo messages.yaml tiene formato JSON, pero con extensión YAML
-            // Si realmente es YAML, usar yaml.load(data)
-            // Si es JSON, usar JSON.parse(data)
-            // Aquí intentamos ambas opciones
-            let result;
-            try {
-              result = yaml.load(data);
-            } catch (yamlErr) {
-              try {
-                result = JSON.parse(data);
-              } catch (jsonErr) {
-                console.error(
-                  'Error parseando queries.yaml como YAML y JSON:',
-                  yamlErr,
-                  jsonErr,
-                );
-                result = null;
-              }
-            }
-            resolve(result);
-          } catch (parseErr) {
-            console.error(
-              `Error parseando YAML desde ${queriesPath}:`,
-              parseErr,
-            );
-            resolve(null);
-          }
-        }
-      });
-    });
+  mapMessages() {
+    const messagesDir = path.resolve(this.__dirname, '../messages');
+    this.MESSAGES = this.readFiles(messagesDir);
   }
 
-  async getLanguage() {
-    console.log(this.getMessages());
+  readFiles(dirname) {
+    let data = {};
+    fs.readdir(dirname, (err, filenames) => {
+      if (err) {
+        console.error('Error reading directory:', err);
+        return;
+      }
+      filenames.forEach((filename) => {
+        fs.readFile(path.join(dirname, filename), 'utf-8', (err, content) => {
+          if (err) {
+            console.error('Error reading file:', err);
+            return;
+          }
+          if (!filename.endsWith('.json')) {
+            console.warn(
+              `Only JSON files are supported. Skipping non-JSON file: ${filename}`,
+            );
+            return;
+          }
+          const lang = filename.split('.')[0];
+          try {
+            data[lang] = JSON.parse(content);
+          } catch (parseErr) {
+            data[lang] = 'Error parsing JSON';
+          }
+        });
+      });
+    });
+    return data;
+  }
+
+  getMessage(language, messageName) {
+    return this.MESSAGES[language] && this.MESSAGES[language][messageName]
+      ? this.MESSAGES[language][messageName]
+      : this.MESSAGES[this.LANGUAGE][messageName];
   }
 }

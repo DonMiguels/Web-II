@@ -54,7 +54,7 @@ class Server {
   }
 
   start() {
-    this.app.listen(process.env.PORT, () => {
+    this.app.listen(process.env.PORT, async () => {
       console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);
     });
   }

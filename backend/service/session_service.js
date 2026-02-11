@@ -1,8 +1,11 @@
+import Config from '../config/config.js';
+
 export default class SessionService {
   constructor() {
     if (SessionService.instance) {
       return SessionService.instance;
     }
+    this.config = new Config();
     SessionService.instance = this;
   }
 
@@ -23,14 +26,23 @@ export default class SessionService {
     if (!this.sessionExists(req))
       return {
         statusCode: 401,
-        message: 'Error, the session to destroy does not exist',
+        message: this.config.getMessage(req?.body?.lang, 'session_required'),
       };
     req.session.destroy((err) => {
       if (err) {
-        return { statusCode: 500, message: 'Error destroying session' };
+        return {
+          statusCode: 500,
+          message: this.config.getMessage(req?.body?.lang, 'server_error'),
+        };
       }
     });
-    return { statusCode: 200, message: 'Session closed successfully' };
+    return {
+      statusCode: 200,
+      message: this.config.getMessage(
+        req?.body?.lang,
+        'session_closed_success',
+      ),
+    };
   }
 
   getSession(req) {

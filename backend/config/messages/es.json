@@ -1,0 +1,12 @@
+{
+  "login_success": "Inicio de sesión exitoso",
+  "logout_success": "Cierre de sesión exitoso",
+  "session_closed_success": "Sesión cerrada exitosamente",
+
+  "login_failure": "Nombre de usuario o contraseña inválidos",
+  "session_expired": "Sesión expirada, por favor inicia sesión nuevamente",
+  "session_required": "Se requiere sesión para acceder a este recurso",
+  "invalid_session": "Sesión inválida, por favor inicia sesión nuevamente",
+  "user_not_found": "Usuario no encontrado",
+  "server_error": "Ocurrió un error en el servidor, por favor intenta nuevamente más tarde"
+}
