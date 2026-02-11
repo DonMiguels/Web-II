@@ -25,19 +25,19 @@ export default class SessionService {
   destroySession(req) {
     if (!this.sessionExists(req))
       return {
-        statusCode: 401,
+        statusCode: this.config.STATUS_CODES.UNAUTHORIZED,
         message: this.config.getMessage(req?.body?.lang, 'session_required'),
       };
     req.session.destroy((err) => {
       if (err) {
         return {
-          statusCode: 500,
+          statusCode: this.config.STATUS_CODES.INTERNAL_SERVER_ERROR,
           message: this.config.getMessage(req?.body?.lang, 'server_error'),
         };
       }
     });
     return {
-      statusCode: 200,
+      statusCode: this.config.STATUS_CODES.OK,
       message: this.config.getMessage(
         req?.body?.lang,
         'session_closed_success',

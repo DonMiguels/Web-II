@@ -14,7 +14,8 @@ export default class Config {
       this.MESSAGES = {};
       this.LANGUAGE = process.env.LANGUAGE || 'en';
 
-      this.ERROR_CODES = {
+      this.STATUS_CODES = {
+        OK: 200, // La solicitud se ha procesado correctamente
         BAD_REQUEST: 400, // El servidor no pudo entender la solicitud debido a una sintaxis inválida
         UNAUTHORIZED: 401, // La solicitud requiere autenticación del usuario
         FORBIDDEN: 403, // El servidor entendió la solicitud, pero se niega a autorizarla
