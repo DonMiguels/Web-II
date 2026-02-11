@@ -15,9 +15,9 @@ sessionRouter.get('/me', (req, res) => {
   res.json({ user: req.session.user });
 });
 
-sessionRouter.post('/logout', (req, res) => {
-  sessionConfig.destroySession(req);
-  res.json({ ok: true });
+sessionRouter.post('/logout', async (req, res) => {
+  const resp = await sessionConfig.destroySession(req);
+  res.status(resp.statusCode).json(resp);
 });
 
 export { sessionRouter };

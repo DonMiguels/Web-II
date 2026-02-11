@@ -22,27 +22,30 @@ export default class SessionService {
     return req?.session?.data && Object.keys(req?.session?.data).length > 0;
   }
 
-  destroySession(req) {
+  async destroySession(req) {
     if (!this.sessionExists(req))
       return {
         statusCode: this.config.STATUS_CODES.UNAUTHORIZED,
         message: this.config.getMessage(req?.body?.lang, 'session_required'),
       };
-    req.session.destroy((err) => {
-      if (err) {
-        return {
-          statusCode: this.config.STATUS_CODES.INTERNAL_SERVER_ERROR,
-          message: this.config.getMessage(req?.body?.lang, 'server_error'),
-        };
-      }
+
+    return new Promise((resolve) => {
+      req.session.destroy((err) => {
+        if (err) {
+          return resolve({
+            statusCode: this.config.STATUS_CODES.INTERNAL_SERVER_ERROR,
+            message: this.config.getMessage(req?.body?.lang, 'server_error'),
+          });
+        }
+        return resolve({
+          statusCode: this.config.STATUS_CODES.OK,
+          message: this.config.getMessage(
+            req?.body?.lang,
+            'session_closed_success',
+          ),
+        });
+      });
     });
-    return {
-      statusCode: this.config.STATUS_CODES.OK,
-      message: this.config.getMessage(
-        req?.body?.lang,
-        'session_closed_success',
-      ),
-    };
   }
 
   getSession(req) {

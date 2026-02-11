@@ -42,44 +42,42 @@ export default class Config {
   }
 
   mapMessages() {
-    const messagesDir = path.resolve(this.__dirname, '../messages');
+    const messagesDir = path.resolve(this.__dirname, './messages');
     this.MESSAGES = this.readFiles(messagesDir);
   }
 
   readFiles(dirname) {
-    let data = {};
-    fs.readdir(dirname, (err, filenames) => {
-      if (err) {
-        console.error('Error reading directory:', err);
-        return;
-      }
+    const data = {};
+    try {
+      const filenames = fs.readdirSync(dirname);
       filenames.forEach((filename) => {
-        fs.readFile(path.join(dirname, filename), 'utf-8', (err, content) => {
-          if (err) {
-            console.error('Error reading file:', err);
-            return;
-          }
-          if (!filename.endsWith('.json')) {
-            console.warn(
-              `Only JSON files are supported. Skipping non-JSON file: ${filename}`,
-            );
-            return;
-          }
-          const lang = filename.split('.')[0];
-          try {
-            data[lang] = JSON.parse(content);
-          } catch (parseErr) {
-            data[lang] = 'Error parsing JSON';
-          }
-        });
+        if (!filename.endsWith('.json')) {
+          console.warn(
+            `Only JSON files are supported. Skipping non-JSON file: ${filename}`,
+          );
+          return;
+        }
+        const content = fs.readFileSync(path.join(dirname, filename), 'utf-8');
+        const lang = filename.split('.')[0];
+        try {
+          data[lang] = JSON.parse(content);
+        } catch (parseErr) {
+          data[lang] = {};
+        }
       });
-    });
+    } catch (err) {
+      console.error('Error reading directory:', err);
+    }
     return data;
   }
 
   getMessage(language, messageName) {
-    return this.MESSAGES[language] && this.MESSAGES[language][messageName]
-      ? this.MESSAGES[language][messageName]
-      : this.MESSAGES[this.LANGUAGE][messageName];
+    if (!this.MESSAGES || Object.keys(this.MESSAGES).length === 0) {
+      this.mapMessages();
+    }
+    const lang = language || this.LANGUAGE;
+    return this.MESSAGES[lang] && this.MESSAGES[lang][messageName]
+      ? this.MESSAGES[lang][messageName]
+      : (this.MESSAGES[this.LANGUAGE] || {})[messageName];
   }
 }
