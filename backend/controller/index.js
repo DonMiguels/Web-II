@@ -1,5 +1,3 @@
-const sessionRouter = require('./session_controller');
+import { sessionRouter } from './session_controller.js';
 
-module.exports = {
-  sessionRouter
-};
+export { sessionRouter };

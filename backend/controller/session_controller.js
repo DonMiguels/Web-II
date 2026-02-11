@@ -1,10 +1,11 @@
-const sessionRouter = require('express').Router();
-const SessionService = require('../service/session_service');
+import { Router } from 'express';
+import SessionService from '../service/session_service.js';
+const sessionRouter = Router();
 const sessionConfig = new SessionService();
 
 sessionRouter.post('/login', (req, res) => {
   sessionConfig.setSession(req, { user: { id: 1, name: 'Marcelo' } });
-  console.log(req.body);
+  console.log(req.body, req.session);
   res.json({ ok: true });
 });
 
@@ -19,4 +20,4 @@ sessionRouter.post('/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-module.exports = sessionRouter;
+export { sessionRouter };

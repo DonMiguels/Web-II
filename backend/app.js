@@ -1,3 +1,3 @@
-const server = require("./service/server_service");
+import { server } from './service/server_service.js';
 
 server.start();

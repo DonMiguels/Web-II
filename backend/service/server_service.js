@@ -1,11 +1,16 @@
-const express = require('express');
-const session = require('express-session');
-const { sessionRouter } = require('../controller');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
+import express from 'express';
+import session from 'express-session';
+import { sessionRouter } from '../controller/index.js';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+import path from 'path';
+import Config from '../config/config.js';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
-require('dotenv').config({
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({
   path: path.resolve(__dirname, '../../.env'),
 });
 
@@ -17,6 +22,7 @@ class Server {
     this.app = express();
     this.configuration();
     this.routes();
+    this.config = new Config();
     Server.instance = this;
   }
 
@@ -56,4 +62,4 @@ class Server {
 
 const server = new Server();
 
-module.exports = server;
+export { server };
