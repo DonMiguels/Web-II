@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import express from 'express';
 import session from 'express-session';
 import { sessionRouter } from '../controller/index.js';
@@ -7,6 +8,15 @@ import path from 'path';
 import Config from '../config/config.js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+=======
+const express = require('express');
+const session = require('express-session');
+const { sessionRouter } = require('../controller');
+const userRouter = require('../controller/user_controller'); 
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const path = require('path');
+>>>>>>> Stashed changes
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +53,7 @@ class Server {
         cookie: {
           secure: false,
           httpOnly: true,
-          maxAge: 5 * 60 * 1000, // 5 minutes
+          maxAge: 5 * 60 * 1000, 
         },
       }),
     );
@@ -51,6 +61,7 @@ class Server {
 
   routes() {
     this.app.use('/', sessionRouter);
+    this.app.use('/users', userRouter); 
   }
 
   start() {
@@ -62,4 +73,8 @@ class Server {
 
 const server = new Server();
 
+<<<<<<< Updated upstream
 export { server };
+=======
+module.exports = server;
+>>>>>>> Stashed changes
