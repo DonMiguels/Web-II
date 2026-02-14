@@ -1,0 +1,105 @@
+.auth-container {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 28px !important;
+  padding: 3rem 2.5rem !important;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 0 20px rgba(59, 130, 246, 0.03) !important;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.auth-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.auth-label {
+  font-weight: 500 !important;
+  color: black !important;
+  margin-bottom: 0.5rem;
+}
+
+.auth-input {
+  border-color: #d1d5db !important;
+  height: 2.75rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.auth-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+  outline: none;
+}
+
+.auth-submit-btn {
+  background-color: #2563eb !important;
+  height: 2.75rem !important;
+  border-radius: 8px !important;
+  transition: background 0.3s ease !important;
+}
+
+.auth-submit-btn:hover {
+  background-color: #1d4ed8 !important;
+}
+
+.auth-container {
+  will-change: transform, opacity;
+}
+
+.auth-input {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.auth-input:focus {
+  transform: translateY(-1px);
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15) !important;
+}
+.auth-submit-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease !important;
+}
+
+.auth-submit-btn:active {
+  filter: brightness(0.9);
+}
+
+@media (min-width: 640px) {
+  .auth-container {
+    padding: 3rem 2.5rem !important;
+    border-radius: 28px !important;
+  }
+}
+
+.auth-title {
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+  .auth-title {
+    font-size: 2.25rem;
+  }
+}
