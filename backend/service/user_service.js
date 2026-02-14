@@ -1,5 +1,5 @@
-const pool = require('../config/db');
-const bcrypt = require('bcrypt');
+import pool from '../config/db.js';
+import bcrypt from 'bcrypt';
 
 class UserService {
   constructor() {}
@@ -9,14 +9,15 @@ class UserService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const query = `
-      INSERT INTO users (username, email, password)
-      VALUES ($1, $2, $3)
+      INSERT INTO public.user (username, email, password, register_date)
+      VALUES ($1, $2, $3, $4)
       RETURNING id, username, email, register_date
     `;
-    const values = [username, email, hashedPassword];
-
+    const values = [username, email, hashedPassword, new Date()];
     try {
-      const res = await pool.query(query, values);
+      const client = await pool.connect();
+      const res = await client.query(query, values);
+      client.release();
       return res.rows[0];
     } catch (err) {
       throw new Error(err.message);
@@ -25,7 +26,7 @@ class UserService {
 
   // Login
   async login({ username, password }) {
-    const query = `SELECT * FROM users WHERE username = $1`;
+    const query = `SELECT * FROM public.user WHERE username = $1`;
     try {
       const res = await pool.query(query, [username]);
       const user = res.rows[0];
@@ -44,10 +45,10 @@ class UserService {
 
   // Obtener usuario por ID
   async getUserById(id) {
-    const query = `SELECT id, username, email, register_date FROM users WHERE id = $1`;
+    const query = `SELECT id, username, email, register_date FROM public.user WHERE id = $1`;
     const res = await pool.query(query, [id]);
     return res.rows[0];
   }
 }
 
-module.exports = new UserService();
+export default UserService;

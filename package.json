@@ -3,10 +3,10 @@
   "name": "webii",
   "version": "1.0.0",
   "description": "",
-  "main": "backend/app.js",
+  "main": "backend/main.js",
   "scripts": {
-    "start": "node backend/app.js",
-    "dev": "nodemon backend/app.js",
+    "start": "node backend/main.js",
+    "dev": "nodemon backend/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

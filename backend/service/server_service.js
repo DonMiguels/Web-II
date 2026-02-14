@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import express from 'express';
 import session from 'express-session';
 import { sessionRouter } from '../controller/index.js';
@@ -8,15 +7,8 @@ import path from 'path';
 import Config from '../config/config.js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-=======
-const express = require('express');
-const session = require('express-session');
-const { sessionRouter } = require('../controller');
-const userRouter = require('../controller/user_controller'); 
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path');
->>>>>>> Stashed changes
+import userRouter from '../controller/user_controller.js';
+import pool from '../config/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,6 +22,7 @@ class Server {
       return Server.instance;
     }
     this.app = express();
+    this.PORT = process.env.PORT || 3000;
     this.configuration();
     this.routes();
     this.config = new Config();
@@ -39,7 +32,8 @@ class Server {
   configuration() {
     this.app.use(
       cors({
-        origin: ['http://localhost:5173'],
+        // origin: ['http://localhost:5173'],
+        origin: ['*'],
         credentials: true,
       }),
     );
@@ -53,7 +47,7 @@ class Server {
         cookie: {
           secure: false,
           httpOnly: true,
-          maxAge: 5 * 60 * 1000, 
+          maxAge: 5 * 60 * 1000,
         },
       }),
     );
@@ -61,20 +55,14 @@ class Server {
 
   routes() {
     this.app.use('/', sessionRouter);
-    this.app.use('/users', userRouter); 
+    this.app.use('/users', userRouter);
   }
 
   start() {
-    this.app.listen(process.env.PORT, async () => {
-      console.log(`Servidor corriendo en http://localhost:${process.env.PORT}`);
+    this.app.listen(this.PORT, async () => {
+      console.log(`Servidor corriendo en http://localhost:${this.PORT}`);
     });
   }
 }
 
-const server = new Server();
-
-<<<<<<< Updated upstream
-export { server };
-=======
-module.exports = server;
->>>>>>> Stashed changes
+export default Server;
