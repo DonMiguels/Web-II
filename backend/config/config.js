@@ -78,6 +78,6 @@ export default class Config {
     const lang = language || this.LANGUAGE;
     return this.MESSAGES[lang] && this.MESSAGES[lang][messageName]
       ? this.MESSAGES[lang][messageName]
-      : (this.MESSAGES[this.LANGUAGE] || {})[messageName];
+      : this.MESSAGES[this.LANGUAGE][messageName] || '_message_not_found_';
   }
 }

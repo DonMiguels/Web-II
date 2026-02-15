@@ -1,5 +1,8 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import Config from './config.js';
+const config = new Config();
+const { getMessage } = config;
 
 dotenv.config();
 
@@ -14,11 +17,11 @@ const dbConfig = {
 const pool = new Pool(dbConfig);
 
 pool.on('connect', () => {
-  console.log('Conectado a PostgreSQL');
+  console.log(getMessage(config.LANGUAGE, 'db_connected_success'));
 });
 
 pool.on('error', (err) => {
-  console.error('Error en la conexión a PostgreSQL', err);
+  console.error(getMessage(config.LANGUAGE, 'db_connected_error'), err);
 });
 
 export default pool;

@@ -5,41 +5,61 @@ const userService = new UserService();
 import SessionService from '../service/session_service.js';
 const sessionService = new SessionService();
 
+import Config from '../config/config.js';
+const config = new Config();
+const { getMessage, STATUS_CODES } = config;
+
 // Registro de usuario
 router.post('/register', async (req, res) => {
   try {
-    const user = await userService.register(req.body);
-    sessionService.setSession(req, { user });
-    res.status(201).json({ message: 'Usuario registrado', user });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    const userData = await userService.register(req.body);
+    sessionService.setSession(req, { user: userData });
+    res.json({
+      message: getMessage(config.LANGUAGE, 'registration_success'),
+      user: userData,
+    });
+  } catch (error) {
+    res.status(STATUS_CODES.BAD_REQUEST).json({
+      message: getMessage(config.LANGUAGE, 'registration_error'),
+      error,
+    });
   }
 });
 
 // Login
 router.post('/login', async (req, res) => {
   try {
-    const user = await userService.login(req.body);
-    if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
-    sessionService.setSession(req, { user });
-    res.json({ message: 'Login exitoso', user });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    const userData = await userService.login(req.body);
+    if (!userData)
+      return res
+        .status(STATUS_CODES.UNAUTHORIZED)
+        .json({ error: getMessage(config.LANGUAGE, 'login_error') });
+    sessionService.setSession(req, { user: userData });
+    res.json({
+      message: getMessage(config.LANGUAGE, 'login_success'),
+      user: userData,
+    });
+  } catch (error) {
+    res
+      .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .json({ message: getMessage(config.LANGUAGE, 'server_error'), error });
   }
 });
 
 // Obtener usuario actual
 router.get('/me', (req, res) => {
   if (!sessionService.sessionExists(req)) {
-    return res.status(401).json({ error: 'No autenticado' });
+    return res
+      .status(STATUS_CODES.UNAUTHORIZED)
+      .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
   }
-  res.json({ user: sessionService.getSession(req).user });
+  res.json(sessionService.getSession(req).user);
 });
 
 // Logout
 router.post('/logout', (req, res) => {
   sessionService.destroySession(req);
-  res.json({ message: 'Sesión cerrada' });
+  res.json({ message: getMessage(config.LANGUAGE, 'logout_success') });
 });
 
 export default router;
