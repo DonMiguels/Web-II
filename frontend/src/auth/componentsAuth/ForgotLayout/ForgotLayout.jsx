@@ -8,11 +8,9 @@ import { User, Lock, ArrowLeft } from "lucide-react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { NotificationToast } from "@/components/NotificationToast/NotificationToast";
-import { forgotSchema } from "@/auth/ForgotSchema/ForgotSchema";
-import { ForgotSuccess } from "../ForgotSuccess/ForgotSuccess";
-
-import "../AuthLayout/AuthLayout.css";
+import { NotificationToast } from "@/components";
+import { forgotSchema } from "@/auth/schemasAuth";
+import { ForgotSuccess } from "@/auth/componentsAuth";
 
 export const ForgotLayout = () => {
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,16 +27,13 @@ export const ForgotLayout = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Simulación de envío a la API
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Feedback inmediato
       setToast({
         message: "Contraseña actualizada correctamente",
         type: "success",
       });
 
-      // Pequeño delay para que el usuario vea el Toast antes de la transición
       setTimeout(() => setIsSuccess(true), 1200);
     } catch (err) {
       setToast({
@@ -66,7 +61,6 @@ export const ForgotLayout = () => {
 
   return (
     <>
-      {/* Sistema de notificaciones */}
       <NotificationToast
         message={toast.message}
         type={toast.type}
@@ -91,7 +85,6 @@ export const ForgotLayout = () => {
             </motion.div>
 
             <FieldGroup className="space-y-5">
-              {/* Campo Usuario */}
               <motion.div variants={itemVariants}>
                 <Field>
                   <FieldLabel
@@ -124,7 +117,6 @@ export const ForgotLayout = () => {
                 </Field>
               </motion.div>
 
-              {/* Campos dinámicos de Password */}
               {[
                 {
                   id: "password",

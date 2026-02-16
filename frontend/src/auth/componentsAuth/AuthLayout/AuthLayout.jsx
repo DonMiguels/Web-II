@@ -5,12 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 
-import { useAuth } from "@/hooks/useAuth/useAuth";
+import { useAuth } from "@/hooks";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { NotificationToast } from "@/components/NotificationToast/NotificationToast";
-import { loginSchema } from "@/auth/LoginSchema/LoginSchema";
+import { NotificationToast } from "@/components";
+import { loginSchema } from "@/auth/schemasAuth";
 
 import "./AuthLayout.css";
 

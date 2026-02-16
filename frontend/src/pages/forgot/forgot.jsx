@@ -1,5 +1,5 @@
-import { ForgotLayout } from "@/auth/components/ForgotLayout/ForgotLayout";
-import { useTheme } from "@/context/ThemeContext";
+import { ForgotLayout } from "@/auth/componentsAuth/ForgotLayout/ForgotLayout";
+import { useTheme } from "@/context/ThemeContext/ThemeContext";
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";

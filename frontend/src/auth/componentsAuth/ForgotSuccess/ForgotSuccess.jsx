@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, ArrowRight } from "lucide-react";
-import "../AuthLayout/AuthLayout.css";
 
 export const ForgotSuccess = () => {
   const navigate = useNavigate();

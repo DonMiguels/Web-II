@@ -1,8 +1,8 @@
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
 
-import { LoginForm } from "@/auth/components/LoginForm/LoginForm";
-import { useTheme } from "@/context/ThemeContext";
+import { LoginForm } from "@/auth/componentsAuth/LoginForm/LoginForm";
+import { useTheme } from "@/context/ThemeContext/ThemeContext";
 
 import { Button } from "@/components/ui/button";
 
