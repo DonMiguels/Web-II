@@ -1,3 +1,4 @@
+import { useState } from "react"; 
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,19 +7,24 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { forgotSchema } from "@/auth/ForgotSchema/ForgotSchema";
+import { ForgotSuccess } from "../ForgotSuccess/ForgotSuccess"; // Importamos el éxito
 import "../AuthLayout/AuthLayout.css";
 
 export const ForgotLayout = () => {
+  const [isSuccess, setIsSuccess] = useState(false); 
   const navigate = useNavigate();
+  
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(forgotSchema),
   });
 
   const onSubmit = async (data) => {
-    console.log("Datos para recuperar:", data);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
+    console.log("Simulando envío a la DB de la URU:", data);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsSuccess(true); 
   };
+
+  if (isSuccess) return <ForgotSuccess />;
 
   const itemVariants = { hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } };
 
@@ -71,7 +77,7 @@ export const ForgotLayout = () => {
 
         <motion.div className="mt-8 flex flex-col gap-4" variants={itemVariants}>
           <Button type="submit" disabled={isSubmitting} className="w-full auth-submit-btn font-semibold">
-            {isSubmitting ? "Procesando..." : "Actualizar Contraseña"}
+            {isSubmitting ? "Actualizando..." : "Actualizar Contraseña"}
           </Button>
           <Button 
             variant="link" 
