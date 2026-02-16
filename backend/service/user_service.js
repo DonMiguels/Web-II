@@ -49,6 +49,23 @@ class UserService {
     const res = await pool.query(query, [id]);
     return res.rows[0];
   }
+
+  // Recuperar contraseña por usuario
+  async resetPasswordByUsername({ username, password }) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const query = `
+      UPDATE public.user
+      SET password = $1
+      WHERE username = $2
+      RETURNING id, username, email, register_date
+    `;
+    try {
+      const res = await pool.query(query, [hashedPassword, username]);
+      return res.rows[0] || null;
+    } catch (err) {
+      throw new Error(err.message);
+    }
+  }
 }
 
 export default UserService;

@@ -5,7 +5,6 @@ import cors from 'cors';
 import Config from '../config/config.js';
 import dotenv from 'dotenv';
 import userRouter from '../controller/user_controller.js';
-import pool from '../config/db.js';
 
 dotenv.config();
 
@@ -26,9 +25,10 @@ class Server {
   configuration() {
     this.app.use(
       cors({
-        // origin: ['http://localhost:5173'],
-        origin: ['*'],
+        origin: ['http://localhost:5173'],
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
       }),
     );
     this.app.use(bodyParser.json());
