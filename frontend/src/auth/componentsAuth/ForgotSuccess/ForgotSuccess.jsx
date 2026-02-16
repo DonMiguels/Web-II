@@ -22,40 +22,40 @@ export const ForgotSuccess = () => {
 
   return (
     <motion.div
-      className="auth-container w-full max-w-[440px] rounded-[28px] p-8 sm:p-10 text-center"
+      className="auth-container w-full max-w-[360px] rounded-[16px] p-6 text-center shadow-xl border border-white/5 bg-white/80 dark:bg-black/40 backdrop-blur-xl"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="flex justify-center mb-6 text-green-500 dark:text-green-400"
+        className="flex justify-center mb-4 text-green-500 dark:text-green-400"
         variants={iconVariants}
         initial="hidden"
         animate="visible"
       >
-        <div className="relative h-20 w-20 flex items-center justify-center">
-          <div className="absolute inset-0 bg-green-500/20 blur-2xl rounded-full scale-150" />
-          <CheckCircle2 size={80} strokeWidth={1.5} className="relative z-10" />
+        <div className="relative h-16 w-16 flex items-center justify-center">
+          <div className="absolute inset-0 bg-green-500/20 blur-xl rounded-full scale-125" />
+          <CheckCircle2 size={56} strokeWidth={1.5} className="relative z-10" />
         </div>
       </motion.div>
 
-      <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+      <h1 className="text-xl font-extrabold tracking-tight mb-2">
         ¡Todo listo!
       </h1>
 
-      <p className="text-muted-foreground text-sm mb-8 px-4 font-medium opacity-80 leading-relaxed">
+      <p className="text-muted-foreground text-[11px] mb-6 px-2 font-medium opacity-80 leading-relaxed">
         Tu contraseña ha sido actualizada exitosamente. Ya puedes volver a
         entrar al sistema con tu nueva clave.
       </p>
 
-      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+      <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
         <Button
           onClick={() => navigate("/login")}
-          className="auth-submit-btn w-full h-12 rounded-xl font-bold text-white uppercase tracking-wider text-sm cursor-pointer shadow-lg flex items-center justify-center gap-2 group"
+          className="auth-submit-btn w-full h-9.5 rounded-lg font-bold text-white uppercase tracking-wider text-[10px] cursor-pointer shadow-md flex items-center justify-center gap-2 group"
         >
           Ir al Inicio de Sesión
           <ArrowRight
-            size={18}
+            size={14}
             className="group-hover:translate-x-1 transition-transform"
           />
         </Button>

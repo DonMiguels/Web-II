@@ -1,23 +1,58 @@
-import { ForgotLayout } from "@/auth/componentsAuth/ForgotLayout/ForgotLayout";
-import { useTheme } from "@/context/ThemeContext/ThemeContext";
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
+
+import { ForgotLayout } from "@/auth/componentsAuth";
+import { useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
+
+import Logo from "@/assets/img/uru-logo-maracaibo.png";
 
 export const Forgot = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden transition-colors duration-500">
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="rounded-full cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-primary)]"
+    <div
+      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden transition-colors duration-500"
+      style={{
+        background:
+          theme === "light"
+            ? `radial-gradient(at bottom right, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+               radial-gradient(at bottom left, rgba(29, 78, 216, 0.1) 0%, transparent 40%),
+               linear-gradient(to bottom, #ffffff 70%, #dbeafe 100%)`
+            : `radial-gradient(at bottom right, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+               radial-gradient(at bottom left, rgba(22, 20, 56, 0.4) 0%, transparent 40%),
+               linear-gradient(to bottom, #000000 70%, #0a0a2e 100%)`,
+      }}
+    >
+      <div className="fixed top-6 left-8 z-50">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
-        </Button>
+          <img
+            src={Logo}
+            alt="Logo URU"
+            className="h-12 w-auto object-contain filter drop-shadow-sm"
+          />
+        </motion.div>
+      </div>
+
+      <div className="fixed top-6 right-8 z-50">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-primary)] backdrop-blur-sm bg-white/5"
+          >
+            {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+          </Button>
+        </motion.div>
       </div>
 
       <div
