@@ -84,10 +84,11 @@ export const AuthLayout = () => {
                 <div className="flex items-center justify-between">
                   <FieldLabel htmlFor="password">Contraseña</FieldLabel>
                   <Button
-                    variant="link"
+                     variant="link"
                     type="button"
+                    onClick={() => navigate("/forgot-password")}
                     className="px-0 h-auto text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors hover:cursor-pointer"
-                  >
+                    > 
                     ¿Olvidaste tu contraseña?
                   </Button>
                 </div>
