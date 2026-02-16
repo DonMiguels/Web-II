@@ -55,17 +55,30 @@ export const Login = () => {
         </motion.div>
       </div>
 
-      <div
-        className="absolute inset-0 z-[1] opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+      <motion.div
+        className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px]"
+        animate={{
+          x: [0, 30, 0],
+          y: [0, 20, 0],
+        }}
+        transition={{
+          duration: 10,
+          repeat: Infinity,
+          ease: "easeInOut",
         }}
       />
 
-      <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px] animate-pulse" />
-      <div
-        className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px] animate-pulse"
-        style={{ animationDuration: "8s" }}
+      <motion.div
+        className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px]"
+        animate={{
+          x: [0, -30, 0],
+          y: [0, -20, 0],
+        }}
+        transition={{
+          duration: 12,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
       />
 
       <div
@@ -76,12 +89,11 @@ export const Login = () => {
           backgroundSize: "60px 60px",
         }}
       />
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-md px-6"
+        className="relative z-10 w-full max-w-md px-6 flex justify-center"
       >
         <LoginForm />
       </motion.div>
