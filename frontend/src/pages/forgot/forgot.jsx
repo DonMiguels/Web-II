@@ -5,7 +5,8 @@ import { ForgotLayout } from "@/auth/componentsAuth";
 import { useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 
-import Logo from "@/assets/img/uru-logo-maracaibo.png";
+import LogoLight from "../../assets/img/uru-logo-white.png";
+import LogoDark from "../../assets/img/uru-logo-dark.png";
 
 export const Forgot = () => {
   const { theme, toggleTheme } = useTheme();
@@ -26,13 +27,14 @@ export const Forgot = () => {
     >
       <div className="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
         <motion.div
+          key={theme}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.5 }}
           className="flex items-center"
         >
           <img
-            src={Logo}
+            src={theme === "light" ? LogoLight : LogoDark}
             alt="Logo URU"
             className="h-10 w-auto object-contain filter drop-shadow-sm"
           />

@@ -5,7 +5,8 @@ import { LoginForm } from "@/auth/componentsAuth";
 import { useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 
-import Logo from "@/assets/img/uru-logo-maracaibo.png";
+import LogoLight from "../../assets/img/uru-logo-white.png";
+import LogoDark from "../../assets/img/uru-logo-dark.png";
 
 export const Login = () => {
   const { theme, toggleTheme } = useTheme();
@@ -26,13 +27,14 @@ export const Login = () => {
     >
       <div className="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          key={theme}
+          initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.4 }}
           className="flex items-center"
         >
           <img
-            src={Logo}
+            src={theme === "light" ? LogoLight : LogoDark}
             alt="Logo URU"
             className="h-10 w-auto object-contain filter drop-shadow-sm"
           />
@@ -57,28 +59,14 @@ export const Login = () => {
 
       <motion.div
         className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px]"
-        animate={{
-          x: [0, 30, 0],
-          y: [0, 20, 0],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <motion.div
         className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px]"
-        animate={{
-          x: [0, -30, 0],
-          y: [0, -20, 0],
-        }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ x: [0, -30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <div
@@ -89,6 +77,7 @@ export const Login = () => {
           backgroundSize: "60px 60px",
         }}
       />
+
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
