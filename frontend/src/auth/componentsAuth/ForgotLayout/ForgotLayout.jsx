@@ -9,8 +9,9 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { NotificationToast } from "@/components";
+
 import { forgotSchema } from "@/auth/schemasAuth";
-import { ForgotSuccess } from "@/auth/componentsAuth";
+import { AlertMessage } from "@/components";
 
 export const ForgotLayout = () => {
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,10 +29,12 @@ export const ForgotLayout = () => {
   const onSubmit = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
+
       setToast({
         message: "Contraseña actualizada correctamente",
         type: "success",
       });
+
       setTimeout(() => setIsSuccess(true), 1200);
     } catch (err) {
       setToast({
@@ -41,7 +44,17 @@ export const ForgotLayout = () => {
     }
   };
 
-  if (isSuccess) return <ForgotSuccess />;
+  if (isSuccess) {
+    return (
+      <AlertMessage
+        type="success"
+        title="¡Todo listo!"
+        message="Tu contraseña ha sido actualizada con éxito. Ahora puedes volver a ingresar a tu cuenta con tus nuevas credenciales."
+        buttonText="Ir al inicio de sesión"
+        onConfirm={() => navigate("/login")}
+      />
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -81,6 +94,7 @@ export const ForgotLayout = () => {
                 Configura tu nueva contraseña
               </p>
             </motion.div>
+
             <FieldGroup className="space-y-2">
               <motion.div variants={itemVariants}>
                 <Field>
@@ -163,6 +177,7 @@ export const ForgotLayout = () => {
               ))}
             </FieldGroup>
           </FieldSet>
+
           <motion.div
             className="mt-5 flex flex-col gap-2"
             variants={itemVariants}
