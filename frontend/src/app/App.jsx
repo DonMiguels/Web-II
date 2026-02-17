@@ -1,16 +1,24 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Login } from "../pages/login/login";
-import { Forgot } from "../pages/forgot/forgot";
+import { Routes, Route } from "react-router-dom";
+import { Login } from "@/pages";
+import { Forgot } from "@/pages";
+import { Dashboard } from "@/pages";
+import { NotFound } from "@/pages";
+import { AuthProvider } from "@/context";
+import { ProtectedRoute } from "@/components";
 
 function App() {
   return (
-    <BrowserRouter>
+    <AuthProvider>
       <Routes>
-        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<Forgot />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </AuthProvider>
   );
 }
 
