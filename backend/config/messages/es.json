@@ -25,5 +25,9 @@
   "user_not_found": "Usuario no encontrado",
 
   "server_running": "Servidor corriendo en:",
-  "server_error": "Ocurrió un error en el servidor, por favor intenta nuevamente más tarde"
+  "server_error": "Ocurrió un error en el servidor, por favor intenta nuevamente más tarde",
+
+  "missing_required_fields": "Faltan campos requeridos",
+  "passwords_do_not_match": "Las contraseñas no coinciden",
+  "password_reset_success": "Contraseña actualizada correctamente"
 }

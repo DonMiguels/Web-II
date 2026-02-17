@@ -25,5 +25,9 @@
   "user_not_found": "User not found",
 
   "server_running": "Server running at:",
-  "server_error": "An error occurred on the server, please try again later"
+  "server_error": "An error occurred on the server, please try again later",
+
+  "missing_required_fields": "Missing required fields",
+  "passwords_do_not_match": "Passwords do not match",
+  "password_reset_success": "Password updated successfully"
 }

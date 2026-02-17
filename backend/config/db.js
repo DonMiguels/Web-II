@@ -2,7 +2,6 @@ import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import Config from './config.js';
 const config = new Config();
-const getMessage = config.getMessage.bind(config);
 
 dotenv.config();
 
@@ -16,12 +15,12 @@ const dbConfig = {
 
 const pool = new Pool(dbConfig);
 
-pool.on('connect', async () => {
-  console.log(await getMessage(config.LANGUAGE, 'db_connected_success'));
+pool.on('connect', () => {
+  console.log(config.getMessage(config.LANGUAGE, 'db_connected_success'));
 });
 
-pool.on('error', async (err) => {
-  console.error(await getMessage(config.LANGUAGE, 'db_connected_error'), err);
+pool.on('error', (err) => {
+  console.error(config.getMessage(config.LANGUAGE, 'db_connected_error'), err);
 });
 
 export default pool;

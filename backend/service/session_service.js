@@ -19,7 +19,7 @@ export default class SessionService {
   }
 
   sessionExists(req) {
-    return req?.session?.data && Object.keys(req?.session?.data).length > 0;
+    return Boolean(req?.session?.data && Object.keys(req.session.data).length > 0);
   }
 
   async destroySession(req) {
@@ -53,6 +53,6 @@ export default class SessionService {
   }
 
   authenticate(req) {
-    return Boolean(req?.session?.user);
+    return Boolean(req?.session?.data?.user);
   }
 }
