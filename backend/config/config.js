@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -34,37 +34,46 @@ export default class Config {
     return Config.instance;
   }
 
-  getMessages() {
+  async init() {
+    await this.getMessages();
+  }
+
+  async getMessages() {
     if (!this.MESSAGES || Object.keys(this.MESSAGES).length === 0) {
-      this.mapMessages();
+      await this.mapMessages();
     }
     return this.MESSAGES;
   }
 
-  mapMessages() {
+  async mapMessages() {
     const messagesDir = path.resolve(this.__dirname, './messages');
-    this.MESSAGES = this.readFiles(messagesDir);
+    this.MESSAGES = await this.readFiles(messagesDir);
   }
 
-  readFiles(dirname) {
+  async readFiles(dirname) {
     const data = {};
     try {
-      const filenames = fs.readdirSync(dirname);
-      filenames.forEach((filename) => {
-        if (!filename.endsWith('.json')) {
-          console.warn(
-            `Only JSON files are supported. Skipping non-JSON file: ${filename}`,
+      const filenames = await fs.readdir(dirname);
+      await Promise.all(
+        filenames.map(async (filename) => {
+          if (!filename.endsWith('.json')) {
+            console.warn(
+              `Only JSON files are supported. Skipping non-JSON file: ${filename}`,
+            );
+            return;
+          }
+          const content = await fs.readFile(
+            path.join(dirname, filename),
+            'utf-8',
           );
-          return;
-        }
-        const content = fs.readFileSync(path.join(dirname, filename), 'utf-8');
-        const lang = filename.split('.')[0];
-        try {
-          data[lang] = JSON.parse(content);
-        } catch (parseErr) {
-          data[lang] = {};
-        }
-      });
+          const lang = filename.split('.')[0];
+          try {
+            data[lang] = JSON.parse(content);
+          } catch (parseErr) {
+            data[lang] = {};
+          }
+        }),
+      );
     } catch (err) {
       console.error('Error reading directory:', err);
     }
@@ -72,9 +81,6 @@ export default class Config {
   }
 
   getMessage(language, messageName) {
-    if (!this.MESSAGES || Object.keys(this.MESSAGES).length === 0) {
-      this.mapMessages();
-    }
     const lang = language || this.LANGUAGE;
     return this.MESSAGES[lang] && this.MESSAGES[lang][messageName]
       ? this.MESSAGES[lang][messageName]

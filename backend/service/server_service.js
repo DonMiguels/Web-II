@@ -1,10 +1,10 @@
-import express from 'express';
-import session from 'express-session';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import Config from '../config/config.js';
-import dotenv from 'dotenv';
-import userRouter from '../controller/user_controller.js';
+import express from "express";
+import session from "express-session";
+import bodyParser from "body-parser";
+import cors from "cors";
+import Config from "../config/config.js";
+import dotenv from "dotenv";
+import userRouter from "../controller/user_controller.js";
 
 dotenv.config();
 
@@ -25,10 +25,11 @@ class Server {
   configuration() {
     this.app.use(
       cors({
-        origin: ['http://localhost:5173'],
+        // origin: ['*'],
+        origin: ["http://localhost:5173"],
         credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
       }),
     );
     this.app.use(bodyParser.json());
@@ -48,13 +49,14 @@ class Server {
   }
 
   routes() {
-    this.app.use('/users', userRouter);
+    this.app.use("/users", userRouter);
   }
 
   start() {
     this.app.listen(this.PORT, async () => {
+      await this.config.init();
       console.log(
-        `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} http://localhost:${this.PORT}`,
+        `${this.config.getMessage(this.config.LANGUAGE, "server_running")} http://localhost:${this.PORT}`,
       );
     });
   }
