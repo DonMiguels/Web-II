@@ -47,10 +47,10 @@ export default class Config {
 
   async mapMessages() {
     const messagesDir = path.resolve(this.__dirname, './messages');
-    this.MESSAGES = await this.readFiles(messagesDir);
+    this.MESSAGES = await this.readJSONFiles(messagesDir);
   }
 
-  async readFiles(dirname) {
+  async readJSONFiles(dirname) {
     const data = {};
     try {
       const filenames = await fs.readdir(dirname);
@@ -85,5 +85,53 @@ export default class Config {
     return this.MESSAGES[lang] && this.MESSAGES[lang][messageName]
       ? this.MESSAGES[lang][messageName]
       : this.MESSAGES[this.LANGUAGE][messageName] || '_message_not_found_';
+  }
+
+  async getQueries() {
+    if (!this.QUERIES) {
+      await this.mapQueries();
+    }
+    return this.QUERIES;
+  }
+
+  async mapQueries() {
+    const queriesPath = path.resolve(this.__dirname, '../config/queries.yaml');
+    this.QUERIES = await new Promise((resolve) => {
+      fs.readFile(queriesPath, 'utf8', (err, data) => {
+        if (err) {
+          console.error(`Error leyendo YAML desde ${queriesPath}:`, err);
+          resolve(null);
+        } else {
+          try {
+            // El archivo queries.yaml tiene formato JSON, pero con extensión YAML
+            // Si realmente es YAML, usar yaml.load(data)
+            // Si es JSON, usar JSON.parse(data)
+            // Aquí intentamos ambas opciones
+            let result;
+            try {
+              result = yaml.load(data);
+            } catch (yamlErr) {
+              try {
+                result = JSON.parse(data);
+              } catch (jsonErr) {
+                console.error(
+                  'Error parseando queries.yaml como YAML y JSON:',
+                  yamlErr,
+                  jsonErr,
+                );
+                result = null;
+              }
+            }
+            resolve(result);
+          } catch (parseErr) {
+            console.error(
+              `Error parseando YAML desde ${queriesPath}:`,
+              parseErr,
+            );
+            resolve(null);
+          }
+        }
+      });
+    });
   }
 }
