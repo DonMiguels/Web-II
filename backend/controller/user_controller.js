@@ -7,7 +7,8 @@ const sessionService = new SessionService();
 
 import Config from '../config/config.js';
 const config = new Config();
-const { getMessage, STATUS_CODES } = config;
+const getMessage = config.getMessage.bind(config);
+const { STATUS_CODES } = config;
 
 // Registro de usuario
 router.post('/register', async (req, res) => {
@@ -20,7 +21,8 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     res.status(STATUS_CODES.BAD_REQUEST).json({
-      message: getMessage(config.LANGUAGE, 'registration_error'),
+      message:
+        error.message || getMessage(config.LANGUAGE, 'registration_error'),
       error,
     });
   }
@@ -40,14 +42,15 @@ router.post('/login', async (req, res) => {
       user: userData,
     });
   } catch (error) {
-    res
-      .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-      .json({ message: getMessage(config.LANGUAGE, 'server_error'), error });
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: getMessage(config.LANGUAGE, 'server_error'),
+      error,
+    });
   }
 });
 
 // Obtener usuario actual
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   if (!sessionService.sessionExists(req)) {
     return res
       .status(STATUS_CODES.UNAUTHORIZED)
@@ -57,7 +60,7 @@ router.get('/me', (req, res) => {
 });
 
 // Logout
-router.post('/logout', (req, res) => {
+router.post('/logout', async (req, res) => {
   sessionService.destroySession(req);
   res.json({ message: getMessage(config.LANGUAGE, 'logout_success') });
 });

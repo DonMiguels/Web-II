@@ -26,8 +26,8 @@ class Server {
   configuration() {
     this.app.use(
       cors({
-        // origin: ['http://localhost:5173'],
-        origin: ['*'],
+        // origin: ['*'],
+        origin: ['http://localhost:5173'],
         credentials: true,
       }),
     );
@@ -53,6 +53,7 @@ class Server {
 
   start() {
     this.app.listen(this.PORT, async () => {
+      await this.config.init();
       console.log(
         `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} http://localhost:${this.PORT}`,
       );
