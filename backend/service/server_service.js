@@ -25,10 +25,7 @@ class Server {
   configuration() {
     this.app.use(
       cors({
-<<<<<<< HEAD
         // origin: ['*'],
-=======
->>>>>>> 94d76bb87a15aa676088c7d9ad33b272eff19e5e
         origin: ['http://localhost:5173'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
