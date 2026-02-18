@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const publicRoutes = ["/login", "/forgot-password"];
+    const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 
     const isPublicRoute = publicRoutes.includes(window.location.pathname);
 

@@ -17,12 +17,15 @@ export const ProtectedRoute = () => {
       }, 1500);
     }
 
+
     if (user) {
       setShowWarning(false);
     }
 
+
     return () => clearTimeout(timer);
   }, [loading, user, location.pathname]);
+
 
   if (loading) {
     return (
@@ -36,6 +39,7 @@ export const ProtectedRoute = () => {
       </div>
     );
   }
+
 
   if (!user && showWarning) {
     return (
@@ -51,6 +55,7 @@ export const ProtectedRoute = () => {
     );
   }
 
+
   if (!user) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[var(--bg-main)]">
@@ -58,6 +63,7 @@ export const ProtectedRoute = () => {
       </div>
     );
   }
+
 
   return <Outlet />;
 };
