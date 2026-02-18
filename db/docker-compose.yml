@@ -15,6 +15,30 @@ services:
       - ./restore.sql/initial_data.sql:/docker-entrypoint-initdb.d/02-data.sql
       - ./backups:/backups
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  db_ready:
+    image: postgres:16
+    container_name: webii_db_ready
+    depends_on:
+      - db
+    environment:
+      POSTGRES_DB: webii
+      POSTGRES_USER: webii_user
+      POSTGRES_PASSWORD: webii_pass
+    command: >
+      bash -c "
+        until pg_isready -h db -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do
+          echo 'Esperando a que la base de datos esté lista...';
+          sleep 2;
+        done;
+        echo 'Base de datos lista, actualizada y en ejecución.';
+      "
+    restart: "no"
 
   pgadmin:
     image: dpage/pgadmin4
