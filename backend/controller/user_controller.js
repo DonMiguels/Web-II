@@ -4,6 +4,8 @@ import UserService from '../service/user_service.js';
 const userService = new UserService();
 import SessionService from '../service/session_service.js';
 const sessionService = new SessionService();
+import Validator from '../utils/validator.js';
+const validator = new Validator();
 
 import Config from '../config/config.js';
 const config = new Config();
@@ -11,14 +13,40 @@ const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
 import Tokenizer from '../src/tokenizer/tokenizer.js';
 import Mailer from '../src/mailer/mailer.js';
-import Validator from '../src/validator/validator.js';
 const tokenizer = new Tokenizer();
 const mailer = new Mailer();
-const validator = new Validator();
 
 // Registro de usuario
 router.post('/register', async (req, res) => {
   try {
+    // Schema de validación para registro
+    const registerSchema = {
+      username: {
+        type: 'string',
+        options: { required: true },
+      },
+      email: {
+        type: 'email',
+        options: { required: true },
+      },
+      password: {
+        type: 'string',
+        options: {
+          required: true,
+          requireSpecialChars: true,
+        },
+      },
+    };
+
+    // Validar todos los campos
+    const validation = validator.validateObject(req.body, registerSchema);
+    if (!validation.isValid) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        message: getMessage(config.LANGUAGE, 'validation_error'),
+        errors: validation.errors,
+      });
+    }
+
     const userData = await userService.register(req.body);
     sessionService.setSession(req, { user: userData });
     res.json({
@@ -37,6 +65,27 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
+    // Schema de validación para login
+    const loginSchema = {
+      username: {
+        type: 'string',
+        options: { required: true },
+      },
+      password: {
+        type: 'string',
+        options: { required: true },
+      },
+    };
+
+    // Validar campos de login
+    const validation = validator.validateObject(req.body, loginSchema);
+    if (!validation.isValid) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        message: getMessage(config.LANGUAGE, 'validation_error'),
+        errors: validation.errors,
+      });
+    }
+
     const userData = await userService.login(req.body);
     if (!userData)
       return res
@@ -71,9 +120,18 @@ router.post('/forgot-password', async (req, res) => {
 
   await sessionService.destroySession(req);
 
-  if (!email) {
+  const forgotPasswordSchema = {
+    email: {
+      type: 'email',
+      options: { required: true },
+    },
+  };
+
+  const validation = validator.validateObject(req.body, forgotPasswordSchema);
+  if (!validation.isValid) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
-      error: getMessage(config.LANGUAGE, 'missing_required_fields'),
+      message: getMessage(config.LANGUAGE, 'validation_error'),
+      errors: validation.errors,
     });
   }
 
@@ -114,7 +172,33 @@ router.post('/reset-password', async (req, res) => {
   // Terminar la sesion si existe
   await sessionService.destroySession(req);
 
-  if (!token || !password || !confirmPassword) {
+  const resetPasswordSchema = {
+    token: {
+      type: 'string',
+      options: { required: true },
+    },
+    password: {
+      type: 'string',
+      options: {
+        required: true,
+        requireSpecialChars: true,
+      },
+    },
+    confirmPassword: {
+      type: 'string',
+      options: { required: true },
+    },
+  };
+
+  const validation = validator.validateObject(req.body, resetPasswordSchema);
+  if (!validation.isValid) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+      message: getMessage(config.LANGUAGE, 'validation_error'),
+      errors: validation.errors,
+    });
+  }
+
+  if (password !== confirmPassword) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
       error: getMessage(config.LANGUAGE, 'passwords_do_not_match'),
     });
@@ -125,19 +209,6 @@ router.post('/reset-password', async (req, res) => {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
       error: config.getMessage(config.LANGUAGE, 'invalid_or_expired_token'),
     });
-  }
-
-  const passwordError = validator.validatePassword(password);
-  if (passwordError) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ error: passwordError });
-  }
-
-  const confirmError = validator.validateConfirmPassword(
-    password,
-    confirmPassword,
-  );
-  if (confirmError) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({ error: confirmError });
   }
 
   try {
@@ -161,7 +232,6 @@ router.post('/reset-password', async (req, res) => {
     });
   }
 });
-
 // Logout
 router.post('/logout', async (req, res) => {
   if (!sessionService.authenticate(req))

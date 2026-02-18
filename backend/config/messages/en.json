@@ -16,6 +16,7 @@
 
   "registration_success": "Registration successful, you can now log in",
   "registration_error": "Error registering the user. Please try again later",
+  "validation_error": "Validation error. Please check the fields and try again",
 
   "unauthorized": "Unauthorized, please log in to access this resource",
   "forbidden": "Access forbidden, you do not have permission to access this resource",
