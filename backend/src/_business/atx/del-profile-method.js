@@ -1,7 +1,7 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import DBMS from "../../dbms/dbms.js";
-import getMethod from "./get-method.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import DBMS from '../../dbms/dbms.js';
+import getMethod from './get-method.js';
 
 export default async function delProfileMethod(data) {
   const utils = new Utils();
@@ -17,7 +17,7 @@ export default async function delProfileMethod(data) {
   if (!method || !profile)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   const conf = await _requireConfirmJoin(data.confirmDelete, 'method_profile');
   if (conf !== true) return conf;
@@ -30,7 +30,7 @@ export default async function delProfileMethod(data) {
   } catch (error) {
     return utils.handleError({
       message: `Error en delProfileMethod`,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

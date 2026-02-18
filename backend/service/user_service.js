@@ -61,10 +61,13 @@ class UserService {
 
   // Obtener usuario por email
   async getUserByEmail(email) {
-    const query = `SELECT id, username, email FROM public.user WHERE email = $1`;
+    await this.dbmsReady;
     try {
-      const res = await pool.query(query, [email]);
-      return res.rows[0] || null;
+      const res = await this.dbms.executeNamedQuery({
+        nameQuery: 'getUserByEmail',
+        params: { email },
+      });
+      return res?.rows?.[0] || null;
     } catch (err) {
       throw new Error(err.message);
     }
@@ -72,16 +75,14 @@ class UserService {
 
   // Actualizar contraseña por ID
   async updatePasswordById({ userId, password }) {
+    await this.dbmsReady;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = `
-      UPDATE public.user
-      SET password = $1
-      WHERE id = $2
-      RETURNING id, username, email, register_date
-    `;
     try {
-      const res = await pool.query(query, [hashedPassword, userId]);
-      return res.rows[0] || null;
+      const res = await this.dbms.executeNamedQuery({
+        nameQuery: 'updateUserPassword',
+        params: { password: hashedPassword, userId },
+      });
+      return res?.rows?.[0] || null;
     } catch (err) {
       throw new Error(err.message);
     }

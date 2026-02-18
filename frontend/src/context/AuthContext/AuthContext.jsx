@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
       if (res.data.loggedIn) {
         setUser(res.data.user);
       }
-    } catch (err) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const publicRoutes = ['/login', '/forgot-password'];
+    const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
 
     const isPublicRoute = publicRoutes.includes(window.location.pathname);
 
@@ -71,6 +71,43 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotPassword = async ({ email }) => {
+    setIsSubmitting(true);
+    setAuthError(null);
+    try {
+      const res = await api.post('/forgot-password', { email });
+      return res.data;
+    } catch (err) {
+      const message =
+        err.response?.data?.message ||
+        'Error al enviar el correo de recuperación';
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const resetPassword = async ({ token, password, confirmPassword }) => {
+    setIsSubmitting(true);
+    setAuthError(null);
+    try {
+      const res = await api.post('/reset-password', {
+        token,
+        password,
+        confirmPassword,
+      });
+      return res.data;
+    } catch (err) {
+      const message =
+        err.response?.data?.message || 'Error al restablecer la contraseña';
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -80,6 +117,8 @@ export const AuthProvider = ({ children }) => {
         authError,
         login,
         logout,
+        forgotPassword,
+        resetPassword,
         checkAuth,
       }}
     >

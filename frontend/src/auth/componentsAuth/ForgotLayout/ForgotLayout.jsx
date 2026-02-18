@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Lock, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 
 import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { NotificationToast } from '@/components';
+import { NotificationToast, AlertMessage } from '@/components';
 
 import { forgotSchema } from '@/auth/schemasAuth';
-import { AlertMessage } from '@/components';
 import { useAuth } from '@/context';
 
 export const ForgotLayout = () => {
@@ -30,24 +29,18 @@ export const ForgotLayout = () => {
 
   const onSubmit = async (data) => {
     try {
-      await forgotPassword(
-        {
-          username: data.username,
-          password: data.password,
-          confirmPassword: data.confirmPassword,
-        },
-        navigate,
-      );
+      await forgotPassword({ email: data.email });
 
       setToast({
-        message: 'Contraseña actualizada correctamente',
+        message:
+          'Si el correo existe, te enviamos un enlace para restablecer tu contraseña',
         type: 'success',
       });
 
       setTimeout(() => setIsSuccess(true), 1200);
     } catch (err) {
       setToast({
-        message: err.message || 'Error al intentar actualizar la contraseña',
+        message: err.message || 'Error al intentar enviar el correo',
         type: 'error',
       });
     }
@@ -57,9 +50,9 @@ export const ForgotLayout = () => {
     return (
       <AlertMessage
         type='success'
-        title='¡Todo listo!'
-        message='Tu contraseña ha sido actualizada con éxito. Ahora puedes volver a ingresar a tu cuenta con tus nuevas credenciales.'
-        buttonText='Ir al inicio de sesión'
+        title='¡Revisa tu correo!'
+        message='Si el correo existe, te enviamos un enlace para restablecer tu contraseña.'
+        buttonText='Volver al inicio de sesión'
         onConfirm={() => navigate('/login')}
       />
     );
@@ -100,7 +93,7 @@ export const ForgotLayout = () => {
                 Recuperar Acceso
               </h1>
               <p className='text-muted-foreground text-[11px] mt-0.5 font-medium opacity-80'>
-                Configura tu nueva contraseña
+                Enviaremos un enlace a tu correo
               </p>
             </motion.div>
 
@@ -108,82 +101,35 @@ export const ForgotLayout = () => {
               <motion.div variants={itemVariants}>
                 <Field>
                   <FieldLabel
-                    htmlFor='username'
+                    htmlFor='email'
                     className='text-[11px] font-semibold mb-1 block opacity-90'
                   >
-                    Usuario
+                    Correo electrónico
                   </FieldLabel>
                   <div className='relative group'>
-                    <User className='absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 pointer-events-none' />
+                    <Mail className='absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 pointer-events-none' />
                     <Input
-                      id='username'
-                      className={`auth-input pl-9 h-8.5 text-sm rounded-lg relative z-0 ${errors.username ? 'border-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]' : ''}`}
-                      placeholder='Ingresa tu usuario'
-                      {...register('username')}
+                      id='email'
+                      type='email'
+                      className={`auth-input pl-9 h-8.5 text-sm rounded-lg relative z-0 ${errors.email ? 'border-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]' : ''}`}
+                      placeholder='Ingresa tu correo'
+                      {...register('email')}
                     />
                   </div>
                   <AnimatePresence mode='wait'>
-                    {errors.username && (
+                    {errors.email && (
                       <motion.p
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         className='text-[10px] text-red-500 mt-1 ml-1 font-medium overflow-hidden'
                       >
-                        {errors.username.message}
+                        {errors.email.message}
                       </motion.p>
                     )}
                   </AnimatePresence>
                 </Field>
               </motion.div>
-
-              {[
-                {
-                  id: 'password',
-                  label: 'Nueva Contraseña',
-                  icon: <Lock className='h-3.5 w-3.5' />,
-                },
-                {
-                  id: 'confirmPassword',
-                  label: 'Confirmar Contraseña',
-                  icon: <Lock className='h-3.5 w-3.5' />,
-                },
-              ].map((f) => (
-                <motion.div key={f.id} variants={itemVariants}>
-                  <Field>
-                    <FieldLabel
-                      htmlFor={f.id}
-                      className='text-[11px] font-semibold mb-1 block opacity-90'
-                    >
-                      {f.label}
-                    </FieldLabel>
-                    <div className='relative group'>
-                      <div className='absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10 pointer-events-none'>
-                        {f.icon}
-                      </div>
-                      <Input
-                        id={f.id}
-                        type='password'
-                        className={`auth-input pl-9 h-8.5 text-sm rounded-lg relative z-0 ${errors[f.id] ? 'border-red-500 shadow-[0_0_0_2px_rgba(239,68,68,0.1)]' : ''}`}
-                        placeholder='••••••••'
-                        {...register(f.id)}
-                      />
-                    </div>
-                    <AnimatePresence mode='wait'>
-                      {errors[f.id] && (
-                        <motion.p
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className='text-[10px] text-red-500 mt-1 ml-1 font-medium overflow-hidden'
-                        >
-                          {errors[f.id].message}
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-                  </Field>
-                </motion.div>
-              ))}
             </FieldGroup>
           </FieldSet>
 
@@ -196,7 +142,7 @@ export const ForgotLayout = () => {
               disabled={isSubmitting}
               className='auth-submit-btn w-full h-9.5 rounded-lg font-bold text-white uppercase tracking-wider text-[10px] cursor-pointer shadow-md'
             >
-              {isSubmitting ? 'Actualizando...' : 'Actualizar Contraseña'}
+              {isSubmitting ? 'Enviando...' : 'Enviar enlace'}
             </Button>
 
             <Button

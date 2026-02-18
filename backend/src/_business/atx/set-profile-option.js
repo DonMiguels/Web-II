@@ -1,5 +1,5 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
 
 export default async function setProfileOption(data) {
   const utils = new Utils();
@@ -23,7 +23,7 @@ export default async function setProfileOption(data) {
   if (!option || !profile)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   return await _withTransaction(async (client) => {
     const optionId = await _ensureEntityByUniqueField(client, 'option', {

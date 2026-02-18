@@ -1,6 +1,6 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import getMethod from "./get-method.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import getMethod from './get-method.js';
 
 export default async function setUserProfile(data) {
   const utils = new Utils();
@@ -25,7 +25,7 @@ export default async function setUserProfile(data) {
   if (!username || !profile)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   return await _withTransaction(async (client) => {
     const userId = await _ensureEntityByUniqueField(client, 'user', {

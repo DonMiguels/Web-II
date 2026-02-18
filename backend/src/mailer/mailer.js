@@ -6,9 +6,7 @@ const resend = resendApiKey ? new Resend(resendApiKey) : null;
 export default class Mailer {
   constructor() {
     this.resend = resend;
-    this.defaultFrom =
-      process.env.EMAIL||
-      'onboarding@resend.dev';
+    this.defaultFrom = process.env.EMAIL || 'onboarding@resend.dev';
   }
 
   async sendEmail(to, subject, html) {
@@ -25,8 +23,8 @@ export default class Mailer {
         html,
       });
       // Resend retorna { id } o { data, error } segun versión.
-      const id = result?.id || result?.data?.id;
-      if (id) console.log('[mailer] email sent:', { to, subject, id });
+      // const id = result?.id || result?.data?.id;
+      // if (id) console.log('[mailer] email sent:', { to, subject, id });
       if (result?.error) console.error('[mailer] resend error:', result.error);
       return result;
     } catch (error) {
@@ -68,6 +66,12 @@ export default class Mailer {
               >
                 Restablecer contraseña
               </a>
+            </p>
+
+            <p style="color: #666; font-size: 12px; margin-top: 8px;">
+              Si el botón no funciona, copia y pega este enlace en tu navegador:
+              <br />
+              <span style="word-break: break-all;">${resetUrl}</span>
             </p>
 
             <p style="color: #666; font-size: 12px;">

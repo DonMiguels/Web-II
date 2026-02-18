@@ -143,10 +143,7 @@ router.post('/forgot-password', async (req, res) => {
         username: userData.username,
         email: userData.email,
       });
-      const origin =
-        process.env.FRONTEND_URL ||
-        req.headers.origin ||
-        'http://localhost:5173/reset-password';
+      const origin = process.env.FRONTEND_URL || req.headers.origin;
       await mailer.sendRecoveryEmail({
         email: userData.email,
         token,
@@ -159,6 +156,7 @@ router.post('/forgot-password', async (req, res) => {
       message: config.getMessage(config.LANGUAGE, 'recovery_email_sent'),
     });
   } catch (error) {
+    console.error('Error en forgot-password:', error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       message: config.getMessage(config.LANGUAGE, 'server_error'),
       error,
@@ -226,6 +224,7 @@ router.post('/reset-password', async (req, res) => {
       user: userData,
     });
   } catch (error) {
+    console.error('Error en reset-password:', error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       message: getMessage(config.LANGUAGE, 'server_error'),
       error,

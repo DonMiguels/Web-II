@@ -1,6 +1,6 @@
-import DBMS from "../../dbms/dbms.js";
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
+import DBMS from '../../dbms/dbms.js';
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
 
 export default async function parseMOP({ profile }) {
   const dbms = new DBMS();
@@ -189,7 +189,7 @@ export default async function parseMOP({ profile }) {
 
     utils.handleError({
       message: 'Error parsing MOP',
-      errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
+      statusCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       error,
     });
   }

@@ -1,6 +1,6 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import DBMS from "../../dbms/dbms.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import DBMS from '../../dbms/dbms.js';
 
 export default async function getSubsystemClassesMethods(data) {
   const utils = new Utils();
@@ -12,7 +12,7 @@ export default async function getSubsystemClassesMethods(data) {
   if (!subsystem)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
 
   try {
@@ -24,7 +24,7 @@ export default async function getSubsystemClassesMethods(data) {
   } catch (error) {
     return utils.handleError({
       message: `Error en getSubsystemClassesMethods`,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

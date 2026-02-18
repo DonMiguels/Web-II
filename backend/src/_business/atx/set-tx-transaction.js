@@ -1,6 +1,6 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import getMethod from "./get-method.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import getMethod from './get-method.js';
 
 export default async function setTxTransaction(data) {
   const utils = new Utils();
@@ -28,7 +28,7 @@ export default async function setTxTransaction(data) {
     return utils.handleError({
       message:
         'Datos inválidos o incompletos (subsystem, className, method requeridos)',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
 
   return await _withTransaction(async (client) => {
@@ -62,7 +62,7 @@ export default async function setTxTransaction(data) {
     } catch (e) {}
     const checkRes = await client.query(
       'SELECT tx, description FROM public."transaction" WHERE id_subsystem = $1 AND id_class = $2 AND id_method = $3 LIMIT 1;',
-      [subsystemId, classId, methodId]
+      [subsystemId, classId, methodId],
     );
     if (checkRes.rows && checkRes.rows.length > 0) {
       return { message: 'Transacción ya existente', data: checkRes.rows[0] };
@@ -73,7 +73,7 @@ export default async function setTxTransaction(data) {
     try {
       inserted = await client.query(
         'INSERT INTO public."transaction" (description, id_subsystem, id_class, id_method) VALUES ($1, $2, $3, $4) RETURNING tx;',
-        [descValue, subsystemId, classId, methodId]
+        [descValue, subsystemId, classId, methodId],
       );
     } catch (e) {
       // If INSERT fails due to concurrency (duplicate key) try to SELECT the existing row
@@ -89,13 +89,13 @@ export default async function setTxTransaction(data) {
               subsystem,
               className,
               method,
-            }
+            },
           );
         } catch (logErr) {}
         try {
           const chk = await client.query(
             'SELECT tx, description FROM public."transaction" WHERE id_subsystem = $1 AND id_class = $2 AND id_method = $3 LIMIT 1;',
-            [subsystemId, classId, methodId]
+            [subsystemId, classId, methodId],
           );
           if (chk.rows && chk.rows.length > 0)
             return { message: 'Transacción ya existente', data: chk.rows[0] };
@@ -114,7 +114,7 @@ export default async function setTxTransaction(data) {
             subsystem,
             className,
             method,
-          }
+          },
         );
       } catch (ee) {}
       throw e;
@@ -128,7 +128,7 @@ export default async function setTxTransaction(data) {
     // Si no se insertó (conflict), recuperar la fila existente
     const checkResAgain = await client.query(
       'SELECT tx, description FROM public."transaction" WHERE id_subsystem = $1 AND id_class = $2 AND id_method = $3 LIMIT 1;',
-      [subsystemId, classId, methodId]
+      [subsystemId, classId, methodId],
     );
     if (checkResAgain.rows && checkResAgain.rows.length > 0) {
       return {
@@ -139,7 +139,7 @@ export default async function setTxTransaction(data) {
     // Fallback: devolver error si no se pudo recuperar
     return utils.handleError({
       message: 'No se pudo crear o recuperar la transacción',
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
     });
   }, 'Error en setTxTransaction');
 }

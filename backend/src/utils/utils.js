@@ -6,13 +6,13 @@ export default class Utils {
 
   getAllDinamicMethodNames = (thisArg) =>
     Object.keys(thisArg).filter(
-      (method) => typeof thisArg[method] === 'function'
+      (method) => typeof thisArg[method] === 'function',
     );
 
-  handleError({ message, errorCode, error = {} }) {
+  handleError({ message, statusCode, error = {} }) {
     const errPayload = {
       message,
-      errorCode,
+      statusCode,
       error:
         error && typeof error === 'object'
           ? {

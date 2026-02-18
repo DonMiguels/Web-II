@@ -1,7 +1,7 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import DBMS from "../../dbms/dbms.js";
-import getMethod from "./get-method.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import DBMS from '../../dbms/dbms.js';
+import getMethod from './get-method.js';
 
 export default async function delTxTransaction(data) {
   const utils = new Utils();
@@ -16,7 +16,7 @@ export default async function delTxTransaction(data) {
   if (!data || typeof data !== 'object')
     return utils.handleError({
       message: 'Datos inválidos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   const conf = await _requireConfirmJoin(data.confirmDelete, 'transaction');
   if (conf !== true) return conf;
@@ -34,7 +34,7 @@ export default async function delTxTransaction(data) {
   } else {
     return utils.handleError({
       message: 'Debe proporcionar tx o subsystem/className/method',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   }
   try {
@@ -43,13 +43,13 @@ export default async function delTxTransaction(data) {
     if (res.rowCount === 0)
       return utils.handleError({
         message: 'Transacción no encontrada para eliminar',
-        errorCode: ERROR_CODES.NOT_FOUND,
+        statusCode: ERROR_CODES.NOT_FOUND,
       });
     return { message: 'Transacción eliminada correctamente' };
   } catch (error) {
     return utils.handleError({
       message: 'Error en delTxTransaction',
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

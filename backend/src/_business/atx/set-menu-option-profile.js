@@ -1,4 +1,4 @@
-import getMethod from "./get-method.js";
+import getMethod from './get-method.js';
 
 export default async function setMenuOptionProfile(data) {
   const _ensureEntityByUniqueField = await getMethod({
@@ -51,7 +51,7 @@ export default async function setMenuOptionProfile(data) {
                   name: submenuName,
                   description: submenuNode?.description || submenuName,
                   ...(parentId ? { id_parent: parentId } : {}),
-                }
+                },
               );
               const options = Object.keys(submenuNode?.options || {});
               for (const optionName of options) {
@@ -62,7 +62,7 @@ export default async function setMenuOptionProfile(data) {
                     Object.assign({}, optionNode.method || {}, {
                       __client: client,
                     }),
-                    subsystem
+                    subsystem,
                   );
                 }
                 const optionId = await _ensureOptionWithTx(client, {
@@ -79,7 +79,7 @@ export default async function setMenuOptionProfile(data) {
                   const profileId = await _ensureEntityByUniqueField(
                     client,
                     'profile',
-                    { name: prof }
+                    { name: prof },
                   );
                   await _ensureJoin(client, 'option_profile', {
                     id_option: optionId,
@@ -98,7 +98,7 @@ export default async function setMenuOptionProfile(data) {
                   Object.assign({}, optionNode.method || {}, {
                     __client: client,
                   }),
-                  subsystem
+                  subsystem,
                 );
               }
               const optionId = await _ensureOptionWithTx(client, {
@@ -115,7 +115,7 @@ export default async function setMenuOptionProfile(data) {
                 const profileId = await _ensureEntityByUniqueField(
                   client,
                   'profile',
-                  { name: prof }
+                  { name: prof },
                 );
                 await _ensureJoin(client, 'option_profile', {
                   id_option: optionId,
@@ -133,14 +133,14 @@ export default async function setMenuOptionProfile(data) {
 
   const { menu, option, profile } = data || {};
   if (!menu || !option || !profile) {
-    const Utils = (await import("../../utils/utils.js")).default;
-    const Config = (await import("../../../config/config.js")).default;
+    const Utils = (await import('../../utils/utils.js')).default;
+    const Config = (await import('../../../config/config.js')).default;
     const utils = new Utils();
     const config = new Config();
     const ERROR_CODES = config.ERROR_CODES;
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   }
 
@@ -154,7 +154,7 @@ export default async function setMenuOptionProfile(data) {
         {
           name: data.subsystem,
           description: data.subsystem,
-        }
+        },
       );
       menuFields = { ...menuFields, id_subsystem: subsystemId };
     }
@@ -170,9 +170,9 @@ export default async function setMenuOptionProfile(data) {
             className: data.className,
             method: data.method,
             __client: client,
-          }
+          },
         ),
-        data.subsystem
+        data.subsystem,
       );
     }
     const optionId = await _ensureOptionWithTx(client, {

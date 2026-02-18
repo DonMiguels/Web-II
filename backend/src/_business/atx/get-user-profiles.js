@@ -1,6 +1,6 @@
-import DBMS from "../../dbms/dbms.js";
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
+import DBMS from '../../dbms/dbms.js';
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
 
 export default async function getUserProfiles(data) {
   const dbms = new DBMS();
@@ -12,7 +12,7 @@ export default async function getUserProfiles(data) {
   if (!username)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
 
   try {
@@ -24,7 +24,7 @@ export default async function getUserProfiles(data) {
   } catch (error) {
     return utils.handleError({
       message: 'Error en getUserProfiles',
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

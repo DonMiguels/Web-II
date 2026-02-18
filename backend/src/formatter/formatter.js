@@ -36,7 +36,7 @@ export default class Formatter {
         if (validationErrors && validationErrors.length > 0) {
           this.utils.handleError({
             message: 'Parámetros inválidos: ' + validationErrors.join('. '),
-            errorCode: this.STATUS_CODES.BAD_REQUEST,
+            statusCode: this.STATUS_CODES.BAD_REQUEST,
           });
         }
       }
@@ -49,7 +49,7 @@ export default class Formatter {
           if (current == null || !(k in current)) {
             this.utils.handleError({
               message: `Parámetro requerido '${path}' ausente`,
-              errorCode: this.STATUS_CODES.BAD_REQUEST,
+              statusCode: this.STATUS_CODES.BAD_REQUEST,
             });
           }
           current = current[k];
@@ -69,7 +69,7 @@ export default class Formatter {
       this.utils.handleError({
         message:
           'Invalid array structure for mapping' + validationErrors.join('. '),
-        errorCode: this.STATUS_CODES.BAD_REQUEST,
+        statusCode: this.STATUS_CODES.BAD_REQUEST,
       });
     }
 
@@ -96,7 +96,7 @@ export default class Formatter {
       this.utils.handleError({
         message:
           'Invalid array structure for mapping' + validationErrors.join('. '),
-        errorCode: this.STATUS_CODES.BAD_REQUEST,
+        statusCode: this.STATUS_CODES.BAD_REQUEST,
       });
     }
 

@@ -245,7 +245,7 @@ export default class Validator {
       if (err.errors) {
         err.errors.forEach((e) => errors.push(e.message));
       } else {
-        errors.push('Error desconocido en estructura de datos');
+        errors.push(err?.message || 'Error desconocido en estructura de datos');
       }
     }
 
