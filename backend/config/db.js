@@ -1,11 +1,8 @@
-import { Pool } from "pg";
-import dotenv from "dotenv";
-import Config from "./config.js";
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import Config from './config.js';
 const config = new Config();
-<<<<<<< HEAD
-=======
 const getMessage = config.getMessage.bind(config);
->>>>>>> 80b3f1f224b6addbf5e37e1f4fd647a491622165
 
 dotenv.config();
 
@@ -20,11 +17,11 @@ const dbConfig = {
 const pool = new Pool(dbConfig);
 
 pool.on('connect', () => {
-  console.log(config.getMessage(config.LANGUAGE, 'db_connected_success'));
+  console.log(getMessage(config.LANGUAGE, 'db_connected_success'));
 });
 
 pool.on('error', (err) => {
-  console.error(config.getMessage(config.LANGUAGE, 'db_connected_error'), err);
+  console.error(getMessage(config.LANGUAGE, 'db_connected_error'), err);
 });
 
 export default pool;
