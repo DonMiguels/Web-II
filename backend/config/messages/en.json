@@ -29,5 +29,7 @@
 
   "missing_required_fields": "Missing required fields",
   "passwords_do_not_match": "Passwords do not match",
-  "password_reset_success": "Password updated successfully"
+  "password_reset_success": "Password updated successfully",
+  "recovery_email_sent": "If the email exists, we sent you a link to reset your password",
+  "invalid_or_expired_token": "Invalid or expired token"
 }

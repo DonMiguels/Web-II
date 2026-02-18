@@ -9,6 +9,12 @@ import Config from '../config/config.js';
 const config = new Config();
 const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
+import Tokenizer from '../src/tokenizer/tokenizer.js';
+import Mailer from '../src/mailer/mailer.js';
+import Validator from '../src/validator/validator.js';
+const tokenizer = new Tokenizer();
+const mailer = new Mailer();
+const validator = new Validator();
 
 // Registro de usuario
 router.post('/register', async (req, res) => {
@@ -59,28 +65,84 @@ router.get('/me', async (req, res) => {
   res.json(sessionService.getSession(req).user);
 });
 
-// Recuperacion de contrasena (olvido de clave)
+// Recuperacion de contrasena
 router.post('/forgot-password', async (req, res) => {
-  const { username, password, confirmPassword } = req.body || {};
+  const { email } = req.body || {};
 
-  // Terminar la sesion si existe
   await sessionService.destroySession(req);
 
-  if (!username || !password || !confirmPassword) {
+  if (!email) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
       error: getMessage(config.LANGUAGE, 'missing_required_fields'),
     });
   }
 
-  if (password !== confirmPassword) {
+  try {
+    const userData = await userService.getUserByEmail(email);
+    if (userData) {
+      const token = tokenizer.generateToken({
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+      });
+      const origin =
+        process.env.FRONTEND_URL ||
+        req.headers.origin ||
+        'http://localhost:5173/reset-password';
+      await mailer.sendRecoveryEmail({
+        email: userData.email,
+        token,
+        origin,
+        username: userData.username,
+      });
+    }
+
+    return res.json({
+      message: config.getMessage(config.LANGUAGE, 'recovery_email_sent'),
+    });
+  } catch (error) {
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: config.getMessage(config.LANGUAGE, 'server_error'),
+      error,
+    });
+  }
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { token, password, confirmPassword } = req.body || {};
+
+  // Terminar la sesion si existe
+  await sessionService.destroySession(req);
+
+  if (!token || !password || !confirmPassword) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
       error: getMessage(config.LANGUAGE, 'passwords_do_not_match'),
     });
   }
 
+  const tokenPayload = tokenizer.verifyToken(token);
+  if (!tokenPayload?.id) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({
+      error: config.getMessage(config.LANGUAGE, 'invalid_or_expired_token'),
+    });
+  }
+
+  const passwordError = validator.validatePassword(password);
+  if (passwordError) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({ error: passwordError });
+  }
+
+  const confirmError = validator.validateConfirmPassword(
+    password,
+    confirmPassword,
+  );
+  if (confirmError) {
+    return res.status(STATUS_CODES.BAD_REQUEST).json({ error: confirmError });
+  }
+
   try {
-    const userData = await userService.resetPasswordByUsername({
-      username,
+    const userData = await userService.updatePasswordById({
+      userId: tokenPayload.id,
       password,
     });
     if (!userData) {

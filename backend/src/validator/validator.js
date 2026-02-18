@@ -12,7 +12,11 @@ export default class Validator {
 
     this.dbms = dbmsInstance;
     this.config = new Config();
-    const customTypes = this.config.getCustomTypes();
+
+    const customTypes =
+      this.config && typeof this.config.getCustomTypes === 'function'
+        ? this.config.getCustomTypes()
+        : {};
 
     if (!Validator.instance) {
       this.types = {
@@ -33,7 +37,16 @@ export default class Validator {
         ...customTypes,
       };
 
-      this.validationValues = this.config.getValidationValues();
+      this.validationValues =
+        this.config && typeof this.config.getValidationValues === 'function'
+          ? this.config.getValidationValues()
+          : {
+              user: {
+                username: { min: 3, max: 32 },
+                email: { max: 254 },
+                password: { min: 8, max: 128 },
+              },
+            };
 
       Validator.instance = this;
     }

@@ -71,24 +71,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const forgotPassword = async (data, navigate) => {
-    setIsSubmitting(true);
-    setAuthError(null);
-    try {
-      await api.post('/forgot-password', data);
-      if (navigate) {
-        navigate('/login', { replace: true });
-      }
-    } catch (err) {
-      const message =
-        err.response?.data?.message || 'Error al actualizar la contraseña';
-      setAuthError(message);
-      throw new Error(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -99,7 +81,6 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         checkAuth,
-        forgotPassword,
       }}
     >
       {children}
