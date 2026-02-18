@@ -1,92 +1,92 @@
--- Datos iniciales para la base de datos Web-II
--- Este archivo se ejecuta automáticamente al iniciar el contenedor
+-- Initial data for Web-II database
+-- This file executes automatically when container starts
 
--- Insertar tipos de categoría
-INSERT INTO tipo_categoria (tipo_categoria_de) VALUES 
-('Equipos'),
-('Materiales'),
-('Herramientas'),
-('Libros'),
+-- Insert category types
+INSERT INTO category_type (category_type_name) VALUES 
+('Equipment'),
+('Materials'),
+('Tools'),
+('Books'),
 ('Software');
 
--- Insertar categorías
-INSERT INTO categoria (categoria_de, tipo_categoria_id) VALUES 
+-- Insert categories
+INSERT INTO category (category_name, category_type_id) VALUES 
 ('Laptops', 1),
 ('Desktops', 1),
 ('Tablets', 1),
-('Monitores', 1),
-('Teclados', 3),
+('Monitors', 1),
+('Keyboards', 3),
 ('Mouses', 3),
-('Libros Texto', 4),
-('Libros Referencia', 4),
-('Licencias Software', 5);
+('Textbooks', 4),
+('Reference Books', 4),
+('Software Licenses', 5);
 
--- Insertar características
-INSERT INTO caracteristica (caracteristica_de) VALUES 
-('Marca'),
-('Modelo'),
-('Serie'),
+-- Insert features
+INSERT INTO feature (feature_name) VALUES 
+('Brand'),
+('Model'),
+('Series'),
 ('Color'),
-('Capacidad'),
-('Velocidad'),
-('Estado'),
-('Garantía');
+('Capacity'),
+('Speed'),
+('Condition'),
+('Warranty');
 
--- Insertar tipos de movimiento
-INSERT INTO tipo_movimiento (tipo_movimiento_de) VALUES 
-('Préstamo'),
-('Devolución'),
-('Mantenimiento'),
-('Transferencia');
+-- Insert movement types
+INSERT INTO movement_type (movement_type_name) VALUES 
+('Loan'),
+('Return'),
+('Maintenance'),
+('Transfer');
 
--- Insertar períodos
-INSERT INTO periodo (periodo_de, periodo_activo) VALUES 
+-- Insert periods
+INSERT INTO period (period_name, period_active) VALUES 
 ('2024-1', true),
 ('2024-2', false),
 ('2025-1', false),
 ('2025-2', false);
 
--- Insertar ubicaciones
-INSERT INTO ubicacion (ubicacion_de, ubicacion_edificio, ubicacion_cuarto, ubicacion_estante) VALUES 
-('Bodega Principal', 'Edificio A', '101', 'A1'),
-('Laboratorio 1', 'Edificio B', '201', 'B1'),
-('Laboratorio 2', 'Edificio B', '202', 'B2'),
-('Sala de Profesores', 'Edificio C', '301', 'C1'),
-('Biblioteca', 'Edificio D', '401', 'D1');
+-- Insert locations
+INSERT INTO location (location_name, location_building, location_room, location_shelf) VALUES 
+('Main Warehouse', 'Building A', '101', 'A1'),
+('Laboratory 1', 'Building B', '201', 'B1'),
+('Laboratory 2', 'Building B', '202', 'B2'),
+('Faculty Room', 'Building C', '301', 'C1'),
+('Library', 'Building D', '401', 'D1');
 
--- Insertar personas de ejemplo
-INSERT INTO persona (persona_ci, persona_nombre, persona_apellido, persona_correo, persona_telefono, persona_carrera) VALUES 
-('12345678', 'Juan', 'Pérez', 'juan.perez@universidad.edu', '555-0101', 'Ingeniería'),
-('87654321', 'María', 'González', 'maria.gonzalez@universidad.edu', '555-0102', 'Arquitectura'),
-('13579246', 'Carlos', 'Rodríguez', 'carlos.rodriguez@universidad.edu', '555-0103', 'Medicina');
+-- Insert sample people
+INSERT INTO person (person_id_number, person_first_name, person_last_name, person_email, person_phone, person_career) VALUES 
+('12345678', 'Juan', 'Pérez', 'juan.perez@universidad.edu', '555-0101', 'Engineering'),
+('87654321', 'María', 'González', 'maria.gonzalez@universidad.edu', '555-0102', 'Architecture'),
+('13579246', 'Carlos', 'Rodríguez', 'carlos.rodriguez@universidad.edu', '555-0103', 'Medicine');
 
--- Insertar usuarios
-INSERT INTO usuario (usuario_nombre, usuario_clave, persona_id) VALUES 
+-- Insert users
+INSERT INTO "user" (user_name, user_password, person_id) VALUES 
 ('jperez', '$2b$10$placeholder_hash_1', 1),
 ('mgonzalez', '$2b$10$placeholder_hash_2', 2),
 ('crodriguez', '$2b$10$placeholder_hash_3', 3);
 
--- Insertar items de ejemplo
-INSERT INTO item (item_codigo, item_nombre, item_costo, item_fecha_adquisicion, categoria_id) VALUES 
+-- Insert sample items
+INSERT INTO item (item_code, item_name, item_cost, item_acquisition_date, category_id) VALUES 
 ('LAP001', 'Laptop Dell XPS 15', 1500.00, '2024-01-15', 1),
 ('LAP002', 'Laptop HP Pavilion', 800.00, '2024-02-20', 1),
 ('MON001', 'Monitor LG 27"', 300.00, '2024-01-10', 4),
-('KEY001', 'Teclado Mecánico RGB', 120.00, '2024-03-01', 5),
-('LIB001', 'Cálculo Diferencial', 45.00, '2024-01-05', 7);
+('KEY001', 'Mechanical Keyboard RGB', 120.00, '2024-03-01', 5),
+('LIB001', 'Differential Calculus', 45.00, '2024-01-05', 7);
 
--- Insertar inventario inicial
-INSERT INTO inventario (inventario_cantidad, inventario_fecha_actualizacion, ubicacion_id, item_id) VALUES 
+-- Insert initial inventory
+INSERT INTO inventory (inventory_quantity, inventory_update_date, location_id, item_id) VALUES 
 (10, CURRENT_TIMESTAMP, 1, 1),
 (15, CURRENT_TIMESTAMP, 1, 2),
 (8, CURRENT_TIMESTAMP, 2, 3),
 (20, CURRENT_TIMESTAMP, 1, 4),
 (5, CURRENT_TIMESTAMP, 5, 5);
 
--- Insertar características de items
-INSERT INTO caracteristica_item (caracteristica_item_de, caracteristica_id, item_id) VALUES 
+-- Insert item features
+INSERT INTO item_feature (item_feature_value, feature_id, item_id) VALUES 
 ('Dell', 1, 1),
 ('XPS 15', 2, 1),
 ('HP', 1, 2),
 ('Pavilion', 2, 2),
 ('LG', 1, 3),
-('27 pulgadas', 2, 3);
+('27 inches', 2, 3);
