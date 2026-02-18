@@ -4,9 +4,10 @@ import UserService from '../service/user_service.js';
 const userService = new UserService();
 import SessionService from '../service/session_service.js';
 const sessionService = new SessionService();
+
 import Config from '../config/config.js';
 const config = new Config();
-const getMessage = config.getMessage.bind(config);
+const getMessage = getMessage.bind(config);
 const { STATUS_CODES } = config;
 
 // Registro de usuario
@@ -15,7 +16,7 @@ router.post('/register', async (req, res) => {
     const userData = await userService.register(req.body);
     sessionService.setSession(req, { user: userData });
     res.json({
-      message: config.getMessage(config.LANGUAGE, 'registration_success'),
+      message: getMessage(config.LANGUAGE, 'registration_success'),
       user: userData,
     });
   } catch (error) {
@@ -34,10 +35,10 @@ router.post('/login', async (req, res) => {
     if (!userData)
       return res
         .status(STATUS_CODES.UNAUTHORIZED)
-        .json({ error: config.getMessage(config.LANGUAGE, 'login_error') });
+        .json({ error: getMessage(config.LANGUAGE, 'login_error') });
     sessionService.setSession(req, { user: userData });
     res.json({
-      message: config.getMessage(config.LANGUAGE, 'login_success'),
+      message: getMessage(config.LANGUAGE, 'login_success'),
       user: userData,
     });
   } catch (error) {
@@ -53,7 +54,7 @@ router.get('/me', async (req, res) => {
   if (!sessionService.sessionExists(req)) {
     return res
       .status(STATUS_CODES.UNAUTHORIZED)
-      .json({ error: config.getMessage(config.LANGUAGE, 'unauthorized') });
+      .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
   }
   res.json(sessionService.getSession(req).user);
 });
@@ -67,13 +68,13 @@ router.post('/forgot-password', async (req, res) => {
 
   if (!username || !password || !confirmPassword) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
-      error: config.getMessage(config.LANGUAGE, 'missing_required_fields'),
+      error: getMessage(config.LANGUAGE, 'missing_required_fields'),
     });
   }
 
   if (password !== confirmPassword) {
     return res.status(STATUS_CODES.BAD_REQUEST).json({
-      error: config.getMessage(config.LANGUAGE, 'passwords_do_not_match'),
+      error: getMessage(config.LANGUAGE, 'passwords_do_not_match'),
     });
   }
 
@@ -85,15 +86,15 @@ router.post('/forgot-password', async (req, res) => {
     if (!userData) {
       return res
         .status(STATUS_CODES.NOT_FOUND)
-        .json({ error: config.getMessage(config.LANGUAGE, 'user_not_found') });
+        .json({ error: getMessage(config.LANGUAGE, 'user_not_found') });
     }
     return res.json({
-      message: config.getMessage(config.LANGUAGE, 'password_reset_success'),
+      message: getMessage(config.LANGUAGE, 'password_reset_success'),
       user: userData,
     });
   } catch (error) {
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: config.getMessage(config.LANGUAGE, 'server_error'),
+      message: getMessage(config.LANGUAGE, 'server_error'),
       error,
     });
   }

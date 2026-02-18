@@ -1,0 +1,6 @@
+DB_HOST=localhost
+DB_USER=webii_user
+DB_PASSWORD=webii_pass
+DB_NAME=webii
+DB_PORT=5436
+SECRET=Miguelon202020
