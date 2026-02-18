@@ -1,7 +1,11 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
-import Config from './config.js';
+import { Pool } from "pg";
+import dotenv from "dotenv";
+import Config from "./config.js";
 const config = new Config();
+<<<<<<< HEAD
+=======
+const getMessage = config.getMessage.bind(config);
+>>>>>>> 80b3f1f224b6addbf5e37e1f4fd647a491622165
 
 dotenv.config();
 

@@ -1,15 +1,17 @@
 import { Sun, Moon } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
-import { ForgotLayout } from "@/auth/componentsAuth";
 import { useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
+import { AlertMessage } from "@/components";
 
 import LogoLight from "../../assets/img/uru-logo-white.png";
 import LogoDark from "../../assets/img/uru-logo-dark.png";
 
-export const Forgot = () => {
+export const NotFound = () => {
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   return (
     <div
@@ -28,9 +30,9 @@ export const Forgot = () => {
       <div className="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
         <motion.div
           key={theme}
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
           className="flex items-center"
         >
           <img
@@ -59,28 +61,14 @@ export const Forgot = () => {
 
       <motion.div
         className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px]"
-        animate={{
-          x: [0, 30, 0],
-          y: [0, 20, 0],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <motion.div
         className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px]"
-        animate={{
-          x: [0, -30, 0],
-          y: [0, -20, 0],
-        }}
-        transition={{
-          duration: 12,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
+        animate={{ x: [0, -30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <div
@@ -91,14 +79,19 @@ export const Forgot = () => {
           backgroundSize: "60px 60px",
         }}
       />
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-md px-6 flex justify-center"
+        className="relative z-10 w-full flex justify-center px-6"
       >
-        <ForgotLayout />
+        <AlertMessage
+          title="Error 404"
+          message="La página que estás buscando no existe o ha sido movida. Verifica la dirección e intenta de nuevo."
+          buttonText="Ir al inicio de sesión"
+          onConfirm={() => navigate("/login")}
+          type="error"
+        />
       </motion.div>
     </div>
   );

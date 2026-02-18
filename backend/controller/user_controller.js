@@ -92,12 +92,10 @@ router.post('/forgot-password', async (req, res) => {
       user: userData,
     });
   } catch (error) {
-    return res
-      .status(STATUS_CODES.INTERNAL_SERVER_ERROR)
-      .json({
-        message: config.getMessage(config.LANGUAGE, 'server_error'),
-        error,
-      });
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+      message: config.getMessage(config.LANGUAGE, 'server_error'),
+      error,
+    });
   }
 });
 
@@ -108,11 +106,9 @@ router.post('/logout', async (req, res) => {
       .status(STATUS_CODES.UNAUTHORIZED)
       .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
   const result = await sessionService.destroySession(req);
-  return res
-    .status(result?.statusCode || STATUS_CODES.OK)
-    .json({
-      message: result?.message || getMessage(config.LANGUAGE, 'logout_success'),
-    });
+  return res.status(result?.statusCode || STATUS_CODES.OK).json({
+    message: result?.message || getMessage(config.LANGUAGE, 'logout_success'),
+  });
 });
 
 export default router;
