@@ -1,4 +1,4 @@
-import { pool } from '../../config/secret-config.js';
+import pool from '../../config/db.js';
 import Config from '../../config/config.js';
 import Utils from '../utils/utils.js';
 import Formatter from '../formatter/formatter.js';

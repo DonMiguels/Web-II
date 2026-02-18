@@ -29,5 +29,7 @@
 
   "missing_required_fields": "Faltan campos requeridos",
   "passwords_do_not_match": "Las contraseñas no coinciden",
-  "password_reset_success": "Contraseña actualizada correctamente"
+  "password_reset_success": "Contraseña actualizada correctamente",
+  "recovery_email_sent": "Si el correo existe, te enviamos un enlace para restablecer tu contraseña",
+  "invalid_or_expired_token": "Token inválido o expirado"
 }
