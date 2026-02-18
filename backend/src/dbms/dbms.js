@@ -1,4 +1,4 @@
-import { pool } from '../../config/secret-config.js';
+import pool from '../../config/db.js';
 import Config from '../../config/config.js';
 import Utils from '../utils/utils.js';
 import Formatter from '../formatter/formatter.js';
@@ -16,7 +16,7 @@ export default class DBMS {
 
     if (!DBMS.instance) {
       this.pool = pool;
-      this.ERROR_CODES = this.config.getErrorCodes();
+      this.STATUS_CODES = new Config().STATUS_CODES;
 
       DBMS.instance = this;
     }
@@ -35,7 +35,7 @@ export default class DBMS {
       .catch((err) => {
         this.utils.handleError({
           message: 'Error de conexión al cliente de base de datos',
-          errorCode: this.ERROR_CODES.DB_ERROR,
+          errorCode: this.STATUS_CODES.DB_ERROR,
           error: err,
         });
       });
@@ -45,7 +45,7 @@ export default class DBMS {
     if (!client) {
       this.utils.handleError({
         message: 'No se proporcionó cliente para la desconexión',
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
       });
       return;
     }
@@ -55,7 +55,7 @@ export default class DBMS {
     } catch (err) {
       this.utils.handleError({
         message: 'Error cerrando la conexión del cliente a la base de datos',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error: err,
       });
     }
@@ -73,7 +73,7 @@ export default class DBMS {
     } catch (err) {
       console.warn(
         'Advertencia al finalizar pool de base de datos:',
-        err?.message || err
+        err?.message || err,
       );
     }
   }
@@ -94,7 +94,7 @@ export default class DBMS {
     if (!queryString) {
       this.utils.handleError({
         message: 'Client was passed a null or undefined query',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
       });
       return;
     }
@@ -124,19 +124,19 @@ export default class DBMS {
       } catch (e) {}
       this.utils.handleError({
         message: error.message || 'Error ejecutando la consulta',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     } finally {
       this.disconnection(client);
     }
   }
-
+  //
   async executeNamedQuery({ nameQuery, params = [] }) {
     if (!this.queries || !this.queries[nameQuery]) {
       this.utils.handleError({
         message: `Consulta nombrada '${nameQuery}' no encontrada`,
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
       });
       return;
     }
@@ -169,14 +169,14 @@ export default class DBMS {
         ) {
           const errors = this.validator.validateStructuredData(
             params,
-            structure
+            structure,
           );
           if (errors && errors.length > 0) {
             this.utils.handleError({
               message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                '. '
+                '. ',
               )}`,
-              errorCode: this.ERROR_CODES.BAD_REQUEST,
+              errorCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
           }
@@ -185,7 +185,7 @@ export default class DBMS {
         params = this.formatter.formatObjectParams(
           params,
           orderArray,
-          structure
+          structure,
         );
       }
       // Caso B: params es array -> validar mapeándolo contra el esquema usando orderArray
@@ -196,7 +196,7 @@ export default class DBMS {
           if (params.length !== orderArray.length) {
             this.utils.handleError({
               message: `Cantidad de parámetros inválida para '${nameQuery}': se esperaban ${orderArray.length} y se recibieron ${params.length}`,
-              errorCode: this.ERROR_CODES.BAD_REQUEST,
+              errorCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
           }
@@ -208,14 +208,14 @@ export default class DBMS {
           ) {
             const errors = this.validator.validateStructuredData(
               obj,
-              structure
+              structure,
             );
             if (errors && errors.length > 0) {
               this.utils.handleError({
                 message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                  '. '
+                  '. ',
                 )}`,
-                errorCode: this.ERROR_CODES.BAD_REQUEST,
+                errorCode: this.STATUS_CODES.BAD_REQUEST,
               });
               return;
             }
@@ -238,9 +238,9 @@ export default class DBMS {
           if (errors && errors.length > 0) {
             this.utils.handleError({
               message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                '. '
+                '. ',
               )}`,
-              errorCode: this.ERROR_CODES.BAD_REQUEST,
+              errorCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
           }
@@ -260,7 +260,7 @@ export default class DBMS {
       ) {
         this.utils.handleError({
           message: `Parámetros requeridos para '${nameQuery}' no fueron proporcionados`,
-          errorCode: this.ERROR_CODES.BAD_REQUEST,
+          errorCode: this.STATUS_CODES.BAD_REQUEST,
         });
         return;
       }
@@ -274,9 +274,9 @@ export default class DBMS {
       if (errors && errors.length > 0) {
         this.utils.handleError({
           message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-            '. '
+            '. ',
           )}`,
-          errorCode: this.ERROR_CODES.BAD_REQUEST,
+          errorCode: this.STATUS_CODES.BAD_REQUEST,
         });
         return;
       }
@@ -288,7 +288,7 @@ export default class DBMS {
     } catch (error) {
       return this.utils.handleError({
         message: `Error ejecutando la consulta nombrada '${nameQuery}'`,
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
@@ -299,7 +299,7 @@ export default class DBMS {
       this.utils.handleError({
         message:
           'No se proporcionaron parámetros necesarios para executeJsonNamedQuery',
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
       });
       return;
     }
@@ -319,14 +319,14 @@ export default class DBMS {
         } else {
           this.utils.handleError({
             message: `No se proporcionaron parámetros para la consulta '${key}'`,
-            errorCode: this.ERROR_CODES.BAD_REQUEST,
+            errorCode: this.STATUS_CODES.BAD_REQUEST,
           });
           continue;
         }
       }
 
       result.push(
-        await this.executeNamedQuery({ nameQuery: key, params: value })
+        await this.executeNamedQuery({ nameQuery: key, params: value }),
       );
     }
     return result;
@@ -340,7 +340,7 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: 'Error iniciando la transacción',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
@@ -348,7 +348,7 @@ export default class DBMS {
 
   async executeJsonTransaction(
     jsonParams,
-    errorMessage = 'Error ejecutando la transacción'
+    errorMessage = 'Error ejecutando la transacción',
   ) {
     const client = await this.beginTransaction();
     try {
@@ -359,7 +359,7 @@ export default class DBMS {
       await this.rollbackTransaction(client);
       this.utils.handleError({
         message: errorMessage,
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     } finally {
@@ -373,7 +373,7 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: 'Error confirmando la transacción',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
@@ -385,7 +385,7 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: 'Error revirtiendo la transacción',
-        errorCode: this.ERROR_CODES.DB_ERROR,
+        errorCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
@@ -408,17 +408,17 @@ export default class DBMS {
         return { data: result.rows };
       else
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message: 'No se encontraron registros',
         };
     } catch (error) {
       this.utils.handleError({
         message: `Error fetching ${tableName} on getAllFrom`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
       };
     }
@@ -433,7 +433,7 @@ export default class DBMS {
 
     if (values.length === 0 || keys.length === 0) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -447,17 +447,17 @@ export default class DBMS {
         return { data: result.rows };
       else
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message: 'No se encontraron registros',
         };
     } catch (error) {
       this.utils.handleError({
         message: `Error fetching ${tableName} on getWhere`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -474,7 +474,7 @@ export default class DBMS {
 
     if (values.length === 0 || keys.length === 0) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -489,7 +489,7 @@ export default class DBMS {
         return { message: 'Registro insertado correctamente' };
       } else {
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
@@ -497,11 +497,11 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: `Error inserting into ${tableName}`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -520,7 +520,7 @@ export default class DBMS {
 
     if (values.length === 0 || keys.length === 0 || !userId) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -534,7 +534,7 @@ export default class DBMS {
         return { message: 'Registro actualizado correctamente' };
       } else {
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
@@ -542,11 +542,11 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: `Error updating ${tableName} by id`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -565,7 +565,7 @@ export default class DBMS {
 
     if (values.length === 0 || keys.length === 0 || !username) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -579,7 +579,7 @@ export default class DBMS {
         return { message: 'Registro actualizado correctamente' };
       } else {
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
@@ -587,11 +587,11 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: `Error updating ${tableName} by username`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -604,7 +604,7 @@ export default class DBMS {
 
     if (!username) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -612,7 +612,7 @@ export default class DBMS {
       const expected = `DELETE_${tableName.toUpperCase()}`;
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
-          errorCode: this.ERROR_CODES.BAD_REQUEST,
+          errorCode: this.STATUS_CODES.BAD_REQUEST,
           message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
         };
       }
@@ -627,7 +627,7 @@ export default class DBMS {
         return { message: 'Registro eliminado correctamente' };
       } else {
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
@@ -635,11 +635,11 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: `Error deleting from ${tableName} by username`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -652,7 +652,7 @@ export default class DBMS {
 
     if (!userId) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -660,7 +660,7 @@ export default class DBMS {
       const expected = `DELETE_${tableName.toUpperCase()}`;
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
-          errorCode: this.ERROR_CODES.BAD_REQUEST,
+          errorCode: this.STATUS_CODES.BAD_REQUEST,
           message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
         };
       }
@@ -675,7 +675,7 @@ export default class DBMS {
         return { message: 'Registro eliminado correctamente' };
       } else {
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
@@ -683,11 +683,11 @@ export default class DBMS {
     } catch (error) {
       this.utils.handleError({
         message: `Error deleting from ${tableName} by id`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -700,7 +700,7 @@ export default class DBMS {
       data.confirmDelete !== `DELETE_ALL_${tableName.toUpperCase()}`
     ) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: `Confirmación no válida para eliminar toda la tabla ${tableName}`,
       };
     }
@@ -708,7 +708,7 @@ export default class DBMS {
     const queryString = `DELETE FROM ${dbSchema}.${tableName};`;
     try {
       const result = await this.query({ query: queryString }).then(
-        (res) => res
+        (res) => res,
       );
       if (result && result.rowCount > 0)
         return {
@@ -716,18 +716,18 @@ export default class DBMS {
         };
       else
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
     } catch (error) {
       this.utils.handleError({
         message: `Error deleting all from ${tableName}`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };
@@ -743,7 +743,7 @@ export default class DBMS {
 
     if (values.length === 0 || keys.length === 0) {
       return {
-        errorCode: this.ERROR_CODES.BAD_REQUEST,
+        errorCode: this.STATUS_CODES.BAD_REQUEST,
         message: 'No se proporcionaron datos necesarios para la consulta',
       };
     }
@@ -751,7 +751,7 @@ export default class DBMS {
       const expected = `DELETE_${tableName.toUpperCase()}`;
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
-          errorCode: this.ERROR_CODES.BAD_REQUEST,
+          errorCode: this.STATUS_CODES.BAD_REQUEST,
           message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
         };
       }
@@ -768,18 +768,18 @@ export default class DBMS {
         };
       else
         return {
-          errorCode: this.ERROR_CODES.NOT_FOUND,
+          errorCode: this.STATUS_CODES.NOT_FOUND,
           message:
             'No se encontraron registros que coincidan con los criterios',
         };
     } catch (error) {
       this.utils.handleError({
         message: `Error deleting from ${tableName} with where clause`,
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
-        errorCode: this.ERROR_CODES.INTERNAL_SERVER_ERROR,
+        errorCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         message: 'Error del servidor',
         error,
       };

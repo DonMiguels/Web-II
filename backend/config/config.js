@@ -1,7 +1,9 @@
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import yaml from 'yaml';
 
 export default class Config {
   constructor() {
@@ -96,42 +98,49 @@ export default class Config {
 
   async mapQueries() {
     const queriesPath = path.resolve(this.__dirname, '../config/queries.yaml');
-    this.QUERIES = await new Promise((resolve) => {
-      fs.readFile(queriesPath, 'utf8', (err, data) => {
-        if (err) {
-          console.error(`Error leyendo YAML desde ${queriesPath}:`, err);
-          resolve(null);
-        } else {
-          try {
-            // El archivo queries.yaml tiene formato JSON, pero con extensión YAML
-            // Si realmente es YAML, usar yaml.load(data)
-            // Si es JSON, usar JSON.parse(data)
-            // Aquí intentamos ambas opciones
-            let result;
-            try {
-              result = yaml.load(data);
-            } catch (yamlErr) {
-              try {
-                result = JSON.parse(data);
-              } catch (jsonErr) {
-                console.error(
-                  'Error parseando queries.yaml como YAML y JSON:',
-                  yamlErr,
-                  jsonErr,
-                );
-                result = null;
-              }
-            }
-            resolve(result);
-          } catch (parseErr) {
-            console.error(
-              `Error parseando YAML desde ${queriesPath}:`,
-              parseErr,
-            );
-            resolve(null);
-          }
+    try {
+      const data = await fs.readFile(queriesPath, 'utf8');
+      let result;
+      try {
+        result = yaml.parse(data);
+      } catch (yamlErr) {
+        try {
+          result = JSON.parse(data);
+        } catch (jsonErr) {
+          console.error(
+            'Error parseando queries.yaml como YAML y JSON:',
+            yamlErr,
+            jsonErr,
+          );
+          result = null;
         }
-      });
-    });
+      }
+      this.QUERIES = result;
+    } catch (err) {
+      console.error(`Error leyendo YAML desde ${queriesPath}:`, err);
+      this.QUERIES = null;
+    }
+  }
+
+  getCustomTypes() {
+    return this.customTypes;
+  }
+
+  // Cargar y exponer las reglas de validación desde config/validations.json
+  getValidationValues() {
+    try {
+      if (!this.VALIDATIONS) {
+        const validationsPath = path.resolve(
+          this.__dirname,
+          './validations.json',
+        );
+        const raw = fsSync.readFileSync(validationsPath, 'utf8');
+        this.VALIDATIONS = JSON.parse(raw);
+      }
+      return this.VALIDATIONS;
+    } catch (err) {
+      console.error('Error cargando validations.json:', err);
+      return {};
+    }
   }
 }

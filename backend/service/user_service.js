@@ -1,24 +1,27 @@
-import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
+import DBMS from '../src/dbms/dbms.js';
 
 class UserService {
-  constructor() {}
+  constructor() {
+    this.dbms = new DBMS();
+    this.dbmsReady = this.dbms.init();
+  }
 
   // Registro de usuario
   async register({ username, email, password }) {
+    await this.dbmsReady;
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const query = `
-      INSERT INTO public.user (username, email, password, register_date)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, username, email, register_date
-    `;
-    const values = [username, email, hashedPassword, new Date()];
     try {
-      const client = await pool.connect();
-      const res = await client.query(query, values);
-      client.release();
-      return res.rows[0];
+      const res = await this.dbms.executeNamedQuery({
+        nameQuery: 'registerUser',
+        params: {
+          username,
+          email,
+          password: hashedPassword,
+          register_date: new Date().toISOString(),
+        },
+      });
+      return res?.rows?.[0];
     } catch (err) {
       throw new Error(err.message);
     }
@@ -26,10 +29,13 @@ class UserService {
 
   // Login
   async login({ username, password }) {
-    const query = `SELECT * FROM public.user WHERE username = $1`;
     try {
-      const res = await pool.query(query, [username]);
-      const user = res.rows[0];
+      await this.dbmsReady;
+      const res = await this.dbms.executeNamedQuery({
+        nameQuery: 'getUser',
+        params: username,
+      });
+      const user = res?.rows?.[0];
       if (!user) return null;
 
       const match = await bcrypt.compare(password, user.password);
@@ -45,23 +51,24 @@ class UserService {
 
   // Obtener usuario por ID
   async getUserById(id) {
-    const query = `SELECT id, username, email, register_date FROM public.user WHERE id = $1`;
-    const res = await pool.query(query, [id]);
-    return res.rows[0];
+    await this.dbmsReady;
+    const res = await this.dbms.executeNamedQuery({
+      nameQuery: 'getUserById',
+      params: id,
+    });
+    return res?.rows?.[0];
   }
 
   // Recuperar contraseña por usuario
   async resetPasswordByUsername({ username, password }) {
+    await this.dbmsReady;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const query = `
-      UPDATE public.user
-      SET password = $1
-      WHERE username = $2
-      RETURNING id, username, email, register_date
-    `;
     try {
-      const res = await pool.query(query, [hashedPassword, username]);
-      return res.rows[0] || null;
+      const res = await this.dbms.executeNamedQuery({
+        nameQuery: 'updateUserPasswordByUsername',
+        params: { password: hashedPassword, username },
+      });
+      return res?.rows?.[0] || null;
     } catch (err) {
       throw new Error(err.message);
     }
