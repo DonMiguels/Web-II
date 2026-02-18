@@ -12,11 +12,13 @@ import { NotificationToast } from "@/components";
 
 import { forgotSchema } from "@/auth/schemasAuth";
 import { AlertMessage } from "@/components";
+import { useAuth } from "@/context";
 
 export const ForgotLayout = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [toast, setToast] = useState({ message: "", type: "" });
   const navigate = useNavigate();
+  const { forgotPassword } = useAuth();
 
   const {
     register,
@@ -28,7 +30,14 @@ export const ForgotLayout = () => {
 
   const onSubmit = async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await forgotPassword(
+        {
+          username: data.username,
+          password: data.password,
+          confirmPassword: data.confirmPassword,
+        },
+        navigate
+      );
 
       setToast({
         message: "Contraseña actualizada correctamente",
