@@ -7,7 +7,7 @@ const sessionService = new SessionService();
 
 import Config from '../config/config.js';
 const config = new Config();
-const getMessage = getMessage.bind(config);
+const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
 
 // Registro de usuario
