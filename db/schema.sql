@@ -1,127 +1,143 @@
--- schema.sql
+-- schema.sql - Esquema de la base de datos
 
-CREATE TABLE tipo_categoria (
-    tipo_categoria_id SERIAL PRIMARY KEY,
-    tipo_categoria_de VARCHAR(100) NOT NULL
+-- Tipos de categorías
+CREATE TABLE category_type (
+    category_type_id SERIAL PRIMARY KEY,
+    category_type_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE categoria (
-    categoria_id SERIAL PRIMARY KEY,
-    categoria_de VARCHAR(100) NOT NULL,
-    tipo_categoria_id INTEGER REFERENCES tipo_categoria(tipo_categoria_id)
+-- Categorías de items
+CREATE TABLE category (
+    category_id SERIAL PRIMARY KEY,
+    category_name VARCHAR(100) NOT NULL,
+    category_type_id INTEGER REFERENCES category_type(category_type_id)
 );
 
+-- Items del inventario
 CREATE TABLE item (
     item_id SERIAL PRIMARY KEY,
-    item_codigo VARCHAR(50) NOT NULL,
-    item_nombre VARCHAR(100) NOT NULL,
-    item_costo NUMERIC(12,2),
-    item_fecha_adquisicion DATE,
-    categoria_id INTEGER REFERENCES categoria(categoria_id)
+    item_code VARCHAR(50) NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
+    item_cost NUMERIC(12,2),
+    item_acquisition_date DATE,
+    category_id INTEGER REFERENCES category(category_id)
 );
 
-CREATE TABLE caracteristica (
-    caracteristica_id SERIAL PRIMARY KEY,
-    caracteristica_de VARCHAR(100) NOT NULL
+-- Características de los items
+CREATE TABLE feature (
+    feature_id SERIAL PRIMARY KEY,
+    feature_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE caracteristica_item (
-    caracteristica_item_id SERIAL PRIMARY KEY,
-    caracteristica_item_de VARCHAR(100),
-    caracteristica_id INTEGER REFERENCES caracteristica(caracteristica_id),
+-- Relación entre items y características
+CREATE TABLE item_feature (
+    item_feature_id SERIAL PRIMARY KEY,
+    item_feature_value VARCHAR(100),
+    feature_id INTEGER REFERENCES feature(feature_id),
     item_id INTEGER REFERENCES item(item_id)
 );
 
-CREATE TABLE periodo (
-    periodo_id SERIAL PRIMARY KEY,
-    periodo_de VARCHAR(100) NOT NULL,
-    periodo_activo BOOLEAN
+-- Períodos académicos
+CREATE TABLE period (
+    period_id SERIAL PRIMARY KEY,
+    period_name VARCHAR(100) NOT NULL,
+    period_active BOOLEAN
 );
 
-CREATE TABLE tipo_movimiento (
-    tipo_movimiento_id SERIAL PRIMARY KEY,
-    tipo_movimiento_de VARCHAR(100) NOT NULL
+-- Tipos de movimientos
+CREATE TABLE movement_type (
+    movement_type_id SERIAL PRIMARY KEY,
+    movement_type_name VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE persona (
-    persona_id SERIAL PRIMARY KEY,
-    persona_ci VARCHAR(20) NOT NULL,
-    persona_nombre VARCHAR(100) NOT NULL,
-    persona_apellido VARCHAR(100) NOT NULL,
-    persona_correo VARCHAR(100),
-    persona_telefono VARCHAR(20),
-    persona_carrera VARCHAR(100)
+-- Personas registradas
+CREATE TABLE person (
+    person_id SERIAL PRIMARY KEY,
+    person_id_number VARCHAR(20) NOT NULL,
+    person_first_name VARCHAR(100) NOT NULL,
+    person_last_name VARCHAR(100) NOT NULL,
+    person_email VARCHAR(100),
+    person_phone VARCHAR(20),
+    person_career VARCHAR(100)
 );
 
-CREATE TABLE usuario (
-    usuario_id SERIAL PRIMARY KEY,
-    usuario_nombre VARCHAR(100) NOT NULL,
-    usuario_clave VARCHAR(100) NOT NULL,
-    persona_id INTEGER REFERENCES persona(persona_id)
+-- Usuarios del sistema
+CREATE TABLE "user" (
+    user_id SERIAL PRIMARY KEY,
+    user_name VARCHAR(100) NOT NULL,
+    user_password VARCHAR(100) NOT NULL,
+    person_id INTEGER REFERENCES person(person_id)
 );
 
-CREATE TABLE notificacion (
-    notificacion_id SERIAL PRIMARY KEY,
-    notificacion_tipo VARCHAR(50),
-    notificacion_prioridad VARCHAR(50),
-    notificacion_titulo VARCHAR(100),
-    notificacion_mensaje TEXT,
-    notificacion_fecha TIMESTAMP,
-    usuario_id INTEGER REFERENCES usuario(usuario_id)
+-- Notificaciones del sistema
+CREATE TABLE notification (
+    notification_id SERIAL PRIMARY KEY,
+    notification_type VARCHAR(50),
+    notification_priority VARCHAR(50),
+    notification_title VARCHAR(100),
+    notification_message TEXT,
+    notification_date TIMESTAMP,
+    user_id INTEGER REFERENCES "user"(user_id)
 );
 
-CREATE TABLE ubicacion (
-    ubicacion_id SERIAL PRIMARY KEY,
-    ubicacion_de VARCHAR(100) NOT NULL,
-    ubicacion_edificio VARCHAR(100),
-    ubicacion_cuarto VARCHAR(100),
-    ubicacion_estante VARCHAR(100),
-    ubicacion_gabeta VARCHAR(100)
+-- Ubicaciones físicas
+CREATE TABLE location (
+    location_id SERIAL PRIMARY KEY,
+    location_name VARCHAR(100) NOT NULL,
+    location_building VARCHAR(100),
+    location_room VARCHAR(100),
+    location_shelf VARCHAR(100),
+    location_drawer VARCHAR(100)
 );
 
-CREATE TABLE inventario (
-    inventario_id SERIAL PRIMARY KEY,
-    inventario_cantidad INTEGER NOT NULL,
-    inventario_fecha_actualizacion TIMESTAMP,
-    ubicacion_id INTEGER REFERENCES ubicacion(ubicacion_id),
+-- Inventario de items
+CREATE TABLE inventory (
+    inventory_id SERIAL PRIMARY KEY,
+    inventory_quantity INTEGER NOT NULL,
+    inventory_update_date TIMESTAMP,
+    location_id INTEGER REFERENCES location(location_id),
     item_id INTEGER REFERENCES item(item_id)
 );
 
-CREATE TABLE movimiento (
-    movimiento_id SERIAL PRIMARY KEY,
-    movimiento_inicio_fe TIMESTAMP,
-    movimiento_fecha_limite_apartado TIMESTAMP,
-    movimiento_fecha_devolucion_estimada TIMESTAMP,
-    movimiento_fecha_devolucion_real TIMESTAMP,
-    movimiento_observaciones TEXT,
-    usuario_id INTEGER REFERENCES usuario(usuario_id),
-    tipo_movimiento_id INTEGER REFERENCES tipo_movimiento(tipo_movimiento_id),
-    periodo_id INTEGER REFERENCES periodo(periodo_id)
+-- Movimientos de préstamo/devolución
+CREATE TABLE movement (
+    movement_id SERIAL PRIMARY KEY,
+    movement_start_date TIMESTAMP,
+    movement_reserve_limit_date TIMESTAMP,
+    movement_estimated_return_date TIMESTAMP,
+    movement_actual_return_date TIMESTAMP,
+    movement_observations TEXT,
+    user_id INTEGER REFERENCES "user"(user_id),
+    movement_type_id INTEGER REFERENCES movement_type(movement_type_id),
+    period_id INTEGER REFERENCES period(period_id)
 );
 
-CREATE TABLE detalle_movimiento (
-    detalle_movimiento_id SERIAL PRIMARY KEY,
-    detalle_movimiento_cantidad INTEGER,
-    detalle_movimiento_observaciones TEXT,
-    detalle_movimiento_multa NUMERIC(12,2),
-    inventario_id INTEGER REFERENCES inventario(inventario_id),
-    movimiento_id INTEGER REFERENCES movimiento(movimiento_id)
+-- Detalles de los movimientos
+CREATE TABLE movement_detail (
+    movement_detail_id SERIAL PRIMARY KEY,
+    movement_detail_quantity INTEGER,
+    movement_detail_observations TEXT,
+    movement_detail_fine NUMERIC(12,2),
+    inventory_id INTEGER REFERENCES inventory(inventory_id),
+    movement_id INTEGER REFERENCES movement(movement_id)
 );
 
-CREATE TABLE estado_devolucion (
-    estado_devolucion_id SERIAL PRIMARY KEY,
-    estado_devolucion_de VARCHAR(100),
-    estado_devolucion_fecha TIMESTAMP,
-    estado_devolucion_observaciones TEXT,
-    detalle_movimiento_id INTEGER REFERENCES detalle_movimiento(detalle_movimiento_id)
+-- Estados de devolución
+CREATE TABLE return_status (
+    return_status_id SERIAL PRIMARY KEY,
+    return_status_name VARCHAR(100),
+    return_status_date TIMESTAMP,
+    return_status_observations TEXT,
+    movement_detail_id INTEGER REFERENCES movement_detail(movement_detail_id)
 );
 
-CREATE TABLE auditoria (
-    auditoria_id SERIAL PRIMARY KEY,
-    auditoria_tabla VARCHAR(100),
-    auditoria_accion VARCHAR(50),
-    auditoria_fecha DATE,
-    auditoria_hora TIME,
-    auditoria_detalles TEXT,
-    usuario_id INTEGER REFERENCES usuario(usuario_id)
+-- Auditoría del sistema
+CREATE TABLE audit (
+    audit_id SERIAL PRIMARY KEY,
+    audit_table VARCHAR(100),
+    audit_action VARCHAR(50),
+    audit_date DATE,
+    audit_time TIME,
+    audit_details TEXT,
+    user_id INTEGER REFERENCES "user"(user_id)
 );
