@@ -26,11 +26,7 @@
   border: 1px solid var(--border-color) !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   z-index: 1 !important;
-}
-
-.relative > svg {
-  z-index: 10;
-  position: absolute;
+  color-scheme: light dark !important; 
 }
 
 .auth-input:focus {
@@ -38,6 +34,37 @@
   border-color: var(--accent-color) !important;
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15) !important;
 }
+
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  
+  -webkit-box-shadow: 0 0 0 1000px var(--secondary) inset !important;
+  
+ 
+  -webkit-text-fill-color: var(--text-primary) !important;
+  
+ 
+  caret-color: var(--text-primary) !important;
+  
+ 
+  border: 1px solid var(--border-color) !important;
+  
+ 
+  transition: background-color 5000s ease-in-out 0s, color 5000s ease-in-out 0s;
+}
+
+
+:not(.dark) input:-webkit-autofill {
+  color-scheme: light !important;
+}
+
+.dark input:-webkit-autofill {
+  color-scheme: dark !important;
+}
+
 
 .auth-submit-btn {
   background-color: var(--accent-color) !important;
@@ -50,15 +77,13 @@
   box-shadow: 0 15px 20px -5px rgba(37, 99, 235, 0.3) !important;
 }
 
+
+.relative > svg {
+  z-index: 10;
+  position: absolute;
+}
+
 input::-ms-reveal,
 input::-ms-clear {
   display: none !important;
-}
-
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px var(--secondary) inset !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  transition: background-color 5000s ease-in-out 0s;
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; 
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +21,16 @@ export const ResetPasswordLayout = () => {
   const { resetPassword } = useAuth();
 
   const token = searchParams.get('token');
+
+
+  useEffect(() => {
+    if (!token) {
+      const timer = setTimeout(() => {
+        navigate('/login');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [token, navigate]);
 
   const {
     register,
@@ -56,10 +66,10 @@ export const ResetPasswordLayout = () => {
     return (
       <AlertMessage
         type='error'
-        title='Enlace inválido'
-        message='El enlace para restablecer la contraseña no es válido o expiró.'
-        buttonText='Solicitar nuevo enlace'
-        onConfirm={() => navigate('/forgot-password')}
+        title='Acceso no autorizado'
+        message='El enlace para restablecer la contraseña es inválido o ha expirado. Serás redirigido al inicio de sesión.'
+        buttonText='Ir al Login ahora'
+        onConfirm={() => navigate('/login')}
       />
     );
   }

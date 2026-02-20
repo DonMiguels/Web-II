@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { SecurityRules } from "@/service/securityService";
 
 const specialCharRegex = /[^a-zA-Z0-9]/;
 
@@ -10,8 +11,8 @@ export const resetPasswordSchema = z
       .min(6, 'Debe tener al menos 6 caracteres')
       .max(100, 'Contraseña demasiado larga')
       .regex(specialCharRegex, 'Debe contener al menos un caracter especial')
-      .refine((val) => !val.includes('<script'), {
-        message: 'La contraseña contiene caracteres no permitidos',
+      .refine(SecurityRules.isSafe, {
+        message: 'La contraseña contiene patrones o caracteres no permitidos',
       }),
     confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
