@@ -1,4 +1,4 @@
-import getMethod from "./get-method.js";
+import getMethod from './get-method.js';
 
 export default async function delMenuOptionsProfile(data) {
   const delMenuOption = await getMethod({
@@ -12,15 +12,15 @@ export default async function delMenuOptionsProfile(data) {
 
   const { profile, menu, arrOptions } = data;
   if (!profile || !menu || !arrOptions) {
-    const Utils = (await import("../../utils/utils.js")).default;
-    const Config = (await import("../../../config/config.js")).default;
+    const Utils = (await import('../../utils/utils.js')).default;
+    const Config = (await import('../../../config/config.js')).default;
     const utils = new Utils();
     const config = new Config();
     const ERROR_CODES = config.ERROR_CODES;
 
     return utils.handleError({
       message: 'Datos inválidos o faltantes',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   }
   for (const option of arrOptions) {

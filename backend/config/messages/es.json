@@ -16,6 +16,7 @@
 
   "registration_success": "Registro exitoso, ahora puedes iniciar sesión",
   "registration_error": "Error al registrar el usuario. Por favor, intenta nuevamente más tarde",
+  "validation_error": "Error de validación. Por favor, verifica los campos e intenta nuevamente",
 
   "unauthorized": "No autorizado, por favor inicia sesión para acceder a este recurso",
   "forbidden": "Acceso prohibido, no tienes permisos para acceder a este recurso",
@@ -29,5 +30,7 @@
 
   "missing_required_fields": "Faltan campos requeridos",
   "passwords_do_not_match": "Las contraseñas no coinciden",
-  "password_reset_success": "Contraseña actualizada correctamente"
+  "password_reset_success": "Contraseña actualizada correctamente",
+  "recovery_email_sent": "Si el correo existe, te enviamos un enlace para restablecer tu contraseña",
+  "invalid_or_expired_token": "Token inválido o expirado"
 }

@@ -23,7 +23,7 @@ export default async function getMethod({ subsystem, className, method }) {
     if (!fileName) {
       utils.handleError({
         message: `Método '${method}' no encontrado en clase '${className}'`,
-        errorCode: ERROR_CODES.NOT_FOUND,
+        statusCode: ERROR_CODES.NOT_FOUND,
       });
     }
     path = `#${className}/${fileName}`;
@@ -36,7 +36,7 @@ export default async function getMethod({ subsystem, className, method }) {
   }
 
   console.log(
-    `Importing method from path: ${path} ---- ${subsystem} / ${className} / ${method}`
+    `Importing method from path: ${path} ---- ${subsystem} / ${className} / ${method}`,
   );
 
   const c = await import(path);
@@ -44,7 +44,7 @@ export default async function getMethod({ subsystem, className, method }) {
   if (i && typeof i[method] !== 'function') {
     utils.handleError({
       message: `Método '${method}' no encontrado en clase '${className}'`,
-      errorCode: ERROR_CODES.NOT_FOUND,
+      statusCode: ERROR_CODES.NOT_FOUND,
     });
   }
   return i;

@@ -1,6 +1,6 @@
-import DBMS from "../../dbms/dbms.js";
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
+import DBMS from '../../dbms/dbms.js';
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
 
 // Devuelve un arreglo con los nombres de las opciones permitidas para un perfil dado
 export default async function getOptionsAllowed(data) {
@@ -13,7 +13,7 @@ export default async function getOptionsAllowed(data) {
   if (!profile) {
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   }
   try {
@@ -28,7 +28,7 @@ export default async function getOptionsAllowed(data) {
   } catch (error) {
     return utils.handleError({
       message: `Error en getOptionsAllowed`,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

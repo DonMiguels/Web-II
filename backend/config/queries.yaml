@@ -289,8 +289,8 @@
     orderArray: ['email']
   },
   'updateUserPassword':{
-    query: 'UPDATE public."user" SET password = $1 WHERE id = $2;',
-    structure_params: { password: 'string', userId: 'string' },
+    query: 'UPDATE public."user" SET password = $1 WHERE id = $2 RETURNING *;',
+    structure_params: { password: 'string', userId: 'int' },
     orderArray: ['password', 'userId']
   },
   'getTxTransactionByTx':{

@@ -1,4 +1,4 @@
-import Config from "../../../config/config.js";
+import Config from '../../../config/config.js';
 
 export default async function handleGetSetData({
   method,
@@ -12,8 +12,8 @@ export default async function handleGetSetData({
   let result = await method(data).then((res) => res);
   if (
     result &&
-    result.errorCode &&
-    result.errorCode === ERROR_CODES.NOT_FOUND
+    result.statusCode &&
+    result.statusCode === ERROR_CODES.NOT_FOUND
   ) {
     await methodIfNotFound(dataIfNotFound);
     result = await method(data).then((res) => res);

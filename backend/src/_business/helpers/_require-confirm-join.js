@@ -5,14 +5,14 @@ export default async function _requireConfirmJoin(token, table) {
   const expectedAll = `DELETE_ALL_${base}`;
   if (token === expected || token === expectedAll) return true;
 
-  const Utils = (await import("../../utils/utils.js")).default;
-  const Config = (await import("../../../config/config.js")).default;
+  const Utils = (await import('../../utils/utils.js')).default;
+  const Config = (await import('../../../config/config.js')).default;
   const utils = new Utils();
   const config = new Config();
   const ERROR_CODES = config.ERROR_CODES;
 
   return utils.handleError({
     message: `Confirmación inválida para ${table}`,
-    errorCode: ERROR_CODES.BAD_REQUEST,
+    statusCode: ERROR_CODES.BAD_REQUEST,
   });
 }

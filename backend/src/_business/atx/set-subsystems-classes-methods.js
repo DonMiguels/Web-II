@@ -1,7 +1,7 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import DBMS from "../../dbms/dbms.js";
-import getMethod from "./get-method.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import DBMS from '../../dbms/dbms.js';
+import getMethod from './get-method.js';
 
 export default async function setSubsystemsClassesMethods(data) {
   const utils = new Utils();
@@ -32,14 +32,17 @@ export default async function setSubsystemsClassesMethods(data) {
     if (!obj || typeof obj !== 'object') return false;
     return Object.values(obj).some(
       (s) =>
-        s && typeof s === 'object' && s.classes && typeof s.classes === 'object'
+        s &&
+        typeof s === 'object' &&
+        s.classes &&
+        typeof s.classes === 'object',
     );
   };
 
   if (!data || Object.keys(data).length === 0) {
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   }
 
@@ -52,7 +55,7 @@ export default async function setSubsystemsClassesMethods(data) {
           {
             name: subsystem,
             description: data[subsystem]?.description || subsystem,
-          }
+          },
         );
         const classes = data[subsystem]?.classes || {};
         for (const className of Object.keys(classes)) {
@@ -68,7 +71,7 @@ export default async function setSubsystemsClassesMethods(data) {
               {
                 name: method,
                 description: methodsObj[method]?.description || method,
-              }
+              },
             );
             await _ensureJoin(client, 'class_method', {
               id_class: classId,
@@ -81,7 +84,7 @@ export default async function setSubsystemsClassesMethods(data) {
             // Ensure transaction exists for (subsystem, class, method)
             const txCheckRes = await client.query(
               'SELECT tx FROM public."transaction" WHERE id_subsystem = $1 AND id_class = $2 AND id_method = $3 LIMIT 1;',
-              [subsystemId, classId, methodId]
+              [subsystemId, classId, methodId],
             );
             if (!txCheckRes.rows || txCheckRes.rows.length === 0) {
               const txKey = `${subsystem}.${className}.${method}`;
@@ -89,7 +92,7 @@ export default async function setSubsystemsClassesMethods(data) {
               try {
                 await client.query(
                   'INSERT INTO public."transaction" (description, id_subsystem, id_class, id_method) VALUES ($1, $2, $3, $4) RETURNING tx;',
-                  [txDesc, subsystemId, classId, methodId]
+                  [txDesc, subsystemId, classId, methodId],
                 );
               } catch (err) {
                 // Log detailed info when duplicate-key occurs or other DB errors
@@ -103,7 +106,7 @@ export default async function setSubsystemsClassesMethods(data) {
                       subsystem,
                       className,
                       method,
-                    }
+                    },
                   );
                   // duplicate key - another process inserted it concurrently, ignore
                 } else {
@@ -116,7 +119,7 @@ export default async function setSubsystemsClassesMethods(data) {
                       subsystem,
                       className,
                       method,
-                    }
+                    },
                   );
                   throw err;
                 }
@@ -136,7 +139,7 @@ export default async function setSubsystemsClassesMethods(data) {
                 const profileId = await _ensureEntityByUniqueField(
                   client,
                   'profile',
-                  { name: profileName, description: profileName }
+                  { name: profileName, description: profileName },
                 );
                 await _ensureJoin(client, 'method_profile', {
                   id_method: methodId,
@@ -163,7 +166,7 @@ export default async function setSubsystemsClassesMethods(data) {
     if (missing || empty) {
       utils.handleError({
         message: `Datos inválidos o incompletos on ${subsystem}. So skipping`,
-        errorCode: ERROR_CODES.BAD_REQUEST,
+        statusCode: ERROR_CODES.BAD_REQUEST,
       });
       continue;
     }
@@ -172,7 +175,7 @@ export default async function setSubsystemsClassesMethods(data) {
       const subsystemId = await _ensureEntityByUniqueField(
         client,
         'subsystem',
-        { name: subsystem }
+        { name: subsystem },
       );
       for (const className of Object.keys(classesMethods)) {
         const methods = classesMethods[className];
@@ -183,7 +186,7 @@ export default async function setSubsystemsClassesMethods(data) {
         if (miss2 || emp2) {
           utils.handleError({
             message: `Datos inválidos o incompletos on ${className}. So skipping`,
-            errorCode: ERROR_CODES.BAD_REQUEST,
+            statusCode: ERROR_CODES.BAD_REQUEST,
           });
           continue;
         }
@@ -206,14 +209,14 @@ export default async function setSubsystemsClassesMethods(data) {
           // Ensure transaction exists for (subsystem, class, method)
           const txCheckRes = await client.query(
             'SELECT tx FROM public."transaction" WHERE id_subsystem = $1 AND id_class = $2 AND id_method = $3 LIMIT 1;',
-            [subsystemId, classId, methodId]
+            [subsystemId, classId, methodId],
           );
           if (!txCheckRes.rows || txCheckRes.rows.length === 0) {
             const txKey = `${subsystem}.${className}.${method}`;
             try {
               await client.query(
                 'INSERT INTO public."transaction" (description, id_subsystem, id_class, id_method) VALUES ($1, $2, $3, $4) RETURNING tx;',
-                [txKey, subsystemId, classId, methodId]
+                [txKey, subsystemId, classId, methodId],
               );
             } catch (err) {
               if (err && err.code === '23505') {
@@ -226,7 +229,7 @@ export default async function setSubsystemsClassesMethods(data) {
                     subsystem,
                     className,
                     method,
-                  }
+                  },
                 );
                 // duplicate key - another process inserted it concurrently, ignore
               } else {
@@ -239,7 +242,7 @@ export default async function setSubsystemsClassesMethods(data) {
                     subsystem,
                     className,
                     method,
-                  }
+                  },
                 );
                 throw err;
               }

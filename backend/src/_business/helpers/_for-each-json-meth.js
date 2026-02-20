@@ -14,8 +14,8 @@ export default async function _forEachJsonMethod({
     }
     return { data: results };
   } catch (error) {
-    const Utils = (await import("../../utils/utils.js")).default;
-    const Config = (await import("../../../config/config.js")).default;
+    const Utils = (await import('../../utils/utils.js')).default;
+    const Config = (await import('../../../config/config.js')).default;
 
     const utils = new Utils();
     const config = new Config();
@@ -23,7 +23,7 @@ export default async function _forEachJsonMethod({
 
     return utils.handleError({
       message: errorMessage,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

@@ -1,6 +1,6 @@
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
-import DBMS from "../../dbms/dbms.js";
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
+import DBMS from '../../dbms/dbms.js';
 
 export default async function getMenusOptionsProfile(data) {
   const utils = new Utils();
@@ -12,7 +12,7 @@ export default async function getMenusOptionsProfile(data) {
   if (!profile)
     return utils.handleError({
       message: 'Datos inválidos o incompletos',
-      errorCode: ERROR_CODES.BAD_REQUEST,
+      statusCode: ERROR_CODES.BAD_REQUEST,
     });
   const selectQuery = `
       SELECT m.id AS menu_id, m.name AS menu_name, o.id AS option_id, o.name AS option_name, p.id AS profile_id, p.name AS profile_name
@@ -32,7 +32,7 @@ export default async function getMenusOptionsProfile(data) {
   } catch (error) {
     return utils.handleError({
       message: `Error en getMenusOptionsProfile`,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   }

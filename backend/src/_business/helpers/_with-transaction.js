@@ -1,10 +1,10 @@
-import DBMS from "../../dbms/dbms.js";
-import Utils from "../../utils/utils.js";
-import Config from "../../../config/config.js";
+import DBMS from '../../dbms/dbms.js';
+import Utils from '../../utils/utils.js';
+import Config from '../../../config/config.js';
 
 export default async function _withTransaction(
   callback,
-  errorMessage = 'Error en transacción genérica'
+  errorMessage = 'Error en transacción genérica',
 ) {
   const dbms = new DBMS();
   const utils = new Utils();
@@ -15,7 +15,7 @@ export default async function _withTransaction(
   if (!client) {
     return utils.handleError({
       message: 'No se pudo iniciar la transacción',
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
     });
   }
   try {
@@ -30,7 +30,7 @@ export default async function _withTransaction(
     }
     return utils.handleError({
       message: errorMessage,
-      errorCode: ERROR_CODES.DB_ERROR,
+      statusCode: ERROR_CODES.DB_ERROR,
       error,
     });
   } finally {
