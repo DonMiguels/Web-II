@@ -1,22 +1,22 @@
-import { Sun, Moon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Sun, Moon } from "lucide-react";
+import { motion } from "framer-motion";
 
-import { ResetPasswordLayout } from '@/auth/componentsAuth';
-import { useTheme } from '@/context';
-import { Button } from '@/components/ui/button';
+import { ResetPasswordLayout } from "@/auth/componentsAuth";
+import { useTheme } from "@/context";
+import { Button } from "@/components/ui/button";
 
-import LogoLight from '../../assets/img/uru-logo-white.png';
-import LogoDark from '../../assets/img/uru-logo-dark.png';
+import LogoLight from "../../assets/img/uru-logo-white.png";
+import LogoDark from "../../assets/img/uru-logo-dark.png";
 
 export const ResetPassword = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <div
-      className='relative min-h-screen w-full flex items-center justify-center overflow-hidden transition-colors duration-500'
+      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden transition-colors duration-500"
       style={{
         background:
-          theme === 'light'
+          theme === "light"
             ? `radial-gradient(at bottom right, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
                radial-gradient(at bottom left, rgba(29, 78, 216, 0.1) 0%, transparent 40%),
                linear-gradient(to bottom, #ffffff 70%, #dbeafe 100%)`
@@ -25,18 +25,18 @@ export const ResetPassword = () => {
                linear-gradient(to bottom, #000000 70%, #0a0a2e 100%)`,
       }}
     >
-      <div className='fixed top-8 left-8 right-8 flex justify-between items-center z-50'>
+      <div className="fixed top-8 left-8 right-8 flex justify-between items-center z-50">
         <motion.div
           key={theme}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className='flex items-center'
+          className="flex items-center"
         >
           <img
-            src={theme === 'light' ? LogoLight : LogoDark}
-            alt='Logo URU'
-            className='h-10 w-auto object-contain filter drop-shadow-sm'
+            src={theme === "light" ? LogoLight : LogoDark}
+            alt="Logo URU"
+            className="h-10 w-auto object-contain filter drop-shadow-sm"
           />
         </motion.div>
 
@@ -44,21 +44,21 @@ export const ResetPassword = () => {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className='flex items-center'
+          className="flex items-center"
         >
           <Button
-            variant='ghost'
-            size='icon'
+            variant="ghost"
+            size="icon"
             onClick={toggleTheme}
-            className='rounded-full h-10 w-10 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-primary)] backdrop-blur-sm bg-white/5'
+            className="rounded-full h-10 w-10 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-primary)] backdrop-blur-sm bg-white/5"
           >
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
           </Button>
         </motion.div>
       </div>
 
       <motion.div
-        className='absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px]'
+        className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-br from-blue-400/20 dark:from-blue-600/10 to-transparent rounded-full blur-[120px]"
         animate={{
           x: [0, 30, 0],
           y: [0, 20, 0],
@@ -66,12 +66,12 @@ export const ResetPassword = () => {
         transition={{
           duration: 10,
           repeat: Infinity,
-          ease: 'easeInOut',
+          ease: "easeInOut",
         }}
       />
 
       <motion.div
-        className='absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px]'
+        className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-gradient-to-tl from-indigo-400/20 dark:from-indigo-600/10 to-transparent rounded-full blur-[120px]"
         animate={{
           x: [0, -30, 0],
           y: [0, -20, 0],
@@ -79,16 +79,16 @@ export const ResetPassword = () => {
         transition={{
           duration: 12,
           repeat: Infinity,
-          ease: 'easeInOut',
+          ease: "easeInOut",
         }}
       />
 
       <div
-        className='absolute inset-0 z-0 opacity-[0.4] dark:opacity-[0.2]'
+        className="absolute inset-0 z-0 opacity-[0.4] dark:opacity-[0.2]"
         style={{
           backgroundImage: `linear-gradient(var(--grid-color) 1px, transparent 1px), 
                             linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundSize: "60px 60px",
         }}
       />
 
@@ -96,7 +96,7 @@ export const ResetPassword = () => {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className='relative z-10 w-full max-w-md px-6 flex justify-center'
+        className="relative z-10 w-full max-w-md px-6 flex justify-center"
       >
         <ResetPasswordLayout />
       </motion.div>

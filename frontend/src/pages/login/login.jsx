@@ -17,9 +17,7 @@ export const Login = () => {
       style={{
         background:
           theme === "light"
-            ? `radial-gradient(at bottom right, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
-               radial-gradient(at bottom left, rgba(29, 78, 216, 0.1) 0%, transparent 40%),
-               linear-gradient(to bottom, #ffffff 70%, #dbeafe 100%)`
+            ? ""
             : `radial-gradient(at bottom right, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
                radial-gradient(at bottom left, rgba(22, 20, 56, 0.4) 0%, transparent 40%),
                linear-gradient(to bottom, #000000 70%, #0a0a2e 100%)`,
