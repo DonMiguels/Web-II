@@ -1,17 +1,35 @@
 import { useState } from "react";
-import { ChevronRight, ChevronLeft, Package, HandCoins, BarChart3, Settings, LogOut, User, Search, ChevronDown } from "lucide-react";
-import { useAuth, useTheme } from "@/context"; 
+import {
+  Package,
+  HandCoins,
+  BarChart3,
+  Settings,
+  LogOut,
+  User,
+  Menu,
+  X,
+  ChevronDown,
+} from "lucide-react";
+import { useAuth } from "@/context";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded, setExpanded }) => {
+const SidebarItem = ({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+  children,
+  isExpanded,
+  setExpanded,
+}) => {
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const hasChildren = children && children.length > 0;
 
   const handleClick = () => {
     if (hasChildren) {
       if (!isExpanded) {
-        setExpanded(true); 
+        setExpanded(true);
         setIsSubmenuOpen(true);
       } else {
         setIsSubmenuOpen(!isSubmenuOpen);
@@ -23,25 +41,27 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded,
 
   return (
     <div className="flex flex-col w-full relative">
-      <div 
+      <div
         onClick={handleClick}
         title={!isExpanded ? label : undefined}
-        className={`relative flex items-center h-12 mx-3 rounded-xl cursor-pointer transition-colors duration-200 group z-10
-          ${active 
-            ? "text-blue-600 dark:text-white" 
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"}`}
+        className={`relative flex items-center h-12 mx-3 cursor-pointer transition-colors duration-200 group z-10
+          ${
+            active
+              ? "text-blue-600 dark:text-white"
+              : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+          }`}
       >
         {active && (
-          <motion.div 
-            layoutId="leftIndicator" 
-            className="absolute -left-3 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-r-md z-20" 
+          <motion.div
+            layoutId="leftIndicator"
+            className="absolute -left-[2px] top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-md z-20"
           />
         )}
 
         {active && (
-          <motion.div 
-            layoutId="activeSidebarTab" 
-            className="absolute inset-0 bg-blue-50 dark:bg-white/10 rounded-xl z-0" 
+          <motion.div
+            layoutId="activeSidebarTab"
+            className="absolute inset-0 bg-blue-50 dark:bg-white/10 rounded-md z-0"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           />
         )}
@@ -52,7 +72,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded,
 
         <AnimatePresence>
           {isExpanded && (
-            <motion.div 
+            <motion.div
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: "auto", opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
@@ -63,9 +83,9 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded,
                   {label}
                 </span>
                 {hasChildren && (
-                  <ChevronDown 
-                    size={16} 
-                    className={`shrink-0 transition-transform duration-300 ${isSubmenuOpen ? "rotate-180" : ""}`} 
+                  <ChevronDown
+                    size={16}
+                    className={`shrink-0 transition-transform duration-300 ${isSubmenuOpen ? "rotate-180" : ""}`}
                   />
                 )}
               </div>
@@ -76,7 +96,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded,
 
       <AnimatePresence>
         {isExpanded && isSubmenuOpen && hasChildren && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -86,7 +106,7 @@ const SidebarItem = ({ icon: Icon, label, active, onClick, children, isExpanded,
               <div
                 key={idx}
                 onClick={() => onClick?.(child.url)}
-                className="flex items-center h-10 pl-12 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer transition-all"
+                className="flex items-center h-10 pl-12 rounded-md text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer transition-all"
               >
                 <span className="text-sm font-medium">{child.title}</span>
               </div>
@@ -110,68 +130,92 @@ export const Sidebar = () => {
       label: "Usuarios",
       children: [
         { title: "Crear", url: "/usuarios/crear" },
-        { title: "Lista", url: "/usuarios/lista" }
-      ]
+        { title: "Lista", url: "/usuarios/lista" },
+      ],
     },
     {
       icon: Package,
       label: "Inventario",
       children: [
         { title: "Productos", url: "/inventario/productos" },
-        { title: "Stock", url: "/inventario/stock" }
-      ]
+        { title: "Stock", url: "/inventario/stock" },
+      ],
     },
     { icon: HandCoins, label: "Préstamos", url: "/prestamos" },
-    { icon: BarChart3, label: "Reportes", url: "/dashboard" }
+    { icon: BarChart3, label: "Reportes", url: "/dashboard" },
   ];
 
   const checkActive = (item) => {
-    if (item.url) return location.pathname === item.url || location.pathname.startsWith(item.url + '/');
+    if (item.url)
+      return (
+        location.pathname === item.url ||
+        location.pathname.startsWith(item.url + "/")
+      );
     return location.pathname.includes(item.label.toLowerCase());
   };
 
   return (
-    <motion.aside 
+    <motion.aside
       initial={false}
       animate={{ width: isExpanded ? 260 : 76 }}
-      className="fixed left-4 top-4 h-[calc(100vh-32px)] rounded-3xl bg-white dark:bg-[#111216] border border-slate-200 dark:border-white/5 z-50 flex flex-col justify-between py-6 shadow-2xl transition-colors duration-500"
+      transition={{ type: "spring", stiffness: 220, damping: 28 }}
+      className="fixed left-4 top-4 h-[calc(100vh-32px)] rounded-3xl bg-white dark:bg-[#111216] border border-slate-200 dark:border-white/5 z-50 flex flex-col justify-between py-6 shadow-2xl overflow-hidden"
     >
-      <button 
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -right-3.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#2B2D31] text-slate-800 dark:text-white flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer border border-slate-200 dark:border-white/10 z-50"
-      >
-        {isExpanded ? <ChevronLeft size={16} strokeWidth={3} /> : <ChevronRight size={16} strokeWidth={3} />}
-      </button>
-
       <div className="flex flex-col gap-6 w-full">
-        <div className="px-3 mt-2">
-          <div className="flex items-center bg-slate-100 dark:bg-white/5 rounded-xl h-10 cursor-pointer hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
-            <div className="w-10 h-10 flex items-center justify-center shrink-0">
-              <Search size={18} className="text-slate-500 dark:text-slate-400" />
-            </div>
+        <div className="px-3">
+          <div
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="relative flex items-center bg-slate-100 dark:bg-white/5 rounded-2xl h-14 cursor-pointer hover:bg-slate-200 dark:hover:bg-white/10 transition-colors group"
+          >
             <AnimatePresence>
               {isExpanded && (
-                <motion.div 
-                  initial={{ width: 0, opacity: 0 }} 
-                  animate={{ width: "auto", opacity: 1 }} 
-                  exit={{ width: 0, opacity: 0 }} 
-                  className="overflow-hidden"
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -5 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute left-4 text-sm font-bold text-slate-800 dark:text-white uppercase tracking-widest"
                 >
-                  <div className="w-[160px] flex items-center h-10">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Buscar...</span>
-                  </div>
-                </motion.div>
+                  Tablero
+                </motion.span>
               )}
             </AnimatePresence>
+
+            <motion.div
+              layout
+              transition={{ type: "spring", stiffness: 220, damping: 28 }}
+              className={`flex items-center justify-center w-12 h-12 ${
+                isExpanded ? "ml-auto mr-1" : "mx-auto"
+              }`}
+            >
+              <motion.div
+                key={isExpanded ? "open" : "closed"}
+                initial={{ rotate: -180, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 180, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                {isExpanded ? (
+                  <X size={20} className="text-slate-500 dark:text-slate-400" />
+                ) : (
+                  <Menu
+                    size={22}
+                    className="text-slate-500 dark:text-slate-400 group-hover:text-blue-600"
+                  />
+                )}
+              </motion.div>
+            </motion.div>
           </div>
         </div>
 
         <nav className="flex flex-col gap-2 w-full mt-2">
           {menuConfig.map((item, index) => (
-            <SidebarItem 
+            <SidebarItem
               key={index}
               {...item}
-              onClick={(url) => url ? navigate(url) : navigate(`/${item.label.toLowerCase()}`)}
+              onClick={(url) =>
+                url ? navigate(url) : navigate(`/${item.label.toLowerCase()}`)
+              }
               active={checkActive(item)}
               isExpanded={isExpanded}
               setExpanded={setIsExpanded}
@@ -182,8 +226,20 @@ export const Sidebar = () => {
 
       <div className="flex flex-col gap-2 w-full mb-2">
         <div className="h-[1px] bg-slate-200 dark:bg-white/5 w-full mb-2" />
-        <SidebarItem icon={Settings} label="Configuración" isExpanded={isExpanded} setExpanded={setIsExpanded} onClick={() => navigate('/settings')} />
-        <SidebarItem icon={LogOut} label="Cerrar Sesión" isExpanded={isExpanded} setExpanded={setIsExpanded} onClick={() => logout(navigate)} />
+        <SidebarItem
+          icon={Settings}
+          label="Configuración"
+          isExpanded={isExpanded}
+          setExpanded={setIsExpanded}
+          onClick={() => navigate("/settings")}
+        />
+        <SidebarItem
+          icon={LogOut}
+          label="Cerrar Sesión"
+          isExpanded={isExpanded}
+          setExpanded={setIsExpanded}
+          onClick={() => logout(navigate)}
+        />
       </div>
     </motion.aside>
   );

@@ -1,9 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ,
+  baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
@@ -29,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
+    const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
     const isPublicRoute = publicRoutes.includes(window.location.pathname);
 
     if (!isPublicRoute) {
