@@ -47,6 +47,10 @@ export default class Config {
     return this.MESSAGES;
   }
 
+  async getErrorCodes() {
+    return this.STATUS_CODES;
+  }
+
   async mapMessages() {
     const messagesDir = path.resolve(this.__dirname, './messages');
     this.MESSAGES = await this.readJSONFiles(messagesDir);

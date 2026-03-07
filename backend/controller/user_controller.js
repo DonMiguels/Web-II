@@ -25,16 +25,16 @@ router.post('/register', async (req, res) => {
         type: 'string',
         options: { required: true },
       },
-      email: {
-        type: 'email',
-        options: { required: true },
-      },
       password: {
         type: 'string',
         options: {
           required: true,
           requireSpecialChars: true,
         },
+      },
+      person_id: {
+        type: 'number',
+        options: { required: true },
       },
     };
 

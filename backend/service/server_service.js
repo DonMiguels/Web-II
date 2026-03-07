@@ -5,6 +5,8 @@ import cors from 'cors';
 import Config from '../config/config.js';
 import dotenv from 'dotenv';
 import userRouter from '../controller/user_controller.js';
+import personRouter from '../controller/person_controller.js';
+import profileRouter from '../controller/profile_controller.js';
 
 dotenv.config();
 
@@ -49,7 +51,9 @@ class Server {
   }
 
   routes() {
-    this.app.use('/users', userRouter);
+    this.app.use('/person', personRouter);
+    this.app.use('/user', userRouter);
+    this.app.use('/profile', profileRouter);
   }
 
   start() {
