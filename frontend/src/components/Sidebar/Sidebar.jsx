@@ -22,6 +22,7 @@ const SidebarItem = ({
   children,
   isExpanded,
   setExpanded,
+  url, 
 }) => {
   const [isSubmenuOpen, setIsSubmenuOpen] = useState(false);
   const hasChildren = children && children.length > 0;
@@ -35,7 +36,7 @@ const SidebarItem = ({
         setIsSubmenuOpen(!isSubmenuOpen);
       }
     } else {
-      onClick?.();
+      onClick?.(url);
     }
   };
 
@@ -105,7 +106,7 @@ const SidebarItem = ({
             {children.map((child, idx) => (
               <div
                 key={idx}
-                onClick={() => onClick?.(child.url)}
+                onClick={() => navigate(child.url)}
                 className="flex items-center h-10 pl-12 rounded-md text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer transition-all"
               >
                 <span className="text-sm font-medium">{child.title}</span>
@@ -142,7 +143,7 @@ export const Sidebar = () => {
       ],
     },
     { icon: HandCoins, label: "Préstamos", url: "/prestamos" },
-    { icon: BarChart3, label: "Reportes", url: "/dashboard" },
+    { icon: BarChart3, label: "Reportes", url: "/reports" },
   ];
 
   const checkActive = (item) => {
@@ -213,9 +214,10 @@ export const Sidebar = () => {
             <SidebarItem
               key={index}
               {...item}
-              onClick={(url) =>
-                url ? navigate(url) : navigate(`/${item.label.toLowerCase()}`)
-              }
+              onClick={(url) => {
+                const targetPath = url || `/${item.label.toLowerCase()}`;
+                navigate(targetPath);
+              }}
               active={checkActive(item)}
               isExpanded={isExpanded}
               setExpanded={setIsExpanded}
@@ -229,9 +231,10 @@ export const Sidebar = () => {
         <SidebarItem
           icon={Settings}
           label="Configuración"
+          url="/settings"
           isExpanded={isExpanded}
           setExpanded={setIsExpanded}
-          onClick={() => navigate("/settings")}
+          onClick={(url) => navigate(url)}
         />
         <SidebarItem
           icon={LogOut}
