@@ -14,17 +14,14 @@ const dbConfig = {
   port: process.env.DB_PORT,
 };
 
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
-
 const pool = new Pool(dbConfig);
 
-pool.on('connect', async () => {
-  console.log(await getMessage(config.LANGUAGE, 'db_connected_success'));
+pool.on('connect', () => {
+  console.log(getMessage(config.LANGUAGE, 'db_connected_success'));
 });
 
-pool.on('error', async (err) => {
-  console.error(await getMessage(config.LANGUAGE, 'db_connected_error'), err);
+pool.on('error', (err) => {
+  console.error(getMessage(config.LANGUAGE, 'db_connected_error'), err);
 });
 
 export default pool;

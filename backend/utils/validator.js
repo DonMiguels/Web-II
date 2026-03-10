@@ -20,7 +20,7 @@ class Validator {
       if (!this.validateType(value, type)) {
         return {
           isValid: false,
-          message: `El campo ${category} debe ser de tipo ${type}`
+          message: `El campo ${category} debe ser de tipo ${type}`,
         };
       }
 
@@ -28,7 +28,7 @@ class Validator {
       if (options.required && (!value || value.toString().trim() === '')) {
         return {
           isValid: false,
-          message: `El campo ${category} es obligatorio`
+          message: `El campo ${category} es obligatorio`,
         };
       }
 
@@ -38,7 +38,11 @@ class Validator {
       }
 
       // Validaciones específicas por categoría
-      const categoryValidation = this.validateCategory(value, category, options);
+      const categoryValidation = this.validateCategory(
+        value,
+        category,
+        options,
+      );
       if (!categoryValidation.isValid) {
         return categoryValidation;
       }
@@ -50,11 +54,10 @@ class Validator {
       }
 
       return { isValid: true, message: '' };
-
     } catch (error) {
       return {
         isValid: false,
-        message: `Error en validación de ${category}: ${error.message}`
+        message: `Error en validación de ${category}: ${error.message}`,
       };
     }
   }
@@ -90,7 +93,9 @@ class Validator {
     if (rules.min && stringValue.length < rules.min) {
       return {
         isValid: false,
-        message: options.minMessage || `El campo ${category} debe tener al menos ${rules.min} caracteres`
+        message:
+          options.minMessage ||
+          `El campo ${category} debe tener al menos ${rules.min} caracteres`,
       };
     }
 
@@ -98,7 +103,9 @@ class Validator {
     if (rules.max && stringValue.length > rules.max) {
       return {
         isValid: false,
-        message: options.maxMessage || `El campo ${category} no puede exceder ${rules.max} caracteres`
+        message:
+          options.maxMessage ||
+          `El campo ${category} no puede exceder ${rules.max} caracteres`,
       };
     }
 
@@ -133,11 +140,13 @@ class Validator {
    */
   validateUsername(username, options = {}) {
     const usernameRegex = /^[a-zA-Z0-9._]+$/;
-    
+
     if (!usernameRegex.test(username)) {
       return {
         isValid: false,
-        message: options.patternMessage || 'El usuario solo puede contener letras, números, puntos y guiones bajos'
+        message:
+          options.patternMessage ||
+          'El usuario solo puede contener letras, números, puntos y guiones bajos',
       };
     }
 
@@ -151,7 +160,9 @@ class Validator {
     if (!this.isValidEmail(email)) {
       return {
         isValid: false,
-        message: options.emailMessage || 'El formato del correo electrónico no es válido'
+        message:
+          options.emailMessage ||
+          'El formato del correo electrónico no es válido',
       };
     }
 
@@ -166,7 +177,9 @@ class Validator {
     if (password.length < 8) {
       return {
         isValid: false,
-        message: options.passwordMinMessage || 'La contraseña debe tener al menos 8 caracteres'
+        message:
+          options.passwordMinMessage ||
+          'La contraseña debe tener al menos 8 caracteres',
       };
     }
 
@@ -180,7 +193,9 @@ class Validator {
       if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
         return {
           isValid: false,
-          message: options.passwordStrengthMessage || 'La contraseña debe contener mayúsculas, minúsculas y números'
+          message:
+            options.passwordStrengthMessage ||
+            'La contraseña debe contener mayúsculas, minúsculas y números',
         };
       }
     }
@@ -200,14 +215,14 @@ class Validator {
       /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
       /javascript:/gi,
       /on\w+\s*=/gi,
-      /<[^>]*>/g
+      /<[^>]*>/g,
     ];
 
     for (const pattern of xssPatterns) {
       if (pattern.test(stringValue)) {
         return {
           isValid: false,
-          message: `El campo ${category} contiene caracteres no permitidos por seguridad`
+          message: `El campo ${category} contiene caracteres no permitidos por seguridad`,
         };
       }
     }
@@ -215,14 +230,14 @@ class Validator {
     // Prevención básica de SQL Injection
     const sqlPatterns = [
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)/gi,
-      /(--|\*|;|'|")/g
+      /(--|\*|;|'|")/g,
     ];
 
     for (const pattern of sqlPatterns) {
       if (pattern.test(stringValue)) {
         return {
           isValid: false,
-          message: `El campo ${category} contiene caracteres sospechosos`
+          message: `El campo ${category} contiene caracteres sospechosos`,
         };
       }
     }
@@ -245,16 +260,17 @@ class Validator {
    * @returns {Object} - { isValid: boolean, errors: Object }
    */
   validateObject(data, schema) {
+    const safeData = data || {};
     const errors = {};
     let isValid = true;
 
     for (const [field, rules] of Object.entries(schema)) {
-      const value = data[field];
+      const value = safeData[field];
       const validation = this.validate(
         value,
         rules.type,
         field,
-        rules.options || {}
+        rules.options || {},
       );
 
       if (!validation.isValid) {
