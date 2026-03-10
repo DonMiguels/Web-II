@@ -95,7 +95,7 @@
       orderArray: ['subsystem_name']
   },
   'registerUser': {
-    query: 'INSERT INTO public."user" (user_na, user_pw, person_id) VALUES ($1, $2, $3) RETURNING user_id AS id, user_na AS username, person_id;'
+    query: 'INSERT INTO public."user" (user_na, user_pw, user_sol, person_id) VALUES ($1, $2, true, $3) RETURNING user_id AS id, user_na AS username, person_id;'
     ,structure_params: { username: 'string', password: 'string', person_id: 'int' }
     ,orderArray: ['username', 'password', 'person_id']
   }
@@ -159,5 +159,20 @@
     query: 'INSERT INTO public.profile (profile_de) VALUES ($1) RETURNING profile_id, profile_de;',
     structure_params: { profile_name: 'string' },
     orderArray: ['profile_name']
+  },
+  'getPermissions': {
+    query: 'SELECT DISTINCT s.subsystem_na AS sub_system, c.class_na AS class_name, m.method_na AS method_name, p.profile_de AS profile_name FROM public.method_profile mp JOIN public.method m ON m.method_id = mp.method_id JOIN public.method_class mc ON mc.method_id = m.method_id JOIN public."class" c ON c.class_id = mc.class_id JOIN public.class_subsystem cs ON cs.class_id = c.class_id JOIN public.subsystem s ON s.subsystem_id = cs.subsystem_id JOIN public.profile p ON p.profile_id = mp.profile_id ORDER BY s.subsystem_na, c.class_na, m.method_na, p.profile_de;',
+    structure_params: {},
+    orderArray: []
+  },
+  'ensureTransactionSerial': {
+    query: 'DO $$ BEGIN CREATE SEQUENCE IF NOT EXISTS public.transaction_nu_seq AS INTEGER START WITH 1 INCREMENT BY 1; PERFORM setval(''public.transaction_nu_seq'', COALESCE((SELECT MAX(transaction_nu) FROM public."transaction"), 0) + 1, false); ALTER TABLE public."transaction" ALTER COLUMN transaction_nu SET DEFAULT nextval(''public.transaction_nu_seq''); END $$;',
+    structure_params: {},
+    orderArray: []
+  },
+  'insertPermission': {
+    query: 'WITH ins_subsystem AS (INSERT INTO public.subsystem (subsystem_na) SELECT $1 WHERE NOT EXISTS (SELECT 1 FROM public.subsystem WHERE subsystem_na = $1)), sel_subsystem AS (SELECT subsystem_id FROM public.subsystem WHERE subsystem_na = $1 ORDER BY subsystem_id LIMIT 1), ins_class AS (INSERT INTO public."class" (class_na) SELECT $2 WHERE NOT EXISTS (SELECT 1 FROM public."class" WHERE class_na = $2)), sel_class AS (SELECT class_id FROM public."class" WHERE class_na = $2 ORDER BY class_id LIMIT 1), link_class_subsystem AS (INSERT INTO public.class_subsystem (class_id, subsystem_id) SELECT c.class_id, s.subsystem_id FROM sel_class c CROSS JOIN sel_subsystem s ON CONFLICT (class_id, subsystem_id) DO NOTHING), ins_method AS (INSERT INTO public.method (method_na) SELECT $3 WHERE NOT EXISTS (SELECT 1 FROM public.method WHERE method_na = $3)), sel_method AS (SELECT method_id FROM public.method WHERE method_na = $3 ORDER BY method_id LIMIT 1), link_method_class AS (INSERT INTO public.method_class (method_id, class_id) SELECT m.method_id, c.class_id FROM sel_method m CROSS JOIN sel_class c ON CONFLICT (method_id, class_id) DO NOTHING), ins_profile AS (INSERT INTO public.profile (profile_de) SELECT $4 WHERE NOT EXISTS (SELECT 1 FROM public.profile WHERE profile_de = $4)), sel_profile AS (SELECT profile_id FROM public.profile WHERE profile_de = $4 ORDER BY profile_id LIMIT 1), link_method_profile AS (INSERT INTO public.method_profile (method_id, profile_id) SELECT m.method_id, p.profile_id FROM sel_method m CROSS JOIN sel_profile p ON CONFLICT (profile_id, method_id) DO NOTHING), ins_transaction AS (INSERT INTO public."transaction" (transaction_nu, method_id, class_id, subsystem_id) SELECT nextval(''public.transaction_nu_seq''), m.method_id, c.class_id, s.subsystem_id FROM sel_method m CROSS JOIN sel_class c CROSS JOIN sel_subsystem s WHERE NOT EXISTS (SELECT 1 FROM public."transaction" t WHERE t.method_id = m.method_id AND t.class_id = c.class_id AND t.subsystem_id = s.subsystem_id)) SELECT s.subsystem_id, c.class_id, m.method_id, p.profile_id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m CROSS JOIN sel_profile p;',
+    structure_params: { sub_system: 'string', class_name: 'string', method_name: 'string', profile_name: 'string' },
+    orderArray: ['sub_system', 'class_name', 'method_name', 'profile_name']
   }
 }

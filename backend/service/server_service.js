@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import userRouter from '../controller/user_controller.js';
 import personRouter from '../controller/person_controller.js';
 import profileRouter from '../controller/profile_controller.js';
+import SecurityService from './security_service.js';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ class Server {
     this.configuration();
     this.routes();
     this.config = new Config();
+    this.securityService = new SecurityService();
     Server.instance = this;
   }
 
@@ -56,13 +58,24 @@ class Server {
     this.app.use('/profile', profileRouter);
   }
 
+  async init() {
+    await this.config.init();
+    await this.securityService.syncPermissions();
+  }
+
   start() {
-    this.app.listen(this.PORT, async () => {
-      await this.config.init();
-      console.log(
-        `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} http://localhost:${this.PORT}`,
-      );
-    });
+    this.init()
+      .then(() => {
+        this.app.listen(this.PORT, () => {
+          console.log(
+            `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} http://localhost:${this.PORT}`,
+          );
+        });
+      })
+      .catch((error) => {
+        console.error('Error al iniciar servidor:', error?.message || error);
+        process.exit(1);
+      });
   }
 }
 

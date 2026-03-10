@@ -1,0 +1,131 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import Utils from '../src/utils/utils.js';
+import DBMS from '../src/dbms/dbms.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default class SecurityService {
+  static instance;
+
+  constructor() {
+    if (SecurityService.instance) return SecurityService.instance;
+
+    this.permissions = new Map();
+    this.utils = new Utils();
+    this.dbms = new DBMS();
+    this.dbmsReady = this.dbms.init();
+    this.reflect = Reflect;
+    SecurityService.instance = this;
+  }
+
+  normalizePermission(permission = {}) {
+    const normalize = (value) => String(value ?? '').trim();
+
+    return {
+      sub_system: normalize(permission.sub_system),
+      class: normalize(permission.class ?? permission.class_name),
+      method: normalize(permission.method ?? permission.method_name),
+      profile: normalize(permission.profile ?? permission.profile_name),
+      parameter: permission.parameter
+    };
+  }
+
+  buildPermissionKey(permission = {}) {
+    const normalized = this.normalizePermission(permission);
+    return [
+      normalized.sub_system.toLowerCase(),
+      normalized.class.toLowerCase(),
+      normalized.method.toLowerCase(),
+      normalized.profile.toLowerCase(),
+    ].join('::');
+  }
+
+  async syncPermissions() {
+    await this.dbmsReady;
+    await this.dbms.executeNamedQuery({
+      nameQuery: 'ensureTransactionSerial',
+    });
+
+    const csvPermissions = await this.getPermissionsFile();
+    const dbPermissions = await this.getPermissionsDB();
+
+    for (const [key, csvPermission] of csvPermissions) {
+      if (dbPermissions.has(key)) continue;
+
+      await this.dbms.executeNamedQuery({
+        nameQuery: 'insertPermission',
+        params: {
+          sub_system: csvPermission.sub_system,
+          class_name: csvPermission.class,
+          method_name: csvPermission.method,
+          profile_name: csvPermission.profile,
+        },
+      });
+
+      dbPermissions.set(key, csvPermission);
+    }
+
+    this.permissions = new Map(dbPermissions);
+    return this.permissions;
+  }
+
+  async getPermissionsFile() {
+    const csvPath = path.resolve(__dirname, '../config/permission.csv');
+    const csvMap = await this.utils.readCSV(csvPath);
+    const permissions = new Map();
+
+    for (const row of csvMap.values()) {
+      const normalized = this.normalizePermission(row);
+      const key = this.buildPermissionKey(normalized);
+      permissions.set(key, normalized);
+    }
+
+    return permissions;
+  }
+
+  async getPermissionsDB() {
+    await this.dbmsReady;
+    const res = await this.dbms.executeNamedQuery({
+      nameQuery: 'getPermissions',
+    });
+
+    const permissions = new Map();
+    for (const row of res?.rows ?? []) {
+      const normalized = this.normalizePermission(row);
+      const key = this.buildPermissionKey(normalized);
+      permissions.set(key, normalized);
+    }
+
+    return permissions;
+  }
+
+  hasPermission(permission) {
+    const key = this.buildPermissionKey(permission);
+    return this.permissions.has(key);
+  }
+
+  async setPermission(permission) {
+    await this.dbmsReady;
+    await this.dbms.executeNamedQuery({
+      nameQuery: 'ensureTransactionSerial',
+    });
+
+    const normalized = this.normalizePermission(permission);
+
+    await this.dbms.executeNamedQuery({
+      nameQuery: 'insertPermission',
+      params: {
+        sub_system: normalized.sub_system,
+        class_name: normalized.class,
+        method_name: normalized.method,
+        profile_name: normalized.profile,
+      },
+    });
+
+    this.permissions.set(this.buildPermissionKey(normalized), normalized);
+  }
+
+  async executeAuthorized(permission) {}
+}
