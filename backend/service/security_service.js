@@ -127,5 +127,51 @@ export default class SecurityService {
     this.permissions.set(this.buildPermissionKey(normalized), normalized);
   }
 
-  async executeAuthorized(permission) {}
+  async executeAuthorized(permission) {
+    try {
+      // Construir la ruta al archivo del método
+      const methodPath = path.resolve(
+        __dirname,
+        `../method/${permission.class.toLowerCase()}/${permission.method.toLowerCase()}.js`
+      );
+
+      // Importar dinámicamente el módulo del método
+      const methodModule = await import(methodPath);
+      
+      // Obtener la función del método exportado
+      const methodName = permission.method;
+      const methodFunction = methodModule[methodName];
+      
+      if (!methodFunction || typeof methodFunction !== 'function') {
+        throw new Error(`Method ${methodName} not found in ${methodPath}`);
+      }
+
+      // Crear contexto con dbms para el método
+      const dbms = new DBMS();
+      const dbmsReady = dbms.init();
+      
+      // Crear contexto y bindear la función
+      const context = {
+        dbms: dbms,
+        dbmsReady: dbmsReady
+      };
+      
+      // Ejecutar el método con el contexto y parámetros
+      const boundMethod = methodFunction.bind(context);
+      const result = await boundMethod(permission.parameter || {});
+      
+      return {
+        statusCode: 200,
+        data: result,
+        message: 'Method executed successfully'
+      };
+    } catch (error) {
+      console.error('Error executing authorized method:', error);
+      return {
+        statusCode: 500,
+        error: error.message,
+        message: 'Failed to execute authorized method'
+      };
+    }
+  }
 }
