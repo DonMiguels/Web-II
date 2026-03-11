@@ -19,9 +19,19 @@ export default class DispatcherService {
             if (!this.session.authenticate(request)) {
                 return this.config.getMessage(request?.body?.lang, 'session_required');
             }
-            if  (!this.security.hasPermission(request?.body?.permission)) {
+            
+            // Verificar que el usuario tenga el perfil requerido
+            const userId = this.session.getUserId(request);
+            const requiredProfile = request?.body?.permission?.profile;
+            
+            if (!this.security.hasUserProfile(userId, requiredProfile)) {
+                return this.config.getMessage(request?.body?.lang, 'profile_not_assigned');
+            }
+            
+            if (!this.security.hasPermission(request?.body?.permission)) {
                 return this.config.getMessage(request?.body?.lang, 'missing_required_fields');
             }
+            
             return await this.security.executeAuthorized(request?.body?.permission);
         } catch (error) {
             return {
