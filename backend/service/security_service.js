@@ -13,6 +13,7 @@ export default class SecurityService {
     if (SecurityService.instance) return SecurityService.instance;
 
     this.permissions = new Map();
+    this.userProfiles = new Map();
     this.utils = new Utils();
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
@@ -68,6 +69,10 @@ export default class SecurityService {
     }
 
     this.permissions = new Map(dbPermissions);
+    
+    // Sincronizar perfiles de usuario
+    await this.syncUserProfiles();
+    
     return this.permissions;
   }
 
@@ -125,6 +130,58 @@ export default class SecurityService {
     });
 
     this.permissions.set(this.buildPermissionKey(normalized), normalized);
+  }
+
+  async syncUserProfiles() {
+    await this.dbmsReady;
+    const res = await this.dbms.executeNamedQuery({
+      nameQuery: 'getUserProfiles',
+    });
+
+    const profiles = new Map();
+    for (const row of res?.rows ?? []) {
+      const userId = String(row.user_id || row.username).trim().toLowerCase();
+      const profileName = String(row.profile_name || row.profile).trim().toLowerCase();
+      
+      if (!profiles.has(userId)) {
+        profiles.set(userId, new Set());
+      }
+      profiles.get(userId).add(profileName);
+    }
+
+    this.userProfiles = profiles;
+    return this.userProfiles;
+  }
+
+  hasUserProfile(userId, profile) {
+    const normalizedUserId = String(userId).trim().toLowerCase();
+    const normalizedProfile = String(profile).trim().toLowerCase();
+    
+    const userProfiles = this.userProfiles.get(normalizedUserId);
+    return userProfiles ? userProfiles.has(normalizedProfile) : false;
+  }
+
+  async setUserProfile(userId, profile) {
+    await this.dbmsReady;
+    await this.dbms.executeNamedQuery({
+      nameQuery: 'ensureTransactionSerial',
+    });
+
+    const normalizedUserId = String(userId).trim().toLowerCase();
+    const normalizedProfile = String(profile).trim().toLowerCase();
+
+    await this.dbms.executeNamedQuery({
+      nameQuery: 'insertUserProfile',
+      params: {
+        user_id: userId,
+        profile_name: profile,
+      },
+    });
+
+    if (!this.userProfiles.has(normalizedUserId)) {
+      this.userProfiles.set(normalizedUserId, new Set());
+    }
+    this.userProfiles.get(normalizedUserId).add(normalizedProfile);
   }
 
   async executeAuthorized(permission) {
