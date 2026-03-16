@@ -1,8 +1,13 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/user",
+<<<<<<< HEAD
+  baseURL: import.meta.env.VITE_API_URL ,
+=======
+  baseURL: "http://localhost:3000/users",
+>>>>>>> 8481540b0b69838fc28ea963aec7977200406fcf
   withCredentials: true,
 });
 
@@ -28,7 +33,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+<<<<<<< HEAD
+    const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
+=======
     const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
+
+>>>>>>> 8481540b0b69838fc28ea963aec7977200406fcf
     const isPublicRoute = publicRoutes.includes(window.location.pathname);
 
     if (!isPublicRoute) {

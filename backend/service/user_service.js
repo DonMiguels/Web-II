@@ -8,7 +8,7 @@ class UserService {
   }
 
   // Registro de usuario
-  async register({ username, password, person_id }) {
+  async register({ username, email, password }) {
     await this.dbmsReady;
     const hashedPassword = await bcrypt.hash(password, 10);
     try {
@@ -16,8 +16,9 @@ class UserService {
         nameQuery: 'registerUser',
         params: {
           username,
+          email,
           password: hashedPassword,
-          person_id
+          register_date: new Date().toISOString(),
         },
       });
       return res?.rows?.[0];
@@ -32,7 +33,7 @@ class UserService {
       await this.dbmsReady;
       const res = await this.dbms.executeNamedQuery({
         nameQuery: 'getUser',
-        params: { username },
+        params: username,
       });
       const user = res?.rows?.[0];
       if (!user) return null;

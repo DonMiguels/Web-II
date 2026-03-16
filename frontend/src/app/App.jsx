@@ -11,10 +11,17 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
+<<<<<<< HEAD
         <Route path='/' element={<Login />}/>
         <Route path='/login' element={<Login />} />
         <Route path='/forgot-password' element={<Forgot />} />
         <Route path='/reset-password' element={<ResetPassword />} />
+=======
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<Forgot />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+>>>>>>> 8481540b0b69838fc28ea963aec7977200406fcf
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />

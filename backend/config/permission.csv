@@ -1,5 +1,0 @@
-id;sub_system;class;method;profile
-1;Security;Person;createPerson;admin
-2;Security;Profile;createProfile;admin
-3;Security;Profile;assignProfileToUser;admin
-4;Security;Profile;getProfileByName;admin
