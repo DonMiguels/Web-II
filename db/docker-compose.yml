@@ -1,59 +1,41 @@
-version: '3.8'
-
 services:
-  db:
+  postgres:
     image: postgres:16
-    container_name: webii_db
-    environment:
-      POSTGRES_DB: webii
-      POSTGRES_USER: webii_user
-      POSTGRES_PASSWORD: webii_pass
+    container_name: uni_postgres
+    restart: unless-stopped
+    env_file: .env
     ports:
-      - '5436:5432'
+      - "127.0.0.1:5432:5432"
     volumes:
-      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./restore.sql/initial_data.sql:/docker-entrypoint-initdb.d/02-data.sql
-      - ./backups:/backups
-      - postgres_data:/var/lib/postgresql/data
+      - ./pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} -h localhost',
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  db_ready:
-    image: postgres:16
-    container_name: webii_db_ready
-    depends_on:
-      - db
+  backups:
+    image: prodrigestivill/postgres-backup-local:latest
+    container_name: uni_pg_backups
+    restart: unless-stopped
+    env_file: .env
     environment:
-      POSTGRES_DB: webii
-      POSTGRES_USER: webii_user
-      POSTGRES_PASSWORD: webii_pass
-    command: >
-      bash -c "
-        until pg_isready -h db -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do
-          echo 'Esperando a que la base de datos esté lista...';
-          sleep 2;
-        done;
-        echo 'Base de datos lista, actualizada y en ejecución.';
-      "
-    restart: 'no'
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: webii_pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - '5050:80'
+      POSTGRES_CLUSTER: "TRUE"
+      POSTGRES_DB: "postgres"
+      POSTGRES_EXTRA_OPTS: "--clean --if-exists"
+
+      BACKUP_ON_START: "TRUE"
+
+      BACKUP_KEEP_DAYS: 7
+      SCHEDULE: "@daily"
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - ./backups:/backups
     depends_on:
-      - db
-
-volumes:
-  postgres_data:
+      - postgres
