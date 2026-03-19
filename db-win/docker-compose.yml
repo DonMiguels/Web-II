@@ -15,6 +15,24 @@ services:
       timeout: 5s
       retries: 5
 
+  db_init:
+    image: postgres:16
+    container_name: uni_db_init
+    env_file: .env
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./init.sql:/init.sql:ro
+    command:
+      - sh
+      - -c
+      - |
+        psql -h postgres -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" -f /init.sql
+    restart: "no"
+
   backups:
     image: prodrigestivill/postgres-backup-local:latest
     container_name: uni_pg_backups
@@ -40,3 +58,5 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      db_init:
+        condition: service_completed_successfully

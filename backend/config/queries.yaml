@@ -166,7 +166,7 @@
     orderArray: []
   },
   'ensureTransactionSerial': {
-    query: 'DO $$ BEGIN CREATE SEQUENCE IF NOT EXISTS public.transaction_nu_seq AS INTEGER START WITH 1 INCREMENT BY 1; PERFORM setval(''public.transaction_nu_seq'', COALESCE((SELECT MAX(transaction_nu) FROM public."transaction"), 0) + 1, false); ALTER TABLE public."transaction" ALTER COLUMN transaction_nu SET DEFAULT nextval(''public.transaction_nu_seq''); END $$;',
+    query: 'DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ''public'' AND table_name = ''transaction'' AND column_name = ''transaction_nu'') THEN CREATE SEQUENCE IF NOT EXISTS public.transaction_nu_seq AS INTEGER START WITH 1 INCREMENT BY 1; PERFORM setval(''public.transaction_nu_seq'', COALESCE((SELECT MAX(transaction_nu) FROM public."transaction"), 0) + 1, false); ALTER TABLE public."transaction" ALTER COLUMN transaction_nu SET DEFAULT nextval(''public.transaction_nu_seq''); END IF; END $$;',
     structure_params: {},
     orderArray: []
   },
