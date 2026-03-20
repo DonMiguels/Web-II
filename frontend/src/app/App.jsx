@@ -5,7 +5,10 @@ import {
   ResetPassword, 
   Dashboard, 
   NotFound, 
-  Reports 
+  Reports,
+  Notifications,
+  Permissions,
+  AssignProfile 
 } from "@/pages"; 
 
 import { AuthProvider } from "@/context";
@@ -23,6 +26,9 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/settings/permissions" element={<Permissions />} />
+          <Route path="/settings/profiles" element={<AssignProfile />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
@@ -30,4 +36,5 @@ function App() {
     </AuthProvider>
   );
 }
+
 export default App;
