@@ -1,178 +1,197 @@
 {
   'getUserProfiles': {
-    query: 'SELECT u.id AS user_id, u.username, p.id AS profile_id, p.name AS profile_name FROM public."user" u JOIN public."user_profile" up ON u.id = up.id_user JOIN public."profile" p ON up.id_profile = p.id WHERE u.username = $1;',
-      structure_params: { username: 'string' },
-      orderArray: ['username']
+    query: 'SELECT u.id AS user_id, u.name AS username, p.id AS profile_id, p.name AS profile_name FROM public."user" u JOIN public."user_profile" up ON u.id = up.user_id JOIN public."profile" p ON up.profile_id = p.id WHERE u.name = $1;',
+    structure_params: { username: 'string' },
+    orderArray: ['username']
   },
   'getUsersProfiles': {
-    query: 'SELECT u.id AS user_id, u.username, p.id AS profile_id, p.name AS profile_name FROM public."user" u JOIN public."user_profile" up ON u.id = up.id_user JOIN public."profile" p ON up.id_profile = p.id',
-      structure_params: { },
-      orderArray: []
+    query: 'SELECT u.id AS user_id, u.name AS username, p.id AS profile_id, p.name AS profile_name FROM public."user" u JOIN public."user_profile" up ON u.id = up.user_id JOIN public."profile" p ON up.profile_id = p.id;',
+    structure_params: {},
+    orderArray: []
   },
   'delUserProfile': {
-    query: 'DELETE FROM public."user_profile" WHERE id_user = (SELECT id FROM public."user" WHERE username = $1) AND id_profile = (SELECT id FROM public."profile" WHERE name = $2);',
-      structure_params: { username: 'string', profile_name: 'string' },
-      orderArray: ['username', 'profile_name']
+    query: 'DELETE FROM public."user_profile" WHERE user_id = (SELECT id FROM public."user" WHERE name = $1) AND profile_id = (SELECT id FROM public."profile" WHERE name = $2);',
+    structure_params: { username: 'string', profile_name: 'string' },
+    orderArray: ['username', 'profile_name']
   },
   'getProfileOptions': {
-    query: 'SELECT p.id AS profile_id, p.name AS profile_name, o.id AS option_id, o.name AS option_name FROM public."profile" p JOIN public."option_profile" op ON p.id = op.id_profile JOIN public."option" o ON op.id_option = o.id WHERE p.name = $1;',
-      structure_params: { profile_name: 'string' },
-      orderArray: ['profile_name']
+    query: 'SELECT p.id AS profile_id, p.name AS profile_name, o.id AS option_id, o.name AS option_name FROM public."profile" p JOIN public."option_profile" op ON p.id = op.profile_id JOIN public."option" o ON op.option_id = o.id WHERE p.name = $1;',
+    structure_params: { profile_name: 'string' },
+    orderArray: ['profile_name']
   },
   'getProfilesOptions': {
-    query: 'SELECT p.id AS profile_id, p.name AS profile_name, o.id AS option_id, o.name AS option_name FROM public."profile" p JOIN public."option_profile" op ON p.id = op.id_profile JOIN public."option" o ON op.id_option = o.id',
-    structure_params: { },
+    query: 'SELECT p.id AS profile_id, p.name AS profile_name, o.id AS option_id, o.name AS option_name FROM public."profile" p JOIN public."option_profile" op ON p.id = op.profile_id JOIN public."option" o ON op.option_id = o.id;',
+    structure_params: {},
     orderArray: []
   },
   'delProfileOption': {
-    query: 'DELETE FROM public."option_profile" WHERE id_option = (SELECT id FROM public."option" WHERE name = $1) AND id_profile = (SELECT id FROM public."profile" WHERE name = $2);',
-      structure_params: { option_name: 'string', profile_name: 'string' },
-      orderArray: ['option_name', 'profile_name']
+    query: 'DELETE FROM public."option_profile" WHERE option_id = (SELECT id FROM public."option" WHERE name = $1) AND profile_id = (SELECT id FROM public."profile" WHERE name = $2);',
+    structure_params: { option_name: 'string', profile_name: 'string' },
+    orderArray: ['option_name', 'profile_name']
   },
   'getMenuOptions': {
-    query: 'SELECT m.id AS menu_id, m.name AS menu_name, o.id AS option_id, o.name AS option_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.id_menu JOIN public."option" o ON om.id_option = o.id WHERE m.name = $1;',
-      structure_params: { menu_name: 'string' },
-      orderArray: ['menu_name']
+    query: 'SELECT m.id AS menu_id, m.name AS menu_name, o.id AS option_id, o.name AS option_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.menu_id JOIN public."option" o ON om.option_id = o.id WHERE m.name = $1;',
+    structure_params: { menu_name: 'string' },
+    orderArray: ['menu_name']
   },
   'getMenusOptions': {
-    query: 'SELECT m.id AS menu_id, m.name AS menu_name, o.id AS option_id, o.name AS option_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.id_menu JOIN public."option" o ON om.id_option = o.id',
-    structure_params: { },
+    query: 'SELECT m.id AS menu_id, m.name AS menu_name, o.id AS option_id, o.name AS option_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.menu_id JOIN public."option" o ON om.option_id = o.id;',
+    structure_params: {},
     orderArray: []
   },
   'delMenuOption': {
-    query: 'DELETE FROM public."option_menu" WHERE id_option = (SELECT id FROM public."option" WHERE name = $1) AND id_menu = (SELECT id FROM public."menu" WHERE name = $2);',
-      structure_params: { option_name: 'string', menu_name: 'string' },
-      orderArray: ['option_name', 'menu_name']
+    query: 'DELETE FROM public."option_menu" WHERE option_id = (SELECT id FROM public."option" WHERE name = $1) AND menu_id = (SELECT id FROM public."menu" WHERE name = $2);',
+    structure_params: { option_name: 'string', menu_name: 'string' },
+    orderArray: ['option_name', 'menu_name']
   },
   'getMenuOptionsProfile': {
-    query: 'SELECT m.id_parent, m.id AS menu_id, m.name AS menu_name, o.tx, o.id AS option_id, o.name AS option_name, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.id_menu JOIN public."option" o ON om.id_option = o.id JOIN public."option_profile" op ON o.id = op.id_option JOIN public."profile" p ON op.id_profile = p.id WHERE m.name = $1 AND p.name = $2;',
-      structure_params: { menu_name: 'string', profile_name: 'string' },
-      orderArray: ['menu_name', 'profile_name']
+    query: 'SELECT NULL::BIGINT AS id_parent, m.id AS menu_id, m.name AS menu_name, NULL::TEXT AS tx, o.id AS option_id, o.name AS option_name, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.menu_id JOIN public."option" o ON om.option_id = o.id JOIN public."option_profile" op ON o.id = op.option_id JOIN public."profile" p ON op.profile_id = p.id WHERE m.name = $1 AND p.name = $2;',
+    structure_params: { menu_name: 'string', profile_name: 'string' },
+    orderArray: ['menu_name', 'profile_name']
   },
   'getMenusOptionsProfile': {
-    query: 'SELECT m.id_parent, m.id AS menu_id, m.name AS menu_name, o.tx, o.id AS option_id, o.name AS option_name, o.description, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.id_menu JOIN public."option" o ON om.id_option = o.id JOIN public."option_profile" op ON o.id = op.id_option JOIN public."profile" p ON op.id_profile = p.id WHERE p.name = $1;',
-      structure_params: { profile_name: 'string' },
-      orderArray: ['profile_name']
+    query: 'SELECT NULL::BIGINT AS id_parent, m.id AS menu_id, m.name AS menu_name, NULL::TEXT AS tx, o.id AS option_id, o.name AS option_name, o.description, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.menu_id JOIN public."option" o ON om.option_id = o.id JOIN public."option_profile" op ON o.id = op.option_id JOIN public."profile" p ON op.profile_id = p.id WHERE p.name = $1;',
+    structure_params: { profile_name: 'string' },
+    orderArray: ['profile_name']
   },
   'getMenusOptionsProfiles': {
-    query: 'SELECT m.id_parent, m.id AS menu_id, m.name AS menu_name, o.tx, o.id AS option_id, o.name AS option_name, o.description, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.id_menu JOIN public."option" o ON om.id_option = o.id JOIN public."option_profile" op ON o.id = op.id_option JOIN public."profile" p ON op.id_profile = p.id',
-    structure_params: { },
+    query: 'SELECT NULL::BIGINT AS id_parent, m.id AS menu_id, m.name AS menu_name, NULL::TEXT AS tx, o.id AS option_id, o.name AS option_name, o.description, p.id AS profile_id, p.name AS profile_name FROM public."menu" m JOIN public."option_menu" om ON m.id = om.menu_id JOIN public."option" o ON om.option_id = o.id JOIN public."option_profile" op ON o.id = op.option_id JOIN public."profile" p ON op.profile_id = p.id;',
+    structure_params: {},
     orderArray: []
   },
   'getProfileMethods': {
-    query: 'SELECT p.id AS profile_id, p.name AS profile_name, m.id AS method_id, m.name AS method_name FROM public."profile" p JOIN public."method_profile" mp ON p.id = mp.id_profile JOIN public."method" m ON mp.id_method = m.id WHERE p.name = $1;',
-      structure_params: { profile_name: 'string' },
-      orderArray: ['profile_name']
+    query: 'SELECT p.id AS profile_id, p.name AS profile_name, m.id AS method_id, m.name AS method_name FROM public."profile" p JOIN public."method_profile" mp ON p.id = mp.profile_id JOIN public."method" m ON mp.method_id = m.id WHERE p.name = $1;',
+    structure_params: { profile_name: 'string' },
+    orderArray: ['profile_name']
   },
   'getProfilesMethods': {
-    query: 'SELECT p.id AS profile_id, p.name AS profile_name, m.id AS method_id, m.name AS method_name FROM public."profile" p JOIN public."method_profile" mp ON p.id = mp.id_profile JOIN public."method" m ON mp.id_method = m.id',
-    structure_params: { },
+    query: 'SELECT p.id AS profile_id, p.name AS profile_name, m.id AS method_id, m.name AS method_name FROM public."profile" p JOIN public."method_profile" mp ON p.id = mp.profile_id JOIN public."method" m ON mp.method_id = m.id;',
+    structure_params: {},
     orderArray: []
   },
   'delProfileMethod': {
-    query: 'DELETE FROM public."method_profile" WHERE id_method = (SELECT id FROM public."method" WHERE name = $1) AND id_profile = (SELECT id FROM public."profile" WHERE name = $2);',
-      structure_params: { method_name: 'string', profile_name: 'string' },
-      orderArray: ['method_name', 'profile_name']
+    query: 'DELETE FROM public."method_profile" WHERE method_id = (SELECT id FROM public."method" WHERE name = $1) AND profile_id = (SELECT id FROM public."profile" WHERE name = $2);',
+    structure_params: { method_name: 'string', profile_name: 'string' },
+    orderArray: ['method_name', 'profile_name']
   },
   'getClassMethods': {
-    query: 'SELECT c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."class" c JOIN public."class_method" cm ON c.id = cm.id_class JOIN public."method" m ON cm.id_method = m.id WHERE c.name = $1;',
-      structure_params: { class_name: 'string' },
-      orderArray: ['class_name']
+    query: 'SELECT c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."class" c JOIN public."class_method" cm ON c.id = cm.class_id JOIN public."method" m ON cm.method_id = m.id WHERE c.name = $1;',
+    structure_params: { class_name: 'string' },
+    orderArray: ['class_name']
   },
   'getClassesMethods': {
-    query: 'SELECT c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."class" c JOIN public."class_method" cm ON c.id = cm.id_class JOIN public."method" m ON cm.id_method = m.id',
-    structure_params: { },
+    query: 'SELECT c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."class" c JOIN public."class_method" cm ON c.id = cm.class_id JOIN public."method" m ON cm.method_id = m.id;',
+    structure_params: {},
     orderArray: []
   },
   'delClassMethod': {
-    query: 'DELETE FROM public."class_method" WHERE id_class = (SELECT id FROM public."class" WHERE name = $1) AND id_method = (SELECT id FROM public."method" WHERE name = $2);',
-      structure_params: { class_name: 'string', method_name: 'string' },
-      orderArray: ['class_name', 'method_name']
+    query: 'DELETE FROM public."class_method" WHERE class_id = (SELECT id FROM public."class" WHERE name = $1) AND method_id = (SELECT id FROM public."method" WHERE name = $2);',
+    structure_params: { class_name: 'string', method_name: 'string' },
+    orderArray: ['class_name', 'method_name']
   },
   'getSubsystemClassesMethods': {
-    query: 'SELECT s.id AS subsystem_id, s.name AS subsystem_name, c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."subsystem" s JOIN public."subsystem_class" sc ON s.id = sc.id_subsystem JOIN public."class" c ON sc.id_class = c.id JOIN public."class_method" cm ON c.id = cm.id_class JOIN public."method" m ON cm.id_method = m.id WHERE s.name = $1;',
-      structure_params: { subsystem_name: 'string' },
-      orderArray: ['subsystem_name']
+    query: 'SELECT s.id AS subsystem_id, s.name AS subsystem_name, c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."subsystem" s JOIN public."subsystem_class" sc ON s.id = sc.subsystem_id JOIN public."class" c ON sc.class_id = c.id JOIN public."class_method" cm ON c.id = cm.class_id JOIN public."method" m ON cm.method_id = m.id WHERE s.name = $1;',
+    structure_params: { subsystem_name: 'string' },
+    orderArray: ['subsystem_name']
+  },
+  'getSubsystemsClassesMethods': {
+    query: 'SELECT s.id AS subsystem_id, s.name AS subsystem_name, c.id AS class_id, c.name AS class_name, m.id AS method_id, m.name AS method_name FROM public."subsystem" s JOIN public."subsystem_class" sc ON s.id = sc.subsystem_id JOIN public."class" c ON sc.class_id = c.id JOIN public."class_method" cm ON c.id = cm.class_id JOIN public."method" m ON cm.method_id = m.id;',
+    structure_params: {},
+    orderArray: []
   },
   'registerUser': {
-    query: 'INSERT INTO public."user" (user_na, user_pw, user_sol, person_id) VALUES ($1, $2, true, $3) RETURNING user_id AS id, user_na AS username, person_id;'
-    ,structure_params: { username: 'string', password: 'string', person_id: 'int' }
-    ,orderArray: ['username', 'password', 'person_id']
-  }
-  ,
+    query: 'INSERT INTO public."user" (name, email, password_hash, is_solvency, person_id) VALUES ($1, (SELECT NULLIF(TRIM(address), '''') FROM public.person WHERE id = $3), $2, TRUE, $3) RETURNING id, name AS username, person_id;',
+    structure_params: { username: 'string', password: 'string', person_id: 'int' },
+    orderArray: ['username', 'password', 'person_id']
+  },
   'getUserById': {
-    query: 'SELECT u.user_id AS id, u.user_na AS username, p.person_em AS email, p.person_na AS name FROM public."user" u LEFT JOIN public.person p ON u.person_id = p.person_id WHERE u.user_id = $1;'
-    ,structure_params: { id: 'int' }
-    ,orderArray: ['id']
-  }
-  ,
+    query: 'SELECT u.id AS id, u.name AS username, u.email AS email, p.first_name AS name FROM public."user" u LEFT JOIN public.person p ON u.person_id = p.id WHERE u.id = $1;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
   'updateUserPasswordByUsername': {
-    query: 'UPDATE public."user" SET user_pw = $1 WHERE user_na = $2 RETURNING user_id AS id, user_na AS username;'
-    ,structure_params: { password: 'string', username: 'string' }
-    ,orderArray: ['password', 'username']
-  }
-  ,
+    query: 'UPDATE public."user" SET password_hash = $1 WHERE name = $2 RETURNING id, name AS username;',
+    structure_params: { password: 'string', username: 'string' },
+    orderArray: ['password', 'username']
+  },
   'countUserByEmail': {
-    query: 'SELECT COUNT(*) AS count FROM public.person WHERE person_em = $1;'
-    ,structure_params: { email: 'string' }
-    ,orderArray: ['email']
-  }
-  ,
+    query: 'SELECT COUNT(*) AS count FROM public."user" WHERE email = $1;',
+    structure_params: { email: 'string' },
+    orderArray: ['email']
+  },
   'countUserByUsername': {
-    query: 'SELECT COUNT(*) AS count FROM public."user" WHERE user_na = $1;'
-    ,structure_params: { username: 'string' }
-    ,orderArray: ['username']
-  }
-  ,
+    query: 'SELECT COUNT(*) AS count FROM public."user" WHERE name = $1;',
+    structure_params: { username: 'string' },
+    orderArray: ['username']
+  },
   'getUser': {
-    query: 'SELECT u.user_id AS id, u.user_na AS username, u.user_pw AS password, p.person_em AS email, p.person_na AS name, p.person_ln AS lastname, p.person_ci AS ci FROM public."user" u LEFT JOIN public.person p ON u.person_id = p.person_id WHERE u.user_na = $1',
+    query: 'SELECT u.id AS id, u.name AS username, u.password_hash AS password, u.email AS email, p.first_name AS name, p.last_name AS lastname, p.document_id AS ci FROM public."user" u LEFT JOIN public.person p ON u.person_id = p.id WHERE u.name = $1;',
     structure_params: { username: 'string' },
     orderArray: ['username']
   },
   'getUserByEmail': {
-    query: 'SELECT u.user_id AS id, u.user_na AS username, u.user_pw AS password, p.person_em AS email, p.person_na AS name, p.person_ln AS lastname, p.person_ci AS ci FROM public."user" u JOIN public.person p ON u.person_id = p.person_id WHERE p.person_em = $1;',
+    query: 'SELECT u.id AS id, u.name AS username, u.password_hash AS password, u.email AS email, p.first_name AS name, p.last_name AS lastname, p.document_id AS ci FROM public."user" u LEFT JOIN public.person p ON u.person_id = p.id WHERE u.email = $1;',
     structure_params: { email: 'string' },
     orderArray: ['email']
   },
   'updateUserPassword': {
-    query: 'UPDATE public."user" SET user_pw = $1 WHERE user_id = $2 RETURNING user_id AS id, user_na AS username;',
+    query: 'UPDATE public."user" SET password_hash = $1 WHERE id = $2 RETURNING id, name AS username;',
     structure_params: { password: 'string', userId: 'int' },
     orderArray: ['password', 'userId']
   },
   'insertPerson': {
-    query: 'INSERT INTO public.person (person_ci, person_na, person_ln, person_em, person_ph) VALUES ($1, $2, $3, $4, $5) RETURNING person_id;',
+    query: 'INSERT INTO public.person (document_id, first_name, last_name, phone, address) VALUES ($1, $2, $3, $5, $4) RETURNING id AS person_id;',
     structure_params: { ci: 'string', name: 'string', lastname: 'string', email: 'string', phone: 'string' },
     orderArray: ['ci', 'name', 'lastname', 'email', 'phone']
   },
   'insertUserProfile': {
-    query: 'INSERT INTO public.user_profile (user_id, profile_id) VALUES ($1, $2) RETURNING user_profile_id;'
-    ,structure_params: { user_id: 'int', profile_id: 'int' }
-    ,orderArray: ['user_id', 'profile_id']
+    query: 'INSERT INTO public.user_profile (user_id, profile_id) VALUES ($1, $2) RETURNING id AS user_profile_id;',
+    structure_params: { user_id: 'int', profile_id: 'int' },
+    orderArray: ['user_id', 'profile_id']
   },
   'getProfileByName': {
-    query: 'SELECT profile_id, profile_de FROM public.profile WHERE profile_de = $1;'
-    ,structure_params: { profile_name: 'string' }
-    ,orderArray: ['profile_name']
-  }
-  ,
+    query: 'SELECT id AS profile_id, name AS profile_de FROM public.profile WHERE name = $1;',
+    structure_params: { profile_name: 'string' },
+    orderArray: ['profile_name']
+  },
   'insertProfile': {
-    query: 'INSERT INTO public.profile (profile_de) VALUES ($1) RETURNING profile_id, profile_de;',
+    query: 'INSERT INTO public.profile (name) VALUES ($1) RETURNING id AS profile_id, name AS profile_de;',
     structure_params: { profile_name: 'string' },
     orderArray: ['profile_name']
   },
   'getPermissions': {
-    query: 'SELECT DISTINCT s.subsystem_na AS sub_system, c.class_na AS class_name, m.method_na AS method_name, p.profile_de AS profile_name FROM public.method_profile mp JOIN public.method m ON m.method_id = mp.method_id JOIN public.method_class mc ON mc.method_id = m.method_id JOIN public."class" c ON c.class_id = mc.class_id JOIN public.class_subsystem cs ON cs.class_id = c.class_id JOIN public.subsystem s ON s.subsystem_id = cs.subsystem_id JOIN public.profile p ON p.profile_id = mp.profile_id ORDER BY s.subsystem_na, c.class_na, m.method_na, p.profile_de;',
+    query: 'SELECT DISTINCT s.name AS sub_system, c.name AS class_name, m.name AS method_name, p.name AS profile_name FROM public.method_profile mp JOIN public.method m ON m.id = mp.method_id JOIN public.class_method cm ON cm.method_id = m.id JOIN public."class" c ON c.id = cm.class_id JOIN public.subsystem_class sc ON sc.class_id = c.id JOIN public.subsystem s ON s.id = sc.subsystem_id JOIN public.profile p ON p.id = mp.profile_id ORDER BY s.name, c.name, m.name, p.name;',
     structure_params: {},
     orderArray: []
   },
   'ensureTransactionSerial': {
-    query: 'DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = ''public'' AND table_name = ''transaction'' AND column_name = ''transaction_nu'') THEN CREATE SEQUENCE IF NOT EXISTS public.transaction_nu_seq AS INTEGER START WITH 1 INCREMENT BY 1; PERFORM setval(''public.transaction_nu_seq'', COALESCE((SELECT MAX(transaction_nu) FROM public."transaction"), 0) + 1, false); ALTER TABLE public."transaction" ALTER COLUMN transaction_nu SET DEFAULT nextval(''public.transaction_nu_seq''); END IF; END $$;',
+    query: 'SELECT 1;',
     structure_params: {},
     orderArray: []
   },
   'insertPermission': {
-    query: 'WITH ins_subsystem AS (INSERT INTO public.subsystem (subsystem_na) SELECT $1 WHERE NOT EXISTS (SELECT 1 FROM public.subsystem WHERE subsystem_na = $1)), sel_subsystem AS (SELECT subsystem_id FROM public.subsystem WHERE subsystem_na = $1 ORDER BY subsystem_id LIMIT 1), ins_class AS (INSERT INTO public."class" (class_na) SELECT $2 WHERE NOT EXISTS (SELECT 1 FROM public."class" WHERE class_na = $2)), sel_class AS (SELECT class_id FROM public."class" WHERE class_na = $2 ORDER BY class_id LIMIT 1), link_class_subsystem AS (INSERT INTO public.class_subsystem (class_id, subsystem_id) SELECT c.class_id, s.subsystem_id FROM sel_class c CROSS JOIN sel_subsystem s ON CONFLICT (class_id, subsystem_id) DO NOTHING), ins_method AS (INSERT INTO public.method (method_na) SELECT $3 WHERE NOT EXISTS (SELECT 1 FROM public.method WHERE method_na = $3)), sel_method AS (SELECT method_id FROM public.method WHERE method_na = $3 ORDER BY method_id LIMIT 1), link_method_class AS (INSERT INTO public.method_class (method_id, class_id) SELECT m.method_id, c.class_id FROM sel_method m CROSS JOIN sel_class c ON CONFLICT (method_id, class_id) DO NOTHING), ins_profile AS (INSERT INTO public.profile (profile_de) SELECT $4 WHERE NOT EXISTS (SELECT 1 FROM public.profile WHERE profile_de = $4)), sel_profile AS (SELECT profile_id FROM public.profile WHERE profile_de = $4 ORDER BY profile_id LIMIT 1), link_method_profile AS (INSERT INTO public.method_profile (method_id, profile_id) SELECT m.method_id, p.profile_id FROM sel_method m CROSS JOIN sel_profile p ON CONFLICT (profile_id, method_id) DO NOTHING), ins_transaction AS (INSERT INTO public."transaction" (transaction_nu, method_id, class_id, subsystem_id) SELECT nextval(''public.transaction_nu_seq''), m.method_id, c.class_id, s.subsystem_id FROM sel_method m CROSS JOIN sel_class c CROSS JOIN sel_subsystem s WHERE NOT EXISTS (SELECT 1 FROM public."transaction" t WHERE t.method_id = m.method_id AND t.class_id = c.class_id AND t.subsystem_id = s.subsystem_id)) SELECT s.subsystem_id, c.class_id, m.method_id, p.profile_id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m CROSS JOIN sel_profile p;',
+    query: 'WITH ins_subsystem AS (INSERT INTO public.subsystem (name) SELECT $1::text WHERE NOT EXISTS (SELECT 1 FROM public.subsystem WHERE name = $1::text) RETURNING id), sel_subsystem AS (SELECT id FROM ins_subsystem UNION ALL SELECT id FROM public.subsystem WHERE name = $1::text ORDER BY id LIMIT 1), ins_class AS (INSERT INTO public."class" (name) SELECT $2::text WHERE NOT EXISTS (SELECT 1 FROM public."class" WHERE name = $2::text) RETURNING id), sel_class AS (SELECT id FROM ins_class UNION ALL SELECT id FROM public."class" WHERE name = $2::text ORDER BY id LIMIT 1), link_subsystem_class AS (INSERT INTO public.subsystem_class (subsystem_id, class_id) SELECT s.id, c.id FROM sel_subsystem s CROSS JOIN sel_class c ON CONFLICT (subsystem_id, class_id) DO NOTHING), ins_method AS (INSERT INTO public."method" (name) SELECT $3::text WHERE NOT EXISTS (SELECT 1 FROM public."method" WHERE name = $3::text) RETURNING id), sel_method AS (SELECT id FROM ins_method UNION ALL SELECT id FROM public."method" WHERE name = $3::text ORDER BY id LIMIT 1), link_class_method AS (INSERT INTO public.class_method (class_id, method_id) SELECT c.id, m.id FROM sel_class c CROSS JOIN sel_method m ON CONFLICT (class_id, method_id) DO NOTHING), ins_profile AS (INSERT INTO public.profile (name) SELECT $4::text WHERE NOT EXISTS (SELECT 1 FROM public.profile WHERE name = $4::text) RETURNING id), sel_profile AS (SELECT id FROM ins_profile UNION ALL SELECT id FROM public.profile WHERE name = $4::text ORDER BY id LIMIT 1), link_method_profile AS (INSERT INTO public.method_profile (method_id, profile_id) SELECT m.id, p.id FROM sel_method m CROSS JOIN sel_profile p ON CONFLICT (method_id, profile_id) DO NOTHING), ins_transaction AS (INSERT INTO public."transaction" (subsystem_id, class_id, method_id) SELECT s.id, c.id, m.id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m WHERE NOT EXISTS (SELECT 1 FROM public."transaction" t WHERE t.method_id = m.id AND t.class_id = c.id AND t.subsystem_id = s.id)) SELECT s.id AS subsystem_id, c.id AS class_id, m.id AS method_id, p.id AS profile_id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m CROSS JOIN sel_profile p;',
     structure_params: { sub_system: 'string', class_name: 'string', method_name: 'string', profile_name: 'string' },
     orderArray: ['sub_system', 'class_name', 'method_name', 'profile_name']
+  },
+  'createEvento': {
+    query: 'WITH ensure_user AS (INSERT INTO public."user" (name, password_hash, is_solvency, is_active) SELECT ''system_event_bot'', ''system_event_bot_hash'', TRUE, TRUE WHERE NOT EXISTS (SELECT 1 FROM public."user" WHERE name = ''system_event_bot'') RETURNING id), sel_user AS (SELECT id FROM ensure_user UNION ALL SELECT id FROM public."user" WHERE name = ''system_event_bot'' ORDER BY id LIMIT 1), sel_type AS (SELECT id FROM public.notification_type WHERE name = ''info'' ORDER BY id LIMIT 1) INSERT INTO public.notification (title, message, sent_at, is_read, user_id, type_id) SELECT $1, jsonb_build_object(''descripcion'', $2::text, ''fecha'', $3::text, ''hora'', $4::text, ''costo'', $5::numeric, ''capacidad'', $6::int, ''visibilidad'', $7::text, ''lugar'', $8::text)::text, (to_date($3::text, ''YYYY-MM-DD'') + ($4::text)::time)::timestamptz, FALSE, (SELECT id FROM sel_user LIMIT 1), (SELECT id FROM sel_type LIMIT 1) RETURNING id, title AS name, message AS descripcion, sent_at;',
+    structure_params: { name: 'string', descripcion: 'string', fecha: 'string', hora: 'string', costo: 'float', capacidad: 'int', visibilidad: 'string', lugar: 'string' },
+    orderArray: ['name', 'descripcion', 'fecha', 'hora', 'costo', 'capacidad', 'visibilidad', 'lugar']
+  },
+  'updateEvents': {
+    query: 'UPDATE public.notification SET title = $1, message = jsonb_build_object(''descripcion'', $2::text, ''fecha'', $3::text, ''hora'', $4::text, ''costo'', $5::numeric, ''capacidad'', $6::int, ''visibilidad'', $7::text, ''lugar'', $8::text)::text, sent_at = (to_date($3::text, ''YYYY-MM-DD'') + ($4::text)::time)::timestamptz WHERE id = $9 RETURNING id, title AS name, message AS descripcion, sent_at;',
+    structure_params: { name: 'string', descripcion: 'string', fecha: 'string', hora: 'string', costo: 'float', capacidad: 'int', visibilidad: 'string', lugar: 'string', id: 'int' },
+    orderArray: ['name', 'descripcion', 'fecha', 'hora', 'costo', 'capacidad', 'visibilidad', 'lugar', 'id']
+  },
+  'deleteEvent': {
+    query: 'DELETE FROM public.notification WHERE id = $1 RETURNING id;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'list_event': {
+    query: 'SELECT n.id, n.title AS name, n.message::jsonb ->> ''descripcion'' AS descripcion, n.message::jsonb ->> ''fecha'' AS fecha, n.message::jsonb ->> ''hora'' AS hora, (n.message::jsonb ->> ''costo'')::numeric AS costo, (n.message::jsonb ->> ''capacidad'')::int AS capacidad, n.message::jsonb ->> ''visibilidad'' AS visibilidad, n.message::jsonb ->> ''lugar'' AS lugar FROM public.notification n JOIN public."user" u ON u.id = n.user_id WHERE u.name = ''system_event_bot'' ORDER BY n.id DESC;',
+    structure_params: {},
+    orderArray: []
   }
 }
