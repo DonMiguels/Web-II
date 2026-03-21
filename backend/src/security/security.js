@@ -1,16 +1,16 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Utils from '../src/utils/utils.js';
-import DBMS from '../src/dbms/dbms.js';
+import Utils from '../utils/utils.js';
+import DBMS from '../dbms/dbms.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default class SecurityService {
+export default class Security {
   static instance;
 
   constructor() {
-    if (SecurityService.instance) return SecurityService.instance;
+    if (Security.instance) return Security.instance;
 
     this.permissions = new Map();
     this.userProfiles = new Map();
@@ -18,7 +18,7 @@ export default class SecurityService {
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
     this.reflect = Reflect;
-    SecurityService.instance = this;
+    Security.instance = this;
   }
 
   normalizePermission(permission = {}) {
@@ -29,7 +29,7 @@ export default class SecurityService {
       class: normalize(permission.class ?? permission.class_name),
       method: normalize(permission.method ?? permission.method_name),
       profile: normalize(permission.profile ?? permission.profile_name),
-      parameter: permission.parameter
+      parameter: permission.parameter,
     };
   }
 
@@ -69,10 +69,10 @@ export default class SecurityService {
     }
 
     this.permissions = new Map(dbPermissions);
-    
+
     // Sincronizar perfiles de usuario
     await this.syncUserProfiles();
-    
+
     return this.permissions;
   }
 
@@ -140,9 +140,13 @@ export default class SecurityService {
 
     const profiles = new Map();
     for (const row of res?.rows ?? []) {
-      const userId = String(row.user_id || row.username).trim().toLowerCase();
-      const profileName = String(row.profile_name || row.profile).trim().toLowerCase();
-      
+      const userId = String(row.user_id || row.username)
+        .trim()
+        .toLowerCase();
+      const profileName = String(row.profile_name || row.profile)
+        .trim()
+        .toLowerCase();
+
       if (!profiles.has(userId)) {
         profiles.set(userId, new Set());
       }
@@ -156,7 +160,7 @@ export default class SecurityService {
   hasUserProfile(userId, profile) {
     const normalizedUserId = String(userId).trim().toLowerCase();
     const normalizedProfile = String(profile).trim().toLowerCase();
-    
+
     const userProfiles = this.userProfiles.get(normalizedUserId);
     return userProfiles ? userProfiles.has(normalizedProfile) : false;
   }
@@ -189,16 +193,16 @@ export default class SecurityService {
       // Construir la ruta al archivo del método
       const methodPath = path.resolve(
         __dirname,
-        `../method/${permission.class.toLowerCase()}/${permission.method.toLowerCase()}.js`
+        `../method/${permission.class.toLowerCase()}/${permission.method.toLowerCase()}.js`,
       );
 
       // Importar dinámicamente el módulo del método
       const methodModule = await import(methodPath);
-      
+
       // Obtener la función del método exportado
       const methodName = permission.method;
       const methodFunction = methodModule[methodName];
-      
+
       if (!methodFunction || typeof methodFunction !== 'function') {
         throw new Error(`Method ${methodName} not found in ${methodPath}`);
       }
@@ -206,28 +210,28 @@ export default class SecurityService {
       // Crear contexto con dbms para el método
       const dbms = new DBMS();
       const dbmsReady = dbms.init();
-      
+
       // Crear contexto y bindear la función
       const context = {
         dbms: dbms,
-        dbmsReady: dbmsReady
+        dbmsReady: dbmsReady,
       };
-      
+
       // Ejecutar el método con el contexto y parámetros
       const boundMethod = methodFunction.bind(context);
       const result = await boundMethod(permission.parameter || {});
-      
+
       return {
         statusCode: 200,
         data: result,
-        message: 'Method executed successfully'
+        message: 'Method executed successfully',
       };
     } catch (error) {
       console.error('Error executing authorized method:', error);
       return {
         statusCode: 500,
         error: error.message,
-        message: 'Failed to execute authorized method'
+        message: 'Failed to execute authorized method',
       };
     }
   }

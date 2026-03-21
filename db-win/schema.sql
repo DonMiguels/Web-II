@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS item (
     code VARCHAR(50) NOT NULL,
     name VARCHAR(120) NOT NULL,
     description TEXT,
-    condition_status_id BIGINT NOT NULL,
+    condition_status_id BIGINT REFERENCES condition_status_type(id) ON DELETE SET NULL,
     is_consumable BOOLEAN NOT NULL DEFAULT FALSE,
     cost NUMERIC(12,2) NOT NULL DEFAULT 0,
     acquisition_date DATE,

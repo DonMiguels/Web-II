@@ -2,13 +2,14 @@ import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import Config from '../config/config.js';
+import Config from '../../config/config.js';
 import dotenv from 'dotenv';
-import userRouter from '../controller/user_controller.js';
-import personRouter from '../controller/person_controller.js';
-import profileRouter from '../controller/profile_controller.js';
-import dispatcherRouter from '../controller/dispatcher_controller.js';
-import SecurityService from './security_service.js';
+import userRouter from '../session/sessionRoutes.js';
+import Security from '../security/security.js';
+
+import personRouter from '../../controller/person_controller.js';
+import profileRouter from '../../controller/profile_controller.js';
+import dispatcherRouter from '../../controller/dispatcher_controller.js';
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ class Server {
     this.configuration();
     this.routes();
     this.config = new Config();
-    this.securityService = new SecurityService();
+    this.security = new Security();
     Server.instance = this;
   }
 
@@ -62,7 +63,7 @@ class Server {
 
   async init() {
     await this.config.init();
-    await this.securityService.syncPermissions();
+    await this.security.syncPermissions();
   }
 
   start() {

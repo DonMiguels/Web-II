@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
-import DBMS from '../src/dbms/dbms.js';
+import DBMS from '../dbms/dbms.js';
 
-class UserService {
+class Session {
   constructor() {
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
@@ -17,7 +17,7 @@ class UserService {
         params: {
           username,
           password: hashedPassword,
-          person_id
+          person_id,
         },
       });
       return res?.rows?.[0];
@@ -103,4 +103,4 @@ class UserService {
   }
 }
 
-export default UserService;
+export default Session;

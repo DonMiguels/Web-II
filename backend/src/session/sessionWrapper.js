@@ -1,12 +1,12 @@
-import Config from '../config/config.js';
+import Config from '../../config/config.js';
 
-export default class SessionService {
+export default class SessionWrapper {
   constructor() {
-    if (SessionService.instance) {
-      return SessionService.instance;
+    if (SessionWrapper.instance) {
+      return SessionWrapper.instance;
     }
     this.config = new Config();
-    SessionService.instance = this;
+    SessionWrapper.instance = this;
   }
 
   setSession(req, data = {}) {
@@ -19,7 +19,9 @@ export default class SessionService {
   }
 
   sessionExists(req) {
-    return Boolean(req?.session?.data && Object.keys(req.session.data).length > 0);
+    return Boolean(
+      req?.session?.data && Object.keys(req.session.data).length > 0,
+    );
   }
 
   async destroySession(req) {
@@ -57,6 +59,10 @@ export default class SessionService {
   }
 
   getUserId(req) {
-    return req?.session?.data?.user?.id || req?.session?.data?.user?.username || req?.session?.data?.user?.user_id;
+    return (
+      req?.session?.data?.user?.id ||
+      req?.session?.data?.user?.username ||
+      req?.session?.data?.user?.user_id
+    );
   }
 }

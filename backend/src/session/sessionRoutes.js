@@ -1,18 +1,18 @@
 import express from 'express';
 const router = express.Router();
-import UserService from '../service/user_service.js';
-const userService = new UserService();
-import SessionService from '../service/session_service.js';
-const sessionService = new SessionService();
-import Validator from '../utils/validator.js';
+import Session from './session.js';
+const session = new Session();
+import SessionWrapper from './sessionWrapper.js';
+const sessionWrapper = new SessionWrapper();
+import Validator from '../../utils/validator.js';
 const validator = new Validator();
 
-import Config from '../config/config.js';
+import Config from '../../config/config.js';
 const config = new Config();
 const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
-import Tokenizer from '../src/tokenizer/tokenizer.js';
-import Mailer from '../src/mailer/mailer.js';
+import Tokenizer from '../tokenizer/tokenizer.js';
+import Mailer from '../mailer/mailer.js';
 const tokenizer = new Tokenizer();
 const mailer = new Mailer();
 
@@ -47,8 +47,8 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    const userData = await userService.register(req.body);
-    sessionService.setSession(req, { user: userData });
+    const userData = await session.register(req.body);
+    sessionWrapper.setSession(req, { user: userData });
     res.json({
       message: getMessage(config.LANGUAGE, 'registration_success'),
       user: userData,
@@ -86,12 +86,12 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const userData = await userService.login(req.body);
+    const userData = await session.login(req.body);
     if (!userData)
       return res
         .status(STATUS_CODES.UNAUTHORIZED)
         .json({ error: getMessage(config.LANGUAGE, 'login_error') });
-    sessionService.setSession(req, { user: userData });
+    sessionWrapper.setSession(req, { user: userData });
     res.json({
       message: getMessage(config.LANGUAGE, 'login_success'),
       user: userData,
@@ -106,19 +106,19 @@ router.post('/login', async (req, res) => {
 
 // Obtener usuario actual
 router.get('/me', async (req, res) => {
-  if (!sessionService.sessionExists(req)) {
+  if (!sessionWrapper.sessionExists(req)) {
     return res
       .status(STATUS_CODES.UNAUTHORIZED)
       .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
   }
-  res.json(sessionService.getSession(req).user);
+  res.json(sessionWrapper.getSession(req).user);
 });
 
 // Recuperacion de contrasena
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body || {};
 
-  await sessionService.destroySession(req);
+  await sessionWrapper.destroySession(req);
 
   const forgotPasswordSchema = {
     email: {
@@ -136,7 +136,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 
   try {
-    const userData = await userService.getUserByEmail(email);
+    const userData = await session.getUserByEmail(email);
     if (userData) {
       const token = tokenizer.generateToken({
         id: userData.id,
@@ -168,7 +168,7 @@ router.post('/reset-password', async (req, res) => {
   const { token, password, confirmPassword } = req.body || {};
 
   // Terminar la sesion si existe
-  await sessionService.destroySession(req);
+  await sessionWrapper.destroySession(req);
 
   const resetPasswordSchema = {
     token: {
@@ -210,7 +210,7 @@ router.post('/reset-password', async (req, res) => {
   }
 
   try {
-    const userData = await userService.updatePasswordById({
+    const userData = await session.updatePasswordById({
       userId: tokenPayload.id,
       password,
     });
@@ -233,11 +233,11 @@ router.post('/reset-password', async (req, res) => {
 });
 // Logout
 router.post('/logout', async (req, res) => {
-  if (!sessionService.authenticate(req))
+  if (!sessionWrapper.authenticate(req))
     return res
       .status(STATUS_CODES.UNAUTHORIZED)
       .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
-  const result = await sessionService.destroySession(req);
+  const result = await sessionWrapper.destroySession(req);
   return res.status(result?.statusCode || STATUS_CODES.OK).json({
     message: result?.message || getMessage(config.LANGUAGE, 'logout_success'),
   });
