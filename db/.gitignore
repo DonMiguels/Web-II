@@ -6,4 +6,4 @@ backups/**
 
 # Archivos de entorno locales (opcional, recomendado)
 .env
-,env
+*.env
