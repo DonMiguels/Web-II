@@ -55,4 +55,8 @@ export default class SessionService {
   authenticate(req) {
     return Boolean(req?.session?.data?.user);
   }
+
+  getUserId(req) {
+    return req?.session?.data?.user?.id || req?.session?.data?.user?.username || req?.session?.data?.user?.user_id;
+  }
 }

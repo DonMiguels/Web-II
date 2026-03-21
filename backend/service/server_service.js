@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import userRouter from '../controller/user_controller.js';
 import personRouter from '../controller/person_controller.js';
 import profileRouter from '../controller/profile_controller.js';
+import dispatcherRouter from '../controller/dispatcher_controller.js';
 import SecurityService from './security_service.js';
 
 dotenv.config();
@@ -56,6 +57,7 @@ class Server {
     this.app.use('/person', personRouter);
     this.app.use('/user', userRouter);
     this.app.use('/profile', profileRouter);
+    this.app.use('/dispatcher', dispatcherRouter);
   }
 
   async init() {
