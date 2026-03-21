@@ -1,10 +1,10 @@
 # Datos generados por PostgreSQL (bind mount)
-pgdata/**
+pgdata/
 
 # Backups generados por el contenedor de backup
-backups/**
-pgadmin/**
-initdb/**
+backups/
+pgadmin/
+initdb/
 
 # Archivos de entorno locales (opcional, recomendado)
 .env
