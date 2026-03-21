@@ -10,7 +10,11 @@ services:
       - ./pgdata:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB',
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,6 +35,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      db_init:
+        condition: service_completed_successfully
 
   db_init:
     image: postgres:16
@@ -38,17 +44,75 @@ services:
     env_file: .env
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD}
+      RESTORE_FROM_BACKUP: ${RESTORE_FROM_BACKUP:-false}
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_started
     volumes:
-      - ./init.sql:/init.sql:ro
+      - ./schema.sql:/schema.sql:ro
+      - ./initial_data.sql:/initial_data.sql:ro
+      - ./backups:/backups:ro
     command:
       - sh
       - -c
       - |
-        psql -h postgres -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" -f /init.sql
-    restart: "no"
+        set -e
+        until pg_isready -h postgres -U "$${POSTGRES_USER}" -d postgres; do sleep 2; done
+
+        TARGET_DB="$${POSTGRES_MULTIPLE_DATABASES:-$${POSTGRES_DB}}"
+        TARGET_DB="$${TARGET_DB%%,*}"
+
+        DB_EXISTS="$$(psql -h postgres -U "$${POSTGRES_USER}" -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$${TARGET_DB}'" || true)"
+        if [ "$${DB_EXISTS}" = "1" ] && psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -Atc "SELECT to_regclass('public.category_type')" | grep -q '^category_type$'; then
+          HAS_SEED_COLUMNS="$$(psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -Atc "SELECT CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='movement_type' AND column_name='name') AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profile' AND column_name='name') THEN 1 ELSE 0 END")"
+
+          if [ "$${HAS_SEED_COLUMNS}" != "1" ]; then
+            echo "Esquema legado detectado; recreando base con schema.sql + initial_data.sql"
+            psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1 -c "DROP DATABASE IF EXISTS \"$${TARGET_DB}\" WITH (FORCE)"
+            psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"$${TARGET_DB}\""
+            psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -f /schema.sql
+            psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -f /initial_data.sql
+            exit 0
+          fi
+
+          if psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -Atc "SELECT 1 FROM movement_type WHERE name IN ('loan', 'return', 'reserve') LIMIT 1" | grep -q '^1$' && psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -Atc "SELECT 1 FROM profile WHERE name IN ('admin', 'operator', 'viewer') LIMIT 1" | grep -q '^1$'; then
+            echo "Base de datos ya inicializada con seeds base; se omite restauración"
+            exit 0
+          fi
+
+          echo "Esquema detectado sin seeds completos; cargando initial_data.sql"
+          psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -f /initial_data.sql
+          exit 0
+        fi
+
+        BACKUP_FILE=""
+        if [ "$${RESTORE_FROM_BACKUP}" = "true" ]; then
+          if [ -f /backups/last/postgres-latest.sql.gz ]; then
+            BACKUP_FILE="/backups/last/postgres-latest.sql.gz"
+          elif [ -f /backups/last/postgres-latest.sql ]; then
+            BACKUP_FILE="/backups/last/postgres-latest.sql"
+          else
+            BACKUP_FILE="$$(find /backups -type f \( -name '*.sql.gz' -o -name '*.sql' \) | sort | tail -n 1 || true)"
+          fi
+        fi
+
+        if [ -n "$${BACKUP_FILE}" ]; then
+          echo "Restaurando backup desde: $${BACKUP_FILE}"
+          case "$${BACKUP_FILE}" in
+            *.gz)
+              gunzip -c "$${BACKUP_FILE}" | sed -E "/^(DROP|CREATE|ALTER) ROLE( IF EXISTS)? \"?$${POSTGRES_USER}\"?;$/d; /^SET transaction_timeout =/d" | psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1
+              ;;
+            *)
+              sed -E "/^(DROP|CREATE|ALTER) ROLE( IF EXISTS)? \"?$${POSTGRES_USER}\"?;$/d; /^SET transaction_timeout =/d" "$${BACKUP_FILE}" | psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1
+              ;;
+          esac
+        else
+          echo "No se encontró backup; aplicando inicialización por esquema"
+          psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1 -tc "SELECT 1 FROM pg_database WHERE datname = '$${TARGET_DB}'" | grep -q 1 || psql -h postgres -U "$${POSTGRES_USER}" -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE \"$${TARGET_DB}\""
+          psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -Atc "SELECT to_regclass('public.category_type')" | grep -q '^category_type$' || psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -f /schema.sql
+          psql -h postgres -U "$${POSTGRES_USER}" -d "$${TARGET_DB}" -v ON_ERROR_STOP=1 -f /initial_data.sql
+        fi
+    restart: 'no'
 
   backups:
     image: prodrigestivill/postgres-backup-local:latest
@@ -66,10 +130,12 @@ services:
       POSTGRES_EXTRA_OPTS: '--clean --if-exists'
 
       BACKUP_ON_START: 'TRUE'
+      BACKUP_ON_STOP: 'TRUE'
 
       BACKUP_KEEP_DAYS: 7
       SCHEDULE: '@daily'
       HEALTHCHECK_PORT: 8080
+    stop_grace_period: 2m
     volumes:
       - ./backups:/backups
     depends_on:

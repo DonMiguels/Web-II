@@ -3,6 +3,8 @@ pgdata/**
 
 # Backups generados por el contenedor de backup
 backups/**
+pgadmin/**
+initdb/**
 
 # Archivos de entorno locales (opcional, recomendado)
 .env
