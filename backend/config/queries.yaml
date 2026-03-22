@@ -193,5 +193,10 @@
     query: 'SELECT n.id, n.title AS name, n.message::jsonb ->> ''descripcion'' AS descripcion, n.message::jsonb ->> ''fecha'' AS fecha, n.message::jsonb ->> ''hora'' AS hora, (n.message::jsonb ->> ''costo'')::numeric AS costo, (n.message::jsonb ->> ''capacidad'')::int AS capacidad, n.message::jsonb ->> ''visibilidad'' AS visibilidad, n.message::jsonb ->> ''lugar'' AS lugar FROM public.notification n JOIN public."user" u ON u.id = n.user_id WHERE u.name = ''system_event_bot'' ORDER BY n.id DESC;',
     structure_params: {},
     orderArray: []
+  },
+  'getTransactions': {
+    query: 'SELECT t.id, s.name AS sub_system, c.name AS class_name, m.name AS method_name FROM public."transaction" t JOIN public.subsystem s ON t.subsystem_id = s.id JOIN public."class" c ON t.class_id = c.id JOIN public."method" m ON t.method_id = m.id;',
+    structure_params: {},
+    orderArray: []
   }
 }

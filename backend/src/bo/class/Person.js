@@ -1,4 +1,4 @@
-import {createPerson} from "../../method/createPerson.js";
+import {createPerson} from "../method/createPerson.js";
 
 export class Person {
     constructor() {

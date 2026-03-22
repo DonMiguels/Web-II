@@ -1,12 +1,11 @@
-import DBMS from '../../../dbms/dbms.js';
+import DBMS from '../../dbms/dbms.js';
 
-export const assignProfileToUser = async ({ user_id, profile_id }) => {
+export const assignProfileToUser = async function({ user_id, profile_id }) {
   const dbms = new DBMS();
-  const dbmsReady = this.dbms.init();
+  await dbms.init();
 
-  await this.dbmsReady;
   try {
-    const res = await this.dbms.executeNamedQuery({
+    const res = await dbms.executeNamedQuery({
       nameQuery: 'insertUserProfile',
       params: {
         user_id,

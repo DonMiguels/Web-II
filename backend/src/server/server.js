@@ -6,10 +6,7 @@ import Config from '../../config/config.js';
 import dotenv from 'dotenv';
 import userRouter from '../session/sessionRoutes.js';
 import Security from '../security/security.js';
-
-import personRouter from '../../controller/person_controller.js';
-import profileRouter from '../../controller/profile_controller.js';
-import dispatcherRouter from '../../controller/dispatcher_controller.js';
+import dispatcherRouter from '../dispatcher/dispatcherRoutes.js';
 
 dotenv.config();
 
@@ -55,15 +52,15 @@ class Server {
   }
 
   routes() {
-    this.app.use('/person', personRouter);
+    this.app.use('/', dispatcherRouter);
     this.app.use('/user', userRouter);
-    this.app.use('/profile', profileRouter);
-    this.app.use('/dispatcher', dispatcherRouter);
   }
 
   async init() {
     await this.config.init();
     await this.security.syncPermissions();
+    await this.security.syncTransactions();
+    await this.security.syncUserProfiles();
   }
 
   start() {
