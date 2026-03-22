@@ -10,11 +10,13 @@ export default class Config {
     if (!Config.instance) {
       this.PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
       this.SERVER_IP = process.env.SERVER_HOST || process.env.IP || 'localhost';
-      this.PROTOCOL = process.env.SERVER_PROTOCOL || process.env.PROTOCOL || 'http';
+      this.PROTOCOL =
+        process.env.SERVER_PROTOCOL || process.env.PROTOCOL || 'http';
       this.SERVER_URL = `${this.PROTOCOL}://${this.SERVER_IP}:${this.PORT}`;
 
       this.MESSAGES = {};
-      this.LANGUAGE = process.env.SERVER_LANGUAGE || process.env.LANGUAGE || 'es';
+      this.LANGUAGE =
+        process.env.SERVER_LANGUAGE || process.env.LANGUAGE || 'es';
 
       this.STATUS_CODES = {
         OK: 200, // La solicitud se ha procesado correctamente
@@ -89,9 +91,15 @@ export default class Config {
   getMessage(language, messageName) {
     const lang = language || this.LANGUAGE;
     const requestedMessage = this.MESSAGES?.[lang]?.[messageName];
-    const defaultLanguageMessage = this.MESSAGES?.[this.LANGUAGE]?.[messageName];
+    const defaultLanguageMessage =
+      this.MESSAGES?.[this.LANGUAGE]?.[messageName];
 
-    return requestedMessage || defaultLanguageMessage || messageName || '_message_not_found_';
+    return (
+      requestedMessage ||
+      defaultLanguageMessage ||
+      messageName ||
+      '_message_not_found_'
+    );
   }
 
   async getQueries() {

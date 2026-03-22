@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "/user",
+  baseURL: import.meta.env.VITE_API_URL || '/user',
   withCredentials: true,
 });
 
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const res = await api.get("/me");
+      const res = await api.get('/me');
       if (res.data.loggedIn) {
         setUser(res.data.user);
       }
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
+    const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
     const isPublicRoute = publicRoutes.includes(window.location.pathname);
 
     if (!isPublicRoute) {
@@ -42,14 +42,14 @@ export const AuthProvider = ({ children }) => {
     setIsSubmitting(true);
     setAuthError(null);
     try {
-      const res = await api.post("/login", credentials);
+      const res = await api.post('/login', credentials);
       if (res.data.user) {
         setUser(res.data.user);
         return res.data;
       }
     } catch (err) {
       const message =
-        err.response?.data?.message || "Error en la autenticación";
+        err.response?.data?.message || 'Error en la autenticación';
       setAuthError(message);
       throw new Error(message);
     } finally {
@@ -60,13 +60,13 @@ export const AuthProvider = ({ children }) => {
   const logout = async (navigate) => {
     try {
       setUser(null);
-      await api.post("/logout");
+      await api.post('/logout');
 
       if (navigate) {
-        navigate("/login", { replace: true });
+        navigate('/login', { replace: true });
       }
     } catch (error) {
-      console.error("Error al cerrar sesión", error);
+      console.error('Error al cerrar sesión', error);
     }
   };
 
@@ -74,12 +74,12 @@ export const AuthProvider = ({ children }) => {
     setIsSubmitting(true);
     setAuthError(null);
     try {
-      const res = await api.post("/forgot-password", { email });
+      const res = await api.post('/forgot-password', { email });
       return res.data;
     } catch (err) {
       const message =
         err.response?.data?.message ||
-        "Error al enviar el correo de recuperación";
+        'Error al enviar el correo de recuperación';
       setAuthError(message);
       throw new Error(message);
     } finally {
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     setIsSubmitting(true);
     setAuthError(null);
     try {
-      const res = await api.post("/reset-password", {
+      const res = await api.post('/reset-password', {
         token,
         password,
         confirmPassword,
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       return res.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || "Error al restablecer la contraseña";
+        err.response?.data?.message || 'Error al restablecer la contraseña';
       setAuthError(message);
       throw new Error(message);
     } finally {
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth debe usarse dentro de un AuthProvider");
+    throw new Error('useAuth debe usarse dentro de un AuthProvider');
   }
   return context;
 };

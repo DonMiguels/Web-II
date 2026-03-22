@@ -12,26 +12,26 @@ const envOnlyFile = process.env.ENV_ONLY_FILE;
 const envOnlyMode = (process.env.ENV_ONLY_MODE || 'false') === 'true';
 
 const envFiles = envOnlyFile
-	? [envOnlyFile]
-	: envOnlyMode
-		? [`.env.${envName}`]
-		: [
-				`.env.${envName}`,
-				'.env',
-				'server.env',
-				'db.env',
-				'auth.env',
-				'session.env',
-				'services.env',
-				'frontend.env',
-				'docker.env',
-			];
+  ? [envOnlyFile]
+  : envOnlyMode
+    ? [`.env.${envName}`]
+    : [
+        `.env.${envName}`,
+        '.env',
+        'server.env',
+        'db.env',
+        'auth.env',
+        'session.env',
+        'services.env',
+        'frontend.env',
+        'docker.env',
+      ];
 
 for (const filename of envFiles) {
-	const filepath = path.join(envDir, filename);
-	if (fs.existsSync(filepath)) {
-		dotenv.config({ path: filepath, override: true });
-	}
+  const filepath = path.join(envDir, filename);
+  if (fs.existsSync(filepath)) {
+    dotenv.config({ path: filepath, override: true });
+  }
 }
 
 const server = new Server();

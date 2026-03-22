@@ -9,7 +9,7 @@ El sistema de entornos busca cuatro resultados: evitar secretos hardcodeados, se
 ## Convenciones oficiales
 
 1. Formato: UPPER_SNAKE_CASE.
-1. Frontend: solo variables con prefijo VITE_.
+1. Frontend: solo variables con prefijo VITE\_.
 1. Seguridad: nunca subir secretos reales al repositorio.
 1. Contrato base: toda variable nueva inicia en `.env.example`.
 

@@ -57,7 +57,9 @@ class Server {
         cookie: {
           secure: (process.env.SESSION_COOKIE_SECURE || 'false') === 'true',
           httpOnly: (process.env.SESSION_COOKIE_HTTP_ONLY || 'true') === 'true',
-          maxAge: Number(process.env.SESSION_COOKIE_MAX_AGE_MS || 5 * 60 * 1000),
+          maxAge: Number(
+            process.env.SESSION_COOKIE_MAX_AGE_MS || 5 * 60 * 1000,
+          ),
         },
       }),
     );
