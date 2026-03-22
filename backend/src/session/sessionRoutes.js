@@ -143,7 +143,10 @@ router.post('/forgot-password', async (req, res) => {
         username: userData.username,
         email: userData.email,
       });
-      const origin = process.env.FRONTEND_URL || req.headers.origin;
+      const origin =
+        process.env.FRONTEND_PUBLIC_URL ||
+        process.env.FRONTEND_URL ||
+        req.headers.origin;
       await mailer.sendRecoveryEmail({
         email: userData.email,
         token,

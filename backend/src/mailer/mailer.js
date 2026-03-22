@@ -1,12 +1,13 @@
 import { Resend } from 'resend';
 
-const resendApiKey = process.env.RESEND_API_KEY;
+const resendApiKey = process.env.SERVICE_RESEND_API_KEY || process.env.RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export default class Mailer {
   constructor() {
     this.resend = resend;
-    this.defaultFrom = process.env.EMAIL || 'onboarding@resend.dev';
+    this.defaultFrom =
+      process.env.SERVICE_MAIL_FROM || process.env.EMAIL || 'onboarding@resend.dev';
   }
 
   async sendEmail(to, subject, html) {

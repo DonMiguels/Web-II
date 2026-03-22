@@ -3,7 +3,7 @@ services:
     image: postgres:16
     container_name: uni_postgres
     restart: unless-stopped
-    env_file: .env
+    env_file: ../env/docker.env
     ports:
       - '127.0.0.1:5431:5432'
     volumes:
@@ -23,7 +23,7 @@ services:
     image: dpage/pgadmin4:snapshot
     container_name: uni_pgadmin
     restart: unless-stopped
-    env_file: .env
+    env_file: ../env/docker.env
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.dev}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
@@ -41,7 +41,7 @@ services:
   db_init:
     image: postgres:16
     container_name: uni_db_init
-    env_file: .env
+    env_file: ../env/docker.env
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD}
       RESTORE_FROM_BACKUP: ${RESTORE_FROM_BACKUP:-false}
@@ -118,7 +118,7 @@ services:
     image: prodrigestivill/postgres-backup-local:latest
     container_name: uni_pg_backups
     restart: unless-stopped
-    env_file: .env
+    env_file: ../env/docker.env
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432

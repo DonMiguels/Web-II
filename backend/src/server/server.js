@@ -3,15 +3,12 @@ import session from 'express-session';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import Config from '../../config/config.js';
-import dotenv from 'dotenv';
 import userRouter from '../session/sessionRoutes.js';
 import Security from '../security/security.js';
 
 import personRouter from '../../controller/person_controller.js';
 import profileRouter from '../../controller/profile_controller.js';
 import dispatcherRouter from '../../controller/dispatcher_controller.js';
-
-dotenv.config();
 
 class Server {
   constructor() {
@@ -20,7 +17,7 @@ class Server {
     }
 
     this.app = express();
-    this.PORT = process.env.PORT || 3000;
+    this.PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
     this.configuration();
     this.routes();
     this.config = new Config();
@@ -29,10 +26,20 @@ class Server {
   }
 
   configuration() {
+    const allowedOriginsRaw =
+      process.env.SERVER_CORS_ALLOWED_ORIGINS ||
+      process.env.CORS_ALLOWED_ORIGINS ||
+      process.env.FRONTEND_PUBLIC_URL ||
+      process.env.FRONTEND_URL ||
+      'http://localhost:5173';
+    const allowedOrigins = allowedOriginsRaw
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
     this.app.use(
       cors({
-        // origin: ['*'],
-        origin: ['http://localhost:5173'],
+        origin: allowedOrigins,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
@@ -42,13 +49,15 @@ class Server {
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(
       session({
-        secret: process.env.SECRET,
-        resave: false,
-        saveUninitialized: true,
+        secret: process.env.SESSION_SECRET || process.env.SECRET,
+        name: process.env.SESSION_COOKIE_NAME || 'webii.sid',
+        resave: (process.env.SESSION_RESAVE || 'false') === 'true',
+        saveUninitialized:
+          (process.env.SESSION_SAVE_UNINITIALIZED || 'true') === 'true',
         cookie: {
-          secure: false,
-          httpOnly: true,
-          maxAge: 5 * 60 * 1000,
+          secure: (process.env.SESSION_COOKIE_SECURE || 'false') === 'true',
+          httpOnly: (process.env.SESSION_COOKIE_HTTP_ONLY || 'true') === 'true',
+          maxAge: Number(process.env.SESSION_COOKIE_MAX_AGE_MS || 5 * 60 * 1000),
         },
       }),
     );
