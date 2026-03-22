@@ -1,5 +1,6 @@
 ai/
 node_modules/
+db-win/
 *.env
 *.rar
 /env/.env.*
