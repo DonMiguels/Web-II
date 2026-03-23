@@ -1,0 +1,50 @@
+{
+  "defaults": {
+    "APP_ENV": "development",
+    "APP_NAME": "web-ii",
+    "APP_LOG_LEVEL": "info",
+    "SERVER_BIND_PROTOCOL": "http",
+    "SERVER_BIND_HOST": "127.0.0.1",
+    "SERVER_BIND_PORT": 3000,
+    "SERVER_MESSAGES_LANGUAGE": "es",
+    "CORS_ALLOWED_ORIGINS": ["http://localhost:5173"],
+    "CORS_ALLOWED_METHODS": [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+    ],
+    "CORS_ALLOWED_HEADERS": ["Content-Type", "Authorization"],
+    "CORS_ALLOW_CREDENTIALS": true,
+    "SESSION_COOKIE_NAME": "webii.sid",
+    "SESSION_COOKIE_HTTP_ONLY": true,
+    "SESSION_COOKIE_SAME_SITE": "lax",
+    "SESSION_COOKIE_MAX_AGE_SECONDS": 300,
+    "SESSION_RESAVE": false,
+    "SESSION_SAVE_UNINITIALIZED": false,
+    "AUTH_JWT_EXPIRES_IN": "5m",
+    "AUTH_JWT_ISSUER": "web-ii-api",
+    "AUTH_JWT_AUDIENCE": "web-ii-frontend",
+    "AUTH_JWT_ALGORITHM": "HS256",
+    "DB_SSL": false,
+    "DB_SSL_REJECT_UNAUTHORIZED": true,
+    "DB_POOL_MAX": 10,
+    "DB_POOL_IDLE_TIMEOUT_MS": 30000,
+    "DB_POOL_CONNECTION_TIMEOUT_MS": 2000,
+    "DB_SCHEMA_DEFAULT": "public",
+    "MAIL_DEFAULT_FROM": "onboarding@resend.dev",
+    "MAIL_ENABLED": true,
+    "FRONT_APP_NAME": "Web II"
+  },
+  "envDefaults": {
+    "SESSION_COOKIE_SECURE": {
+      "production": true,
+      "default": false
+    },
+    "FRONT_APP_ENV": {
+      "key": "APP_ENV"
+    }
+  }
+}

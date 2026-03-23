@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { getRuntimeEnv } from '../../config/env-runtime.js';
 
 /**
  * Genera un token JWT con la data del usuario
@@ -7,12 +8,12 @@ import jwt from 'jsonwebtoken';
  */
 export default class Tokenizer {
   constructor() {
-    this.secret = process.env.AUTH_JWT_SECRET || process.env.JWT_SECRET;
-    this.expiresIn =
-      process.env.AUTH_JWT_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '5m';
-    this.issuer = process.env.AUTH_JWT_ISSUER;
-    this.audience = process.env.AUTH_JWT_AUDIENCE;
-    this.algorithm = process.env.AUTH_JWT_ALGORITHM || 'HS256';
+    const env = getRuntimeEnv();
+    this.secret = env.auth.jwtSecret;
+    this.expiresIn = env.auth.jwtExpiresIn;
+    this.issuer = env.auth.jwtIssuer;
+    this.audience = env.auth.jwtAudience;
+    this.algorithm = env.auth.jwtAlgorithm;
 
     if (!this.secret) {
       throw new Error('AUTH_JWT_SECRET is required');

@@ -2,21 +2,33 @@
 import { promises as fs } from 'fs';
 import fsSync from 'fs';
 import path from 'path';
+import configPathCatalog from './backend/config/env-config-paths.json' with { type: 'json' };
 
 const forceOverwrite = process.argv.includes('--force');
 
 const DEFAULT_ENV_ALLOWED_VALUES = {
+  APP_ENV: ['development', 'test', 'production'],
+  APP_LOG_LEVEL: ['debug', 'info', 'warn', 'error', 'fatal'],
   CORS_ALLOWED_METHODS: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   CORS_ALLOWED_HEADERS: ['Content-Type', 'Authorization'],
 };
 
+const DEFAULT_SCHEMA_OVERRIDES = {
+  defaults: {
+    APP_ENV: 'development',
+    APP_NAME: 'web-ii',
+    APP_LOG_LEVEL: 'info',
+  },
+};
+
+const resolveFromRoot = (rootDir, relativePath) =>
+  path.resolve(rootDir, relativePath);
+
 function loadEnvAllowedValues(rootDir) {
   try {
-    const filePath = path.join(
+    const filePath = resolveFromRoot(
       rootDir,
-      'backend',
-      'config',
-      'env-allowed-values.json',
+      configPathCatalog.runtimeConfigFiles.allowedValues,
     );
     if (!fsSync.existsSync(filePath)) {
       return DEFAULT_ENV_ALLOWED_VALUES;
@@ -30,6 +42,32 @@ function loadEnvAllowedValues(rootDir) {
     };
   } catch {
     return DEFAULT_ENV_ALLOWED_VALUES;
+  }
+}
+
+function loadSchemaOverrides(rootDir) {
+  try {
+    const filePath = resolveFromRoot(
+      rootDir,
+      configPathCatalog.runtimeConfigFiles.schemaOverrides,
+    );
+
+    if (!fsSync.existsSync(filePath)) {
+      return DEFAULT_SCHEMA_OVERRIDES;
+    }
+
+    const raw = fsSync.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_SCHEMA_OVERRIDES,
+      ...parsed,
+      defaults: {
+        ...DEFAULT_SCHEMA_OVERRIDES.defaults,
+        ...(parsed.defaults || {}),
+      },
+    };
+  } catch {
+    return DEFAULT_SCHEMA_OVERRIDES;
   }
 }
 
@@ -54,13 +92,17 @@ function renderServerEnv(profile, envAllowedValues) {
   const isProd = profile === 'production';
   const host = isProd ? '0.0.0.0' : '127.0.0.1';
 
-  const corsMethods = (envAllowedValues.CORS_ALLOWED_METHODS ||
-    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_METHODS)
+  const corsMethods = (
+    envAllowedValues.CORS_ALLOWED_METHODS ||
+    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_METHODS
+  )
     .join(',')
     .trim();
 
-  const corsHeaders = (envAllowedValues.CORS_ALLOWED_HEADERS ||
-    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_HEADERS)
+  const corsHeaders = (
+    envAllowedValues.CORS_ALLOWED_HEADERS ||
+    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_HEADERS
+  )
     .join(',')
     .trim();
 
@@ -170,20 +212,25 @@ function renderDockerEnv() {
 
 async function main() {
   const root = process.cwd();
-  const envDir = path.join(root, 'env');
+  const envDir = resolveFromRoot(root, configPathCatalog.paths.envDirectory);
   const envAllowedValues = loadEnvAllowedValues(root);
+  const schemaOverrides = loadSchemaOverrides(root);
 
   await ensureDir(envDir);
 
   await ensureFile(
     path.join(envDir, '.env'),
     '# Configuracion global base\n' +
-      'APP_ENV=development\n' +
-      'APP_NAME=web-ii\n' +
-      'APP_LOG_LEVEL=info\n',
+      `APP_ENV=${schemaOverrides.defaults.APP_ENV}\n` +
+      `APP_NAME=${schemaOverrides.defaults.APP_NAME}\n` +
+      `APP_LOG_LEVEL=${schemaOverrides.defaults.APP_LOG_LEVEL}\n`,
   );
 
-  const profiles = ['development', 'test', 'production'];
+  const profiles = envAllowedValues.APP_ENV || [
+    'development',
+    'test',
+    'production',
+  ];
   for (const profile of profiles) {
     const profileDir = path.join(envDir, profile);
     await ensureDir(profileDir);

@@ -1,18 +1,16 @@
 import { Resend } from 'resend';
+import { getRuntimeEnv } from '../../config/env-runtime.js';
 
-const resendApiKey =
-  process.env.MAIL_RESEND_API_KEY || process.env.SERVICE_RESEND_API_KEY;
+const env = getRuntimeEnv();
+const resendApiKey = env.services.mailResendApiKey;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export default class Mailer {
   constructor() {
     this.resend = resend;
-    this.mailEnabled = (process.env.MAIL_ENABLED || 'true') === 'true';
-    this.defaultFrom =
-      process.env.MAIL_DEFAULT_FROM ||
-      process.env.SERVICE_MAIL_FROM ||
-      'onboarding@resend.dev';
-    this.replyTo = process.env.MAIL_REPLY_TO;
+    this.mailEnabled = env.services.mailEnabled;
+    this.defaultFrom = env.services.mailDefaultFrom;
+    this.replyTo = env.services.mailReplyTo;
   }
 
   async sendEmail(to, subject, html) {

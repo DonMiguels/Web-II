@@ -1,28 +1,21 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-import dotenv from 'dotenv';
+import {
+  initializeRuntimeEnv,
+  EnvValidationError,
+  formatEnvValidationErrors,
+} from './config/env-runtime.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const envDir = path.resolve(__dirname, '../env');
-const appEnv = process.env.APP_ENV || 'development';
-process.env.APP_ENV = appEnv;
-
-const envFiles = [
-  path.join(envDir, '.env'),
-  path.join(envDir, appEnv, 'server.env'),
-  path.join(envDir, appEnv, 'db.env'),
-  path.join(envDir, appEnv, 'auth.env'),
-  path.join(envDir, appEnv, 'session.env'),
-  path.join(envDir, appEnv, 'services.env'),
-  path.join(envDir, appEnv, 'frontend.env'),
-];
-
-for (const filepath of envFiles) {
-  if (fs.existsSync(filepath)) {
-    dotenv.config({ path: filepath, override: true });
+try {
+  initializeRuntimeEnv();
+} catch (error) {
+  if (error instanceof EnvValidationError) {
+    console.error(formatEnvValidationErrors(error.errors));
+  } else {
+    console.error(
+      '[env-runtime] Unexpected error while loading environment:',
+      error,
+    );
   }
+  process.exit(1);
 }
 
 const { default: Server } = await import('./src/server/server.js');

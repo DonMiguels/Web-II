@@ -13,12 +13,43 @@ const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
 import Tokenizer from '../tokenizer/tokenizer.js';
 import Mailer from '../mailer/mailer.js';
+import { getRuntimeEnv } from '../../config/env-runtime.js';
+import { createSanitizer } from '../sanitizer/sanitizer.js';
 const tokenizer = new Tokenizer();
 const mailer = new Mailer();
+const runtimeEnv = getRuntimeEnv();
+const sanitizer = createSanitizer();
+
+const sanitizeOrReject = (req, res, routeKey, forceIncludePaths = []) => {
+  const sanitizeResult = sanitizer.sanitizePayload(req.body || {}, {
+    routeKey,
+    forceIncludePaths,
+  });
+
+  req.body = sanitizeResult.cleanedPayload;
+
+  if (sanitizeResult.rejected) {
+    return res.status(sanitizeResult.response.statusCode).json({
+      code: sanitizeResult.response.code,
+      message: sanitizeResult.response.message,
+      fields: sanitizeResult.response.fields,
+      rules: sanitizeResult.response.rules,
+    });
+  }
+
+  return null;
+};
 
 // Registro de usuario
 router.post('/register', async (req, res) => {
   try {
+    const sanitizeError = sanitizeOrReject(req, res, 'session.register', [
+      'username',
+      'password',
+      'person_id',
+    ]);
+    if (sanitizeError) return sanitizeError;
+
     // Schema de validación para registro
     const registerSchema = {
       username: {
@@ -65,6 +96,12 @@ router.post('/register', async (req, res) => {
 // Login
 router.post('/login', async (req, res) => {
   try {
+    const sanitizeError = sanitizeOrReject(req, res, 'session.login', [
+      'username',
+      'password',
+    ]);
+    if (sanitizeError) return sanitizeError;
+
     // Schema de validación para login
     const loginSchema = {
       username: {
@@ -116,6 +153,11 @@ router.get('/me', async (req, res) => {
 
 // Recuperacion de contrasena
 router.post('/forgot-password', async (req, res) => {
+  const sanitizeError = sanitizeOrReject(req, res, 'session.forgotPassword', [
+    'email',
+  ]);
+  if (sanitizeError) return sanitizeError;
+
   const { email } = req.body || {};
 
   await sessionWrapper.destroySession(req);
@@ -143,10 +185,7 @@ router.post('/forgot-password', async (req, res) => {
         username: userData.username,
         email: userData.email,
       });
-      const origin =
-        process.env.FRONT_PUBLIC_URL ||
-        process.env.FRONTEND_PUBLIC_URL ||
-        req.headers.origin;
+      const origin = runtimeEnv.frontend.publicUrl || req.headers.origin;
       await mailer.sendRecoveryEmail({
         email: userData.email,
         token,
@@ -168,6 +207,13 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 router.post('/reset-password', async (req, res) => {
+  const sanitizeError = sanitizeOrReject(req, res, 'session.resetPassword', [
+    'token',
+    'password',
+    'confirmPassword',
+  ]);
+  if (sanitizeError) return sanitizeError;
+
   const { token, password, confirmPassword } = req.body || {};
 
   // Terminar la sesion si existe

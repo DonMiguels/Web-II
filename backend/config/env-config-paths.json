@@ -1,0 +1,20 @@
+{
+  "paths": {
+    "repoRootFromRuntime": "../..",
+    "envDirectory": "env"
+  },
+  "runtimeConfigFiles": {
+    "allowedValues": "backend/config/env-allowed-values.json",
+    "schemaBase": "backend/config/env-validation-schema.base.json",
+    "schemaOverrides": "backend/config/env-validation-schema.overrides.json"
+  },
+  "envFilesByProfile": [
+    ".env",
+    "{APP_ENV}/server.env",
+    "{APP_ENV}/db.env",
+    "{APP_ENV}/auth.env",
+    "{APP_ENV}/session.env",
+    "{APP_ENV}/services.env",
+    "{APP_ENV}/frontend.env"
+  ]
+}

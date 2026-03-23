@@ -1,0 +1,257 @@
+[
+  {
+    "key": "APP_ENV",
+    "type": "enum",
+    "allowedFrom": "APP_ENV",
+    "required": true
+  },
+  {
+    "key": "APP_NAME",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "APP_LOG_LEVEL",
+    "type": "enum",
+    "allowedFrom": "APP_LOG_LEVEL",
+    "required": true
+  },
+  {
+    "key": "SERVER_BIND_PROTOCOL",
+    "type": "enum",
+    "allowedFrom": "SERVER_BIND_PROTOCOL",
+    "required": true
+  },
+  {
+    "key": "SERVER_BIND_HOST",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "SERVER_BIND_PORT",
+    "type": "integer",
+    "min": 1,
+    "max": 65535,
+    "required": true
+  },
+  {
+    "key": "SERVER_MESSAGES_LANGUAGE",
+    "type": "enum",
+    "allowedFrom": "SERVER_MESSAGES_LANGUAGE",
+    "required": true
+  },
+  {
+    "key": "CORS_ALLOWED_ORIGINS",
+    "type": "csv",
+    "required": true
+  },
+  {
+    "key": "CORS_ALLOWED_METHODS",
+    "type": "csvEnum",
+    "allowedFrom": "CORS_ALLOWED_METHODS",
+    "required": true
+  },
+  {
+    "key": "CORS_ALLOWED_HEADERS",
+    "type": "csvEnum",
+    "allowedFrom": "CORS_ALLOWED_HEADERS",
+    "required": true
+  },
+  {
+    "key": "CORS_ALLOW_CREDENTIALS",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "SESSION_SECRET",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "SESSION_COOKIE_NAME",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "SESSION_COOKIE_SECURE",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "SESSION_COOKIE_HTTP_ONLY",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "SESSION_COOKIE_SAME_SITE",
+    "type": "enum",
+    "allowedFrom": "SESSION_COOKIE_SAME_SITE",
+    "required": true
+  },
+  {
+    "key": "SESSION_COOKIE_MAX_AGE_SECONDS",
+    "type": "integer",
+    "min": 1,
+    "max": 86400,
+    "required": true
+  },
+  {
+    "key": "SESSION_RESAVE",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "SESSION_SAVE_UNINITIALIZED",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "AUTH_JWT_SECRET",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "AUTH_JWT_EXPIRES_IN",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "AUTH_JWT_ISSUER",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "AUTH_JWT_AUDIENCE",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "AUTH_JWT_ALGORITHM",
+    "type": "enum",
+    "allowedFrom": "AUTH_JWT_ALGORITHM",
+    "required": true
+  },
+  {
+    "key": "DB_HOST",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "DB_PORT",
+    "type": "integer",
+    "min": 1,
+    "max": 65535,
+    "required": true
+  },
+  {
+    "key": "DB_NAME",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "DB_USER",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "DB_PASSWORD",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "DB_SSL",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "DB_SSL_REJECT_UNAUTHORIZED",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "DB_POOL_MAX",
+    "type": "integer",
+    "min": 1,
+    "max": 100,
+    "required": true
+  },
+  {
+    "key": "DB_POOL_IDLE_TIMEOUT_MS",
+    "type": "integer",
+    "min": 100,
+    "max": 300000,
+    "required": true
+  },
+  {
+    "key": "DB_POOL_CONNECTION_TIMEOUT_MS",
+    "type": "integer",
+    "min": 100,
+    "max": 120000,
+    "required": true
+  },
+  {
+    "key": "DB_SCHEMA_DEFAULT",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "MAIL_RESEND_API_KEY",
+    "type": "string",
+    "minLength": 1,
+    "required": false
+  },
+  {
+    "key": "MAIL_DEFAULT_FROM",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "MAIL_REPLY_TO",
+    "type": "string",
+    "minLength": 1,
+    "required": false
+  },
+  {
+    "key": "MAIL_ENABLED",
+    "type": "boolean",
+    "required": true
+  },
+  {
+    "key": "FRONT_API_URL",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "FRONT_PUBLIC_URL",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "FRONT_APP_NAME",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  },
+  {
+    "key": "FRONT_APP_ENV",
+    "type": "string",
+    "minLength": 1,
+    "required": true
+  }
+]

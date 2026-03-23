@@ -4,27 +4,21 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import yaml from 'yaml';
+import { getRuntimeEnv } from './env-runtime.js';
 
 export default class Config {
   constructor() {
     if (!Config.instance) {
-      this.APP_NAME = process.env.APP_NAME || 'web-ii';
-      this.PORT = Number(
-        process.env.SERVER_BIND_PORT || process.env.SERVER_PORT || 3000,
-      );
-      this.SERVER_IP =
-        process.env.SERVER_BIND_HOST || process.env.SERVER_HOST || 'localhost';
-      this.PROTOCOL =
-        process.env.SERVER_BIND_PROTOCOL ||
-        process.env.SERVER_PROTOCOL ||
-        'http';
+      const env = getRuntimeEnv();
+
+      this.APP_NAME = env.app.name;
+      this.PORT = env.server.bindPort;
+      this.SERVER_IP = env.server.bindHost;
+      this.PROTOCOL = env.server.bindProtocol;
       this.SERVER_URL = `${this.PROTOCOL}://${this.SERVER_IP}:${this.PORT}`;
 
       this.MESSAGES = {};
-      this.LANGUAGE =
-        process.env.SERVER_MESSAGES_LANGUAGE ||
-        process.env.SERVER_LANGUAGE ||
-        'es';
+      this.LANGUAGE = env.server.messagesLanguage;
 
       this.STATUS_CODES = {
         OK: 200, // La solicitud se ha procesado correctamente
