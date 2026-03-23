@@ -1,6 +1,6 @@
 import DBMS from "../../dbms/dbms.js";
 
-export const createEquipo = async function({codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo}) {
+export const createEquipo = async function({codigo, nombre, descripcion, estado_id, costo, fecha_adquisicion, category_id}) {
     const dbms = new DBMS();
     await dbms.init();
     try {
@@ -9,14 +9,11 @@ export const createEquipo = async function({codigo, nombre, marca, modelo, serie
             params: {
                 codigo,
                 nombre,
-                marca,
-                modelo,
-                serie: serie || '',
                 descripcion: descripcion || '',
-                ubicacion_id: ubicacion_id || null,
-                estado_id: estado_id || null,
+                estado_id: estado_id || 1,
+                costo: costo || 0,
                 fecha_adquisicion: fecha_adquisicion || null,
-                costo: costo || 0
+                category_id: category_id || 1
             },
         });
         return res?.rows?.[0];

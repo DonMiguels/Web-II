@@ -1,6 +1,6 @@
 import DBMS from "../../dbms/dbms.js";
 
-export const createUbicacion = async function({nombre, descripcion, edificio, piso, sala}) {
+export const createUbicacion = async function({nombre, descripcion, parent_id, type_id}) {
     const dbms = new DBMS();
     await dbms.init();
     try {
@@ -9,9 +9,8 @@ export const createUbicacion = async function({nombre, descripcion, edificio, pi
             params: {
                 nombre,
                 descripcion: descripcion || '',
-                edificio: edificio || '',
-                piso: piso || '',
-                sala: sala || ''
+                parent_id: parent_id || null,
+                type_id: type_id || 1
             },
         });
         return res?.rows?.[0];
