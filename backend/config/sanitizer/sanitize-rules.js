@@ -83,7 +83,11 @@ const sanitizeRules = {
           trim: true,
           toLowerCase: true,
           normalizeSpaces: false,
-          denyPatternKeys: ['xss_script_tag', 'xss_javascript_protocol', 'control_chars'],
+          denyPatternKeys: [
+            'xss_script_tag',
+            'xss_javascript_protocol',
+            'control_chars',
+          ],
         },
       },
     },

@@ -93,7 +93,12 @@ export const createSanitizer = () => {
 
   const getRouteRules = (routeKey) => sanitizeRules.routeMaps[routeKey] || {};
 
-  const evaluateRegexKeys = ({ regexKeys, targetValue, fieldPath, deniedMatches }) => {
+  const evaluateRegexKeys = ({
+    regexKeys,
+    targetValue,
+    fieldPath,
+    deniedMatches,
+  }) => {
     const ruleKeysTriggered = [];
     for (const ruleKey of regexKeys || []) {
       const rule = regexMap.get(ruleKey);
@@ -113,7 +118,8 @@ export const createSanitizer = () => {
   };
 
   const isSensitiveByPropertyName = (propertyName) => {
-    for (const key of sanitizeRules.sensitivePropertyPolicy.propertyNameRuleKeys) {
+    for (const key of sanitizeRules.sensitivePropertyPolicy
+      .propertyNameRuleKeys) {
       const rule = regexMap.get(key);
       if (!rule || rule.mode !== 'detect') continue;
       if (rule.target !== 'property') continue;
@@ -127,7 +133,8 @@ export const createSanitizer = () => {
   const isSensitiveByValue = (value) => {
     if (typeof value !== 'string') return null;
 
-    for (const key of sanitizeRules.sensitivePropertyPolicy.valueHeuristicRuleKeys) {
+    for (const key of sanitizeRules.sensitivePropertyPolicy
+      .valueHeuristicRuleKeys) {
       const rule = regexMap.get(key);
       if (!rule || rule.mode !== 'detect') continue;
       if (rule.target !== 'value') continue;
@@ -155,10 +162,19 @@ export const createSanitizer = () => {
     return next;
   };
 
-  const applyForceIncludePaths = ({ sourcePayload, targetPayload, forceIncludePaths, forcedIncluded }) => {
+  const applyForceIncludePaths = ({
+    sourcePayload,
+    targetPayload,
+    forceIncludePaths,
+    forcedIncluded,
+  }) => {
     for (const pathValue of forceIncludePaths || []) {
       if (!hasPath(sourcePayload, pathValue)) continue;
-      setPath(targetPayload, pathValue, cloneDeep(getPath(sourcePayload, pathValue)));
+      setPath(
+        targetPayload,
+        pathValue,
+        cloneDeep(getPath(sourcePayload, pathValue)),
+      );
       forcedIncluded.push(pathValue);
     }
   };
@@ -188,7 +204,9 @@ export const createSanitizer = () => {
     });
 
     const allowedSensitivePaths = new Set(
-      sanitizeRules.sensitivePropertyPolicy.allowSensitivePathsByRoute[routeKey] || [],
+      sanitizeRules.sensitivePropertyPolicy.allowSensitivePathsByRoute[
+        routeKey
+      ] || [],
     );
 
     const walk = (currentValue, fieldPath, depth) => {
@@ -203,7 +221,11 @@ export const createSanitizer = () => {
 
       if (Array.isArray(currentValue)) {
         return currentValue.map((entry, index) =>
-          walk(entry, fieldPath ? `${fieldPath}.${index}` : String(index), depth + 1),
+          walk(
+            entry,
+            fieldPath ? `${fieldPath}.${index}` : String(index),
+            depth + 1,
+          ),
         );
       }
 
@@ -225,7 +247,9 @@ export const createSanitizer = () => {
 
       const activeTransformRules = {
         ...sanitizeRules.defaults,
-        ...(sanitizeRules.behavior.normalizeUnknownStrings ? {} : { normalizeSpaces: false }),
+        ...(sanitizeRules.behavior.normalizeUnknownStrings
+          ? {}
+          : { normalizeSpaces: false }),
         ...fieldRule,
       };
 
@@ -259,7 +283,10 @@ export const createSanitizer = () => {
       const sensitiveDetected = sensitiveByName || sensitiveByValue;
 
       if (sensitiveDetected && !allowedSensitivePaths.has(fieldPath)) {
-        if (sanitizeRules.sensitivePropertyPolicy.redactReplacement !== transformedValue) {
+        if (
+          sanitizeRules.sensitivePropertyPolicy.redactReplacement !==
+          transformedValue
+        ) {
           changedFields.push(fieldPath);
           if (forcedIncluded.includes(fieldPath)) {
             sanitizedAfterForce.push(fieldPath);
@@ -273,7 +300,9 @@ export const createSanitizer = () => {
 
     const cleanedPayload = walk(workingPayload, '', 0);
     const uniqueChangedFields = [...new Set(changedFields.filter(Boolean))];
-    const uniqueSanitizedAfterForce = [...new Set(sanitizedAfterForce.filter(Boolean))];
+    const uniqueSanitizedAfterForce = [
+      ...new Set(sanitizedAfterForce.filter(Boolean)),
+    ];
 
     const rejected =
       sanitizeRules.behavior.rejectOnDenyPattern && deniedMatches.length > 0;
