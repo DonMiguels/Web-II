@@ -1,24 +1,26 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import Utils from '../src/utils/utils.js';
-import DBMS from '../src/dbms/dbms.js';
+import Utils from '../utils/utils.js';
+import DBMS from '../dbms/dbms.js';
+import resolveExecutable from "../bo/method_resolver.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default class SecurityService {
+export default class Security {
   static instance;
 
   constructor() {
-    if (SecurityService.instance) return SecurityService.instance;
+    if (Security.instance) return Security.instance;
 
     this.permissions = new Map();
     this.userProfiles = new Map();
+    this.transactions = new Map();
     this.utils = new Utils();
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
     this.reflect = Reflect;
-    SecurityService.instance = this;
+    Security.instance = this;
   }
 
   normalizePermission(permission = {}) {
@@ -29,7 +31,7 @@ export default class SecurityService {
       class: normalize(permission.class ?? permission.class_name),
       method: normalize(permission.method ?? permission.method_name),
       profile: normalize(permission.profile ?? permission.profile_name),
-      parameter: permission.parameter
+      parameter: permission.parameter,
     };
   }
 
@@ -69,15 +71,15 @@ export default class SecurityService {
     }
 
     this.permissions = new Map(dbPermissions);
-    
+
     // Sincronizar perfiles de usuario
     await this.syncUserProfiles();
-    
+
     return this.permissions;
   }
 
   async getPermissionsFile() {
-    const csvPath = path.resolve(__dirname, '../config/permission.csv');
+    const csvPath = path.resolve(__dirname, '../../config/permission.csv');
     const csvMap = await this.utils.readCSV(csvPath);
     const permissions = new Map();
 
@@ -135,14 +137,18 @@ export default class SecurityService {
   async syncUserProfiles() {
     await this.dbmsReady;
     const res = await this.dbms.executeNamedQuery({
-      nameQuery: 'getUserProfiles',
+      nameQuery: 'getUsersProfiles',
     });
 
     const profiles = new Map();
     for (const row of res?.rows ?? []) {
-      const userId = String(row.user_id || row.username).trim().toLowerCase();
-      const profileName = String(row.profile_name || row.profile).trim().toLowerCase();
-      
+      const userId = String(row.user_id || row.username)
+        .trim()
+        .toLowerCase();
+      const profileName = String(row.profile_name || row.profile)
+        .trim()
+        .toLowerCase();
+
       if (!profiles.has(userId)) {
         profiles.set(userId, new Set());
       }
@@ -156,7 +162,7 @@ export default class SecurityService {
   hasUserProfile(userId, profile) {
     const normalizedUserId = String(userId).trim().toLowerCase();
     const normalizedProfile = String(profile).trim().toLowerCase();
-    
+
     const userProfiles = this.userProfiles.get(normalizedUserId);
     return userProfiles ? userProfiles.has(normalizedProfile) : false;
   }
@@ -184,51 +190,54 @@ export default class SecurityService {
     this.userProfiles.get(normalizedUserId).add(normalizedProfile);
   }
 
-  async executeAuthorized(permission) {
+  async syncTransactions() {
+    await this.dbmsReady;
+
+    // Supongamos que esta query trae: id, sub_system, class_name, method_name
+    const res = await this.dbms.executeNamedQuery({ nameQuery: 'getTransactions' });
+
+    this.transactions.clear();
+
+    for (const row of res?.rows ?? []) {
+      this.transactions.set(String(row.id), {
+        sub_system: row.sub_system,
+        class: row.class_name,
+        method: row.method_name
+      });
+    }
+
+    return this.transactions;
+  }
+
+  resolveTransaction(transactionId) {
+    return this.transactions.get(String(transactionId));
+  }
+
+  async execute(permission, reqBody = {}) {
     try {
-      // Construir la ruta al archivo del método
-      const methodPath = path.resolve(
-        __dirname,
-        `../method/${permission.class.toLowerCase()}/${permission.method.toLowerCase()}.js`
+      const { sub_system, class: className, method } = this.normalizePermission(permission);
+
+      const actionInstance = await resolveExecutable({
+        subsystem: sub_system,
+        className: className,
+        method: method
+      });
+
+      const result = await Reflect.apply(
+          actionInstance[method],
+          actionInstance,
+          [reqBody]
       );
 
-      // Importar dinámicamente el módulo del método
-      const methodModule = await import(methodPath);
-      
-      // Obtener la función del método exportado
-      const methodName = permission.method;
-      const methodFunction = methodModule[methodName];
-      
-      if (!methodFunction || typeof methodFunction !== 'function') {
-        throw new Error(`Method ${methodName} not found in ${methodPath}`);
-      }
-
-      // Crear contexto con dbms para el método
-      const dbms = new DBMS();
-      const dbmsReady = dbms.init();
-      
-      // Crear contexto y bindear la función
-      const context = {
-        dbms: dbms,
-        dbmsReady: dbmsReady
-      };
-      
-      // Ejecutar el método con el contexto y parámetros
-      const boundMethod = methodFunction.bind(context);
-      const result = await boundMethod(permission.parameter || {});
-      
       return {
         statusCode: 200,
         data: result,
-        message: 'Method executed successfully'
+        message: 'Ejecutado exitosamente'
       };
+
     } catch (error) {
-      console.error('Error executing authorized method:', error);
-      return {
-        statusCode: 500,
-        error: error.message,
-        message: 'Failed to execute authorized method'
-      };
+      console.error(`Error en executeAuthorized:`, error);
+      throw error;
     }
   }
 }
