@@ -10,7 +10,7 @@
 6. [Flujos de error y códigos de salida observables](#flujos-de-error-y-códigos-de-salida-observables)
 7. [Notas de consistencia y comportamiento actual](#notas-de-consistencia-y-comportamiento-actual)
 8. [Referencias](#referencias)
-9. [Nota de migración _business -> bo](#nota-de-migración-_business---bo)
+9. [Nota de migración \_business -> bo](#nota-de-migración-_business---bo)
 
 ## Resumen ejecutivo del flujo
 
@@ -112,7 +112,7 @@ Si falla, se retorna mensaje de denegación (actualmente usa clave de mensaje ge
 4. Ejecuta por reflexión:
 
 ```js
-Reflect.apply(actionInstance[method], actionInstance, [reqBody])
+Reflect.apply(actionInstance[method], actionInstance, [reqBody]);
 ```
 
 5. Envuelve respuesta:
@@ -255,7 +255,7 @@ Este punto es la ejecución final de la ruta autorizada.
 - [03-analisis-clean-architecture.md](./03-analisis-clean-architecture.md)
 - [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)
 
-## Nota de migración _business -> bo
+## Nota de migración \_business -> bo
 
 - El flujo de este documento describe el runtime activo de autorización/dispatch.
 - Paralelamente existe un ecosistema legacy en `src/_business` (ATX, helpers, ftx) que será migrado.

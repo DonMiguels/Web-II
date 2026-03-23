@@ -1,4 +1,4 @@
-# Plan de Migración: src/_business (legacy) -> src/bo (subsystem/class/method)
+# Plan de Migración: src/\_business (legacy) -> src/bo (subsystem/class/method)
 
 ## Índice
 
@@ -7,7 +7,7 @@
 3. [Modelo objetivo en bo](#modelo-objetivo-en-bo)
 4. [Reglas para carpeta method compartida](#reglas-para-carpeta-method-compartida)
 5. [Estrategia de migración sin downtime lógico](#estrategia-de-migración-sin-downtime-lógico)
-6. [Mapa de transformación _business -> bo](#mapa-de-transformación-_business---bo)
+6. [Mapa de transformación \_business -> bo](#mapa-de-transformación-_business---bo)
 7. [Fases detalladas de ejecución](#fases-detalladas-de-ejecución)
 8. [Contratos mínimos de compatibilidad](#contratos-mínimos-de-compatibilidad)
 9. [Plan de pruebas y validación](#plan-de-pruebas-y-validación)
@@ -92,16 +92,16 @@ Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
 4. Cambiar el punto de resolución dinámico por lotes controlados.
 5. Desactivar legacy solo tras cobertura de pruebas y equivalencia funcional.
 
-## Mapa de transformación _business -> bo
+## Mapa de transformación \_business -> bo
 
 ### Transformación por carpetas
 
-| Origen legacy | Destino objetivo | Acción |
-|---|---|---|
-| `_business/ftx` | `bo/sub_system + bo/class` | Convertir fachada funcional en clases de dominio por subsistema |
-| `_business/atx` | `bo/class` y `bo/method` | Reubicar casos de uso en clase; extraer solo piezas stateless compartidas |
-| `_business/helpers` | `bo/method` o utilitarios de infraestructura | Clasificar helper por naturaleza de dominio vs infraestructura |
-| `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js` | Retirar mapeo por nombres legacy y consolidar registro canónico BO |
+| Origen legacy           | Destino objetivo                                  | Acción                                                                    |
+| ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
+| `_business/ftx`         | `bo/sub_system + bo/class`                        | Convertir fachada funcional en clases de dominio por subsistema           |
+| `_business/atx`         | `bo/class` y `bo/method`                          | Reubicar casos de uso en clase; extraer solo piezas stateless compartidas |
+| `_business/helpers`     | `bo/method` o utilitarios de infraestructura      | Clasificar helper por naturaleza de dominio vs infraestructura            |
+| `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js` | Retirar mapeo por nombres legacy y consolidar registro canónico BO        |
 
 ### Transformación por comportamiento
 

@@ -138,8 +138,8 @@ No es un mapa persistente, pero es objeto clave de autorización:
 ```ts
 permission = {
   ...permissionRouteFromTransaction,
-  profile: profileFromRequest
-}
+  profile: profileFromRequest,
+};
 ```
 
 Ese objeto enlaza:
@@ -274,13 +274,13 @@ En runtime del dispatcher, esta tabla se refleja en `Security.transactions` para
 
 ## Matriz de componentes y responsabilidades
 
-| Componente | Estructura | Rol |
-|---|---|---|
-| `src/security/security.js` | `permissions`, `userProfiles`, `transactions` (`Map`) | Cache en memoria para autorización runtime |
-| `src/bo/method_registry.js` | `mapFiles` (objeto) | Catálogo de reflexión para rutas ejecutables |
-| `src/sanitizer/sanitizer.js` | `regexMap` (`Map`) + políticas (`objeto`) | Control de entrada y rechazo de payload |
-| `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos) | Construcción jerárquica menú-opción-perfil |
-| `src/_business/atx/set-*.js` | objetos de forma constante/compacta | Persistencia y mantenimiento de joins de permisos por opción/método |
+| Componente                       | Estructura                                            | Rol                                                                 |
+| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| `src/security/security.js`       | `permissions`, `userProfiles`, `transactions` (`Map`) | Cache en memoria para autorización runtime                          |
+| `src/bo/method_registry.js`      | `mapFiles` (objeto)                                   | Catálogo de reflexión para rutas ejecutables                        |
+| `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)             | Control de entrada y rechazo de payload                             |
+| `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos)   | Construcción jerárquica menú-opción-perfil                          |
+| `src/_business/atx/set-*.js`     | objetos de forma constante/compacta                   | Persistencia y mantenimiento de joins de permisos por opción/método |
 
 ## Referencias
 
