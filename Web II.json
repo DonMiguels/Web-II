@@ -1,0 +1,389 @@
+{
+  "info": {
+    "name": "Web II",
+    "description": null,
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Person",
+      "item": [
+        {
+          "name": "Create Person",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:3000/person",
+              "protocol": "http",
+              "host": [
+                "localhost:3000"
+              ],
+              "path": [
+                "person"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ci\": \"31005749\",\n    \"name\": \"Marcelo\",\n    \"lastname\": \"Perozo\",\n    \"email\": \"marcelo.perozo@example.com\",\n    \"phone\": \"555-1234567\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Assign Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:3000/profile/assign",
+              "protocol": "http",
+              "host": [
+                "localhost:3000"
+              ],
+              "path": [
+                "profile",
+                "assign"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user_id\": 1,\n    \"profile_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:3000/profile",
+              "protocol": "http",
+              "host": [
+                "localhost:3000"
+              ],
+              "path": [
+                "profile"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"profile_name\": \"Administrador\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "http://localhost:3000/user/register",
+              "protocol": "http",
+              "host": [
+                "localhost:3000"
+              ],
+              "path": [
+                "user",
+                "register"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"marcelo_pcx\",\n    \"password\": \"Maraca1bo_214\",\n    \"person_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session",
+      "item": [
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{baseUrl}}/users/forgot-password",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "forgot-password"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{baseUrl}}/user/login",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "login"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\":\"{{username}}\",\n    \"password\": \"{{password}}\"\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{baseUrl}}/user/logout",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "logout"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{baseUrl}}/user/me",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false,
+                "type": "default"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{baseUrl}}/user/reset-password",
+              "protocol": "",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "reset-password"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\",\n  \"password\": \"{{newPassword}}\",\n  \"confirmPassword\": \"{{newPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {},
+                "exec": [
+                  "// If you pasted a token manually in the environment, this request just uses it.",
+                  "// Tip: You can copy the token from the recovery email link: /reset-password?token=..."
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "default"
+    },
+    {
+      "key": "email",
+      "value": "marceloperozo21@gmail.com",
+      "type": "default"
+    },
+    {
+      "key": "newPassword",
+      "value": "NuevaClave1!",
+      "type": "default"
+    },
+    {
+      "key": "username",
+      "value": "marcelo_pcx",
+      "type": "default"
+    },
+    {
+      "key": "password",
+      "value": "Maraca1bo_214",
+      "type": "default"
+    }
+  ]
+}
