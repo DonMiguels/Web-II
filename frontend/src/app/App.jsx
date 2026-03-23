@@ -1,16 +1,13 @@
-import { Routes, Route } from "react-router-dom";
-import { Login } from "@/pages";
-import { Forgot } from "@/pages";
-import { ResetPassword } from "@/pages";
-import { Dashboard } from "@/pages";
-import { NotFound } from "@/pages";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Login, Forgot, ResetPassword, Dashboard, NotFound } from "@/pages";
 import { AuthProvider } from "@/context";
-import { ProtectedRoute } from "@/components";
+import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
 
 function App() {
   return (
     <AuthProvider>
       <Routes>
+<<<<<<< HEAD
 <<<<<<< HEAD
         <Route path='/' element={<Login />}/>
         <Route path='/login' element={<Login />} />
@@ -22,13 +19,24 @@ function App() {
         <Route path="/forgot-password" element={<Forgot />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 >>>>>>> 8481540b0b69838fc28ea963aec7977200406fcf
+=======
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<Forgot />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+>>>>>>> 9d29643 (refactor: restructure loan component and modularize frontend architecture)
 
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/inventory" element={<Dashboard />} />
+          <Route path="/loans" element={<Dashboard />} />
+          <Route path="/notifications" element={<Dashboard />} />
         </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );
 }
+
 export default App;

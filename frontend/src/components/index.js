@@ -2,3 +2,8 @@ export * from "./NotificationToast/NotificationToast";
 export * from "./ThemeToggle/ThemeToggle";
 export * from "./ProtectedRoute/ProtectedRoute";
 export * from "./AlertMessage/AlertMessage";
+export * from "./Inventory/Inventory";
+export * from "./Table/Table";
+export * from "./ItemTable/ItemTable";
+export * from "./Sidebar/Sidebar";
+export * from "./Loan/Loan";
