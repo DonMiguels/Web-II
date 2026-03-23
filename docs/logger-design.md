@@ -168,72 +168,39 @@ Ejemplo de salida sanitizada:
 1. token: "\*\*\*"
 2. password: "\*\*\*"
 
-## Sanitizacion centralizada con validator.sanitize
+## Sanitizacion centralizada con sanitizer
 
-Adicional al logger, se implementará en Fase 3 un método central de sanitización en validator para ser reutilizado por logger y por cualquier capa del backend.
+En el estado actual del proyecto, la sanitizacion central no vive en validator.
+La implementacion vigente usa un componente dedicado llamado sanitizer.
 
-Archivo objetivo:
+Componentes principales:
 
-1. backend/src/validator/validator.js
+1. backend/src/sanitizer/sanitizer.js
+2. backend/config/sanitizer/sanitize-rules.js
+3. backend/config/sanitizer/sanitize-regex.js
 
-Archivo de configuración de reglas por defecto:
+Documentacion tecnica completa:
 
-1. backend/config/sanitize-defaults.json
+1. docs/sanitizer-design.md
 
-### Firma del método
+### Contrato de uso vigente
 
-1. sanitize(target, removeProps, keepProps = [])
+1. createSanitizer()
+2. sanitizer.sanitizePayload(payload, options)
 
-### Parámetros
+Salida principal:
 
-1. target
-1. Tipo: object.
-1. Descripción: objeto a sanitizar.
-
-1. removeProps
-1. Tipo: string[].
-1. Descripción: propiedades a sanitizar/eliminar de forma explícita para la llamada.
-
-1. keepProps
-1. Tipo: string[].
-1. Descripción: propiedades opcionales que no deben sanitizarse.
-1. Regla: tiene prioridad sobre removeProps y sobre reglas por defecto.
-
-### Reglas de comportamiento
-
-1. Si una propiedad indicada en removeProps no existe en target, no debe lanzar error.
-2. Si una propiedad aparece tanto en removeProps como en keepProps, prevalece keepProps.
-3. Las reglas por defecto provienen de un mapa en memoria cargado desde JSON.
-4. Debe soportar coincidencias por nombre exacto y por regex para cubrir variantes de claves sensibles.
-5. No debe mutar accidentalmente referencias compartidas si la estrategia de implementación decide retornar copia.
-
-### Mapa por defecto en memoria
-
-El validator debe inicializar y mantener en memoria un mapa de sanitización por defecto cargado una sola vez desde backend/config/sanitize-defaults.json.
-
-Contenido esperado del JSON:
-
-1. exactKeys: claves exactas sensibles.
-2. regexRules: patrones para detectar claves sensibles por convención de nombre.
-3. replacement: valor de reemplazo estándar (por ejemplo, \*\*\*).
-
-### Ejemplo de uso recomendado
-
-```javascript
-const cleanContext = validator.sanitize(
-  context,
-  ['password', 'token', 'authorization'],
-  ['tokenType'],
-);
-
-logger.info('Login processed', cleanContext, { statusCode: 200 });
-```
+1. cleanedPayload
+2. changedFields
+3. deniedMatches
+4. rejected
+5. response
 
 ### Orden recomendado en pipeline de log
 
 1. Construir context/meta.
-2. Aplicar validator.sanitize.
-3. Enviar a logger con formato estandar.
+2. Sanitizar context/meta con el componente sanitizer.
+3. Enviar al logger solo data sanitizada.
 
 ## Uso recomendado por capa del proyecto
 

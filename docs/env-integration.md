@@ -71,3 +71,31 @@ El codigo operativo consume unicamente variables canonicas del contrato vigente.
 Catalogo de enums permitidos:
 
 1. backend/config/env-allowed-values.json
+
+Schema y defaults de validacion:
+
+1. backend/config/env-validation-schema.base.json
+2. backend/config/env-validation-schema.overrides.json
+
+Catalogo de rutas de configuracion:
+
+1. backend/config/env-config-paths.json
+
+## 7) Sanitizer de payloads
+
+El backend aplica sanitizacion de payload en puntos de entrada criticos antes de validacion de negocio.
+
+Componentes:
+
+1. backend/src/sanitizer/sanitizer.js
+2. backend/config/sanitizer/sanitize-rules.js
+3. backend/config/sanitizer/sanitize-regex.js
+
+Integraciones actuales:
+
+1. backend/src/session/sessionRoutes.js
+2. backend/src/dispatcher/dispatcherRoutes.js
+
+Guia completa:
+
+1. docs/sanitizer-design.md
