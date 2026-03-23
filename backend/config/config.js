@@ -164,4 +164,22 @@ export default class Config {
       return {};
     }
   }
+
+  // Cargar y exponer valores permitidos para variables de entorno de tipo enum.
+  getEnvAllowedValues() {
+    try {
+      if (!this.ENV_ALLOWED_VALUES) {
+        const envAllowedValuesPath = path.resolve(
+          this.__dirname,
+          './env-allowed-values.json',
+        );
+        const raw = fsSync.readFileSync(envAllowedValuesPath, 'utf8');
+        this.ENV_ALLOWED_VALUES = JSON.parse(raw);
+      }
+      return this.ENV_ALLOWED_VALUES;
+    } catch (err) {
+      console.error('Error cargando env-allowed-values.json:', err);
+      return {};
+    }
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "APP_ENV": ["development", "test", "production"],
+  "APP_LOG_LEVEL": ["debug", "info", "warn", "error", "fatal"],
+  "SERVER_BIND_PROTOCOL": ["http", "https"],
+  "SERVER_MESSAGES_LANGUAGE": ["es", "en"],
+  "CORS_ALLOWED_METHODS": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  "CORS_ALLOWED_HEADERS": ["Content-Type", "Authorization"],
+  "SESSION_COOKIE_SAME_SITE": ["lax", "strict", "none"],
+  "AUTH_JWT_ALGORITHM": ["HS256", "HS384", "HS512"]
+}

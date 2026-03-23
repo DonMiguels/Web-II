@@ -10,13 +10,6 @@ const appEnv = process.env.APP_ENV || 'development';
 process.env.APP_ENV = appEnv;
 
 const envFiles = [
-  // Compatibilidad legacy temporal durante la migracion.
-  path.join(envDir, 'server.env'),
-  path.join(envDir, 'db.env'),
-  path.join(envDir, 'auth.env'),
-  path.join(envDir, 'session.env'),
-  path.join(envDir, 'services.env'),
-  path.join(envDir, 'frontend.env'),
   path.join(envDir, '.env'),
   path.join(envDir, appEnv, 'server.env'),
   path.join(envDir, appEnv, 'db.env'),

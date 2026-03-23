@@ -1,8 +1,37 @@
 #!/usr/bin/env node
 import { promises as fs } from 'fs';
+import fsSync from 'fs';
 import path from 'path';
 
 const forceOverwrite = process.argv.includes('--force');
+
+const DEFAULT_ENV_ALLOWED_VALUES = {
+  CORS_ALLOWED_METHODS: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  CORS_ALLOWED_HEADERS: ['Content-Type', 'Authorization'],
+};
+
+function loadEnvAllowedValues(rootDir) {
+  try {
+    const filePath = path.join(
+      rootDir,
+      'backend',
+      'config',
+      'env-allowed-values.json',
+    );
+    if (!fsSync.existsSync(filePath)) {
+      return DEFAULT_ENV_ALLOWED_VALUES;
+    }
+
+    const raw = fsSync.readFileSync(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_ENV_ALLOWED_VALUES,
+      ...parsed,
+    };
+  } catch {
+    return DEFAULT_ENV_ALLOWED_VALUES;
+  }
+}
 
 async function ensureDir(dirPath) {
   await fs.mkdir(dirPath, { recursive: true });
@@ -21,9 +50,20 @@ async function ensureFile(filePath, content) {
   console.log(`[ok] Creado: ${filePath}`);
 }
 
-function renderServerEnv(profile) {
+function renderServerEnv(profile, envAllowedValues) {
   const isProd = profile === 'production';
   const host = isProd ? '0.0.0.0' : '127.0.0.1';
+
+  const corsMethods = (envAllowedValues.CORS_ALLOWED_METHODS ||
+    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_METHODS)
+    .join(',')
+    .trim();
+
+  const corsHeaders = (envAllowedValues.CORS_ALLOWED_HEADERS ||
+    DEFAULT_ENV_ALLOWED_VALUES.CORS_ALLOWED_HEADERS)
+    .join(',')
+    .trim();
+
   return (
     '# Variables de servidor y CORS\n' +
     `SERVER_BIND_PROTOCOL=http\n` +
@@ -31,8 +71,8 @@ function renderServerEnv(profile) {
     'SERVER_BIND_PORT=3000\n' +
     'SERVER_MESSAGES_LANGUAGE=es\n' +
     'CORS_ALLOWED_ORIGINS=http://localhost:5173\n' +
-    'CORS_ALLOWED_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS\n' +
-    'CORS_ALLOWED_HEADERS=Content-Type,Authorization\n' +
+    `CORS_ALLOWED_METHODS=${corsMethods}\n` +
+    `CORS_ALLOWED_HEADERS=${corsHeaders}\n` +
     'CORS_ALLOW_CREDENTIALS=true\n'
   );
 }
@@ -131,6 +171,7 @@ function renderDockerEnv() {
 async function main() {
   const root = process.cwd();
   const envDir = path.join(root, 'env');
+  const envAllowedValues = loadEnvAllowedValues(root);
 
   await ensureDir(envDir);
 
@@ -149,7 +190,7 @@ async function main() {
 
     await ensureFile(
       path.join(profileDir, 'server.env'),
-      renderServerEnv(profile),
+      renderServerEnv(profile, envAllowedValues),
     );
     await ensureFile(path.join(profileDir, 'db.env'), renderDbEnv());
     await ensureFile(path.join(profileDir, 'auth.env'), renderAuthEnv());

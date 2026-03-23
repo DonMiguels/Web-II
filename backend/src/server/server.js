@@ -25,6 +25,9 @@ class Server {
   }
 
   configuration() {
+    const config = new Config();
+    const envAllowedValues = config.getEnvAllowedValues();
+
     const appEnv = process.env.APP_ENV || 'development';
 
     const allowedOriginsRaw =
@@ -34,11 +37,19 @@ class Server {
       process.env.FRONTEND_PUBLIC_URL ||
       'http://localhost:5173';
 
+    const allowedMethodsCatalog =
+      envAllowedValues.CORS_ALLOWED_METHODS ||
+      ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+
     const allowedMethodsRaw =
-      process.env.CORS_ALLOWED_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
+      process.env.CORS_ALLOWED_METHODS || allowedMethodsCatalog.join(',');
+
+    const allowedHeadersCatalog =
+      envAllowedValues.CORS_ALLOWED_HEADERS ||
+      ['Content-Type', 'Authorization'];
 
     const allowedHeadersRaw =
-      process.env.CORS_ALLOWED_HEADERS || 'Content-Type,Authorization';
+      process.env.CORS_ALLOWED_HEADERS || allowedHeadersCatalog.join(',');
 
     const allowCredentials =
       (process.env.CORS_ALLOW_CREDENTIALS || 'true') === 'true';
@@ -60,20 +71,31 @@ class Server {
 
     const allowedMethods = allowedMethodsRaw
       .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
+      .map((value) => value.trim().toUpperCase())
+      .filter((value) => allowedMethodsCatalog.includes(value));
+
+    const allowedHeaderMap = new Map(
+      allowedHeadersCatalog.map((value) => [value.toLowerCase(), value]),
+    );
 
     const allowedHeaders = allowedHeadersRaw
       .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
+      .map((value) => value.trim().toLowerCase())
+      .filter((value) => allowedHeaderMap.has(value))
+      .map((value) => allowedHeaderMap.get(value));
+
+    const effectiveAllowedMethods =
+      allowedMethods.length > 0 ? allowedMethods : allowedMethodsCatalog;
+
+    const effectiveAllowedHeaders =
+      allowedHeaders.length > 0 ? allowedHeaders : allowedHeadersCatalog;
 
     this.app.use(
       cors({
         origin: allowedOrigins,
         credentials: allowCredentials,
-        methods: allowedMethods,
-        allowedHeaders: allowedHeaders,
+        methods: effectiveAllowedMethods,
+        allowedHeaders: effectiveAllowedHeaders,
       }),
     );
     this.app.use(bodyParser.json());
