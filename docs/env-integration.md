@@ -1,6 +1,6 @@
 # Integracion de entorno centralizado
 
-Este proyecto usa una carpeta unica de configuracion en `env/`.
+Este proyecto usa una carpeta unica de configuracion en env/ con perfiles por entorno.
 
 ## 1) Inicializar plantillas locales
 
@@ -12,50 +12,62 @@ node setup-env.js
 
 Se crean (si no existen):
 
-- `env/.env.development`
-- `env/.env.test`
+1. env/.env
+2. env/development/*.env
+3. env/test/*.env
+4. env/production/*.env
 
 ## 2) Backend (Node + dotenv)
 
-El backend carga automaticamente archivos desde `env/` en este orden:
+El backend carga automaticamente archivos desde env/ en este orden:
 
-1. `.env.{NODE_ENV}`
-2. `server.env`
-3. `db.env`
-4. `auth.env`
-5. `session.env`
-6. `services.env`
-7. `frontend.env`
-8. `docker.env`
+1. env/.env
+2. env/{APP_ENV}/server.env
+3. env/{APP_ENV}/db.env
+4. env/{APP_ENV}/auth.env
+5. env/{APP_ENV}/session.env
+6. env/{APP_ENV}/services.env
+7. env/{APP_ENV}/frontend.env
 
-Archivo responsable: `backend/main.js`.
+APP_ENV por defecto: development.
+
+Nota:
+
+1. docker.env no se carga en runtime de backend.
+
+Archivo responsable: backend/main.js.
 
 ## 3) Frontend (Vite)
 
-Vite ahora usa `envDir: "../env"`, por lo que las variables para frontend deben vivir en `env/` y tener prefijo `VITE_`.
+Vite usa envDir="../env" y carga env/.env + env/{APP_ENV}/frontend.env.
 
-Archivo responsable: `frontend/vite.config.js`.
+Regla de exposicion a cliente:
+
+1. Prefijo FRONT_.
+
+Archivo responsable: frontend/vite.config.js.
 
 ## 4) Docker Compose
 
-Los stacks `db/` y `db-win/` usan:
+Los stacks db/ y db-win/ usan:
 
-- `env_file: ../env/docker.env`
+1. env_file: ../env/${APP_ENV:-development}/docker.env
 
 Archivos responsables:
 
-- `db/docker-compose.yml`
-- `db-win/docker-compose.yml`
+1. db/docker-compose.yml
+2. db-win/docker-compose.yml
 
 ## 5) Seguridad Git
 
-`.gitignore` protege todos los `.env.*` dentro de `env/` excepto la plantilla:
+Regla de seguridad principal:
 
-```gitignore
-/env/.env.*
-!/env/.env.example
-```
+1. No subir secretos reales en archivos de env.
 
 ## 6) Variables canonicas
 
-El codigo operativo consume unicamente variables canonicas definidas en `env/.env.example`.
+El codigo operativo consume unicamente variables canonicas del contrato vigente.
+
+Catalogo de enums permitidos:
+
+1. backend/config/env-allowed-values.json

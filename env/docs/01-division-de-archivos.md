@@ -1,79 +1,81 @@
 # Division de Archivos de Entorno
 
-Este documento define para que sirve cada archivo de `env/` y como decidir donde agregar una variable.
+Este documento define la arquitectura vigente de env y donde debe vivir cada variable.
 
-## Principio de diseno
+## Estructura oficial
 
-La separacion por dominio reduce acoplamiento y evita errores de operacion. Una variable de servidor no debe convivir en el mismo archivo que una credencial de proveedor externo, y una variable de Docker no debe mezclarse con runtime de frontend.
+1. env/.env
+2. env/development/server.env
+3. env/development/db.env
+4. env/development/auth.env
+5. env/development/session.env
+6. env/development/services.env
+7. env/development/frontend.env
+8. env/development/docker.env
+9. env/test/server.env
+10. env/test/db.env
+11. env/test/auth.env
+12. env/test/session.env
+13. env/test/services.env
+14. env/test/frontend.env
+15. env/test/docker.env
+16. env/production/server.env
+17. env/production/db.env
+18. env/production/auth.env
+19. env/production/session.env
+20. env/production/services.env
+21. env/production/frontend.env
+22. env/production/docker.env
 
-## Matriz de responsabilidad
+## Principios
 
-1. `.env.example`: contrato global. Responsable habitual: arquitectura/backend. Uso: todo el proyecto.
-1. `.env.test`: entorno consolidado de pruebas. Responsable habitual: QA/backend. Uso: backend y frontend en test.
-1. `server.env`: dominio HTTP, host, protocolo, idioma y CORS. Responsable habitual: backend. Uso: API Node.
-1. `db.env`: dominio de conexion app a PostgreSQL. Responsable habitual: backend/DBA. Uso: API Node.
-1. `auth.env`: dominio JWT. Responsable habitual: backend/seguridad. Uso: API Node.
-1. `session.env`: dominio sesion/cookies. Responsable habitual: backend/seguridad. Uso: API Node.
-1. `services.env`: dominio integraciones externas. Responsable habitual: backend/devops. Uso: API Node.
-1. `frontend.env`: dominio cliente Vite. Responsable habitual: frontend. Uso: React/Vite.
-1. `docker.env`: dominio infra de base y backup. Responsable habitual: devops/DBA. Uso: docker-compose.
+1. APP_ENV define el perfil activo y por defecto es development.
+2. env/.env es solo base global de app.
+3. docker.env es exclusivo para Docker Compose.
+4. Backend no carga docker.env en runtime.
+5. Frontend solo expone FRONT_ al cliente.
 
-## Scope detallado por archivo
+## Responsabilidad por archivo
 
-### .env.example
+1. .env: APP_ENV, APP_NAME, APP_LOG_LEVEL.
+2. server.env: bind, idioma, CORS.
+3. db.env: conexion app a PostgreSQL.
+4. auth.env: AUTH_JWT_*.
+5. session.env: politica de sesion y cookie.
+6. services.env: MAIL_* y servicios externos.
+7. frontend.env: FRONT_*.
+8. docker.env: imagenes, puertos y credenciales de compose.
 
-Es la fuente de verdad de nombres de variables. Debe incluir ejemplos no sensibles y comentarios claros. Toda variable nueva nace aqui.
+## Regla de decision rapida
 
-### .env.test
+1. API, host, puerto o CORS: server.env.
+2. Conexion a DB de la app: db.env.
+3. JWT: auth.env.
+4. Cookies/sesion: session.env.
+5. Integraciones externas: services.env.
+6. URL y metadata del frontend: frontend.env.
+7. Infra docker postgres/pgadmin/backups: docker.env.
 
-Es un perfil completo de testing. Permite ejecucion reproducible y puede usarse en modo exclusivo con `ENV_ONLY_FILE=.env.test`.
+## Convencion de nombres canonicos
 
-### server.env
+1. APP_* para metadatos globales.
+2. SERVER_\* y CORS_\* para backend HTTP.
+3. DB_* para conexion de aplicacion.
+4. AUTH_JWT_* para autenticacion.
+5. SESSION_* para sesion.
+6. MAIL_* para correo.
+7. FRONT_* para frontend.
+8. POSTGRES_\*, PGADMIN_\*, BACKUP_\*, SCHEDULE, HEALTHCHECK_PORT para docker.
 
-Contiene configuracion de red y comportamiento de servidor, por ejemplo `SERVER_PORT` y `SERVER_CORS_ALLOWED_ORIGINS`.
+## Catalogo de valores permitidos por enum
 
-### db.env
+Las variables de entorno con valores cerrados se centralizan en:
 
-Contiene configuracion de conexion del backend a la base de datos, por ejemplo `DB_POSTGRES_HOST` y `DB_POSTGRES_PASSWORD`.
+1. backend/config/env-allowed-values.json
 
-### auth.env
+Ejemplos:
 
-Contiene la configuracion de tokens, por ejemplo `JWT_SECRET` y `JWT_EXPIRES_IN`.
-
-### session.env
-
-Contiene la configuracion de sesion y cookies, por ejemplo `SESSION_SECRET`, `SESSION_COOKIE_SECURE` y `SESSION_COOKIE_MAX_AGE_MS`.
-
-### services.env
-
-Contiene variables de servicios externos, por ejemplo `SERVICE_RESEND_API_KEY` y `SERVICE_MAIL_FROM`.
-
-### frontend.env
-
-Contiene variables del frontend. En Vite solo son visibles en cliente aquellas con prefijo `VITE_`.
-
-### docker.env
-
-Contiene variables consumidas por compose, postgres, pgadmin y backup, por ejemplo `POSTGRES_USER`, `PGADMIN_DEFAULT_EMAIL` y `SCHEDULE`.
-
-## Regla de decision
-
-Usa esta tabla para ubicar una variable nueva en segundos.
-
-1. Cambiar puerto de API o CORS: `server.env`.
-1. Cambiar credenciales DB de la app: `db.env`.
-1. Cambiar politica JWT: `auth.env`.
-1. Cambiar cookies/sesion: `session.env`.
-1. Cambiar API key de terceros: `services.env`.
-1. Cambiar URL/API del frontend: `frontend.env`.
-1. Cambiar postgres/pgadmin/backups en compose: `docker.env`.
-
-## Estandar de nombres
-
-El sistema usa exclusivamente nombres canonicos definidos en `.env.example`.
-
-Politica recomendada:
-
-1. No crear alias de variables antiguas.
-1. Mantener cada variable en su archivo de dominio.
-1. Priorizar nombres canonicos definidos en `.env.example`.
+1. CORS_ALLOWED_METHODS
+2. CORS_ALLOWED_HEADERS
+3. APP_LOG_LEVEL
+4. SESSION_COOKIE_SAME_SITE

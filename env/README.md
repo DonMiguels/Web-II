@@ -9,77 +9,90 @@ El sistema de entornos busca cuatro resultados: evitar secretos hardcodeados, se
 ## Convenciones oficiales
 
 1. Formato: UPPER_SNAKE_CASE.
-1. Frontend: solo variables con prefijo VITE\_.
+1. Backend: APP_ENV define el perfil activo (development por defecto).
+1. Frontend: variables publicas con prefijo FRONT_.
 1. Seguridad: nunca subir secretos reales al repositorio.
-1. Contrato base: toda variable nueva inicia en `.env.example`.
+1. Configuracion global base: env/.env.
 
 ## Estructura de archivos
 
-1. `.env.example`: contrato maestro y plantilla oficial.
-1. `.env.test`: entorno consolidado para pruebas.
-1. `server.env`: HTTP, host, protocolo, idioma y CORS.
-1. `db.env`: conexion DB de la aplicacion.
-1. `auth.env`: JWT y expiraciones.
-1. `session.env`: sesion y politica de cookies.
-1. `services.env`: integraciones externas.
-1. `frontend.env`: variables de Vite/React.
-1. `docker.env`: variables de compose/postgres/pgadmin/backup.
+1. .env: capa global de app (APP_ENV, APP_NAME, APP_LOG_LEVEL).
+1. development/server.env
+1. development/db.env
+1. development/auth.env
+1. development/session.env
+1. development/services.env
+1. development/frontend.env
+1. development/docker.env
+1. test/server.env
+1. test/db.env
+1. test/auth.env
+1. test/session.env
+1. test/services.env
+1. test/frontend.env
+1. test/docker.env
+1. production/server.env
+1. production/db.env
+1. production/auth.env
+1. production/session.env
+1. production/services.env
+1. production/frontend.env
+1. production/docker.env
 
 ## Carga de variables en backend
 
-Implementado en `backend/main.js`.
+Implementado en backend/main.js.
 
 ### Modo por capas (default)
 
 Orden de lectura efectivo:
 
-1. `.env.{NODE_ENV}`
-1. `server.env`
-1. `db.env`
-1. `auth.env`
-1. `session.env`
-1. `services.env`
-1. `frontend.env`
-1. `docker.env`
+1. env/.env
+1. env/{APP_ENV}/server.env
+1. env/{APP_ENV}/db.env
+1. env/{APP_ENV}/auth.env
+1. env/{APP_ENV}/session.env
+1. env/{APP_ENV}/services.env
+1. env/{APP_ENV}/frontend.env
 
-### Modo estricto por entorno
+Nota: docker.env es exclusivo de Docker Compose.
 
-Activacion: `ENV_ONLY_MODE=true`.
-
-Resultado: solo se carga `.env.{NODE_ENV}`.
-
-### Modo archivo unico
-
-Activacion: `ENV_ONLY_FILE=.env.test`.
-
-Resultado: solo se carga el archivo indicado.
+APP_ENV por defecto es development.
 
 ### Regla de precedencia
 
-El backend usa dotenv con `override: true`. Si una variable aparece en mas de un archivo, prevalece el valor del ultimo archivo cargado.
+El backend usa dotenv con override=true. Si una variable aparece en mas de un archivo, prevalece el valor del ultimo archivo cargado.
 
 ## Carga de variables en frontend
 
-Implementado en `frontend/vite.config.js` con `envDir: "../env"`.
+Implementado en frontend/vite.config.js con envDir="../env".
 
-Vite toma variables de esta carpeta y solo expone al navegador variables con prefijo `VITE_`.
+Vite toma variables de esta carpeta y solo expone al navegador variables con prefijo FRONT\_ (y VITE\_ solo por compatibilidad temporal).
 
 ## Carga de variables en docker
 
-`db/docker-compose.yml` y `db-win/docker-compose.yml` usan `env_file: ../env/docker.env`.
+db/docker-compose.yml y db-win/docker-compose.yml usan env_file por perfil, por ejemplo: ../env/development/docker.env.
 
 ## Flujo recomendado del equipo
 
-1. Declarar variables nuevas en `env/.env.example`.
-1. Ubicarlas en el archivo de dominio correcto.
+1. Declarar variable base en env/.env o en su dominio de perfil.
+1. Ubicarla en el archivo de dominio correcto dentro de development/test/production.
 1. Consumirlas en codigo o compose.
 1. Documentarlas en el catalogo y recetas operativas.
 1. Verificar que no existan secretos reales en cambios versionados.
 
 ## Navegacion de documentacion
 
-1. `env/01-division-de-archivos.md`: arquitectura y responsabilidades.
-1. `env/02-catalogo-de-variables.md`: definicion variable por variable.
-1. `env/03-operacion-y-recetas.md`: comandos y flujos de ejecucion.
-1. `env/04-troubleshooting.md`: diagnostico de errores comunes.
-1. `env/05-seguridad-y-gobernanza.md`: politicas y controles de seguridad.
+1. env/docs/01-division-de-archivos.md: arquitectura y responsabilidades.
+2. env/docs/02-catalogo-de-variables.md: contrato vigente de variables.
+3. env/docs/03-operacion-y-recetas.md: comandos y flujos de ejecucion.
+4. env/docs/04-troubleshooting.md: diagnostico de errores comunes.
+5. env/docs/05-seguridad-y-gobernanza.md: politicas y controles de seguridad.
+6. env/docs/06-contrato-final-de-variables-fase1.md: documento historico (referencial).
+7. env/docs/07-runbook-fase3.md: plantilla de ejecucion de Fase 3.
+
+Regla de lectura:
+
+1. Para operacion diaria, usar 01-05.
+2. 06 se conserva como historial de decisiones.
+3. 07 se usa como runbook de implementacion y cierre de Fase 3.

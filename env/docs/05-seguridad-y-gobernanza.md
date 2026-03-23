@@ -15,19 +15,29 @@
 
 ## Politica de versionado
 
-- Commit permitido: `env/.env.example`.
-- Commit no permitido: cualquier `env/.env.*` con secretos reales.
+1. Commit permitido: estructura de env por perfiles, setup-env.js y documentacion.
+2. Commit no permitido: secretos reales en cualquier archivo de env.
 
 ## Politica de nombres
 
-- Canonicos nuevos:
-  - `SERVER_*`
-  - `DB_POSTGRES_*`
-  - `SESSION_*`
-  - `JWT_*`
-  - `SERVICE_*`
-  - `VITE_*`
-  - `DOCKER_*`
+Canonicos vigentes:
+
+1. APP_\*.
+2. SERVER_\* y CORS_\*.
+3. DB_\*.
+4. AUTH_JWT_\*.
+5. SESSION_\*.
+6. MAIL_\*.
+7. FRONT_\*.
+8. POSTGRES_\*, PGADMIN_\*, BACKUP_\*, SCHEDULE, HEALTHCHECK_PORT.
+
+Variables enum y valores permitidos:
+
+1. Se definen en backend/config/env-allowed-values.json.
+
+Regla:
+
+1. No introducir enums hardcodeados en codigo si ya existen en ese catalogo.
 
 ## Rotacion de secretos
 
@@ -39,16 +49,17 @@ Cuándo rotar:
 
 Qué rotar como minimo:
 
-1. `JWT_SECRET`.
+1. AUTH_JWT_SECRET.
 1. `SESSION_SECRET`.
-1. `DB_POSTGRES_PASSWORD`.
-1. `SERVICE_RESEND_API_KEY`.
+1. DB_PASSWORD.
+1. MAIL_RESEND_API_KEY.
 
 ## Auditoria minima por sprint
 
-- Verificar que `.env.example` este al dia.
-- Verificar que no hay secretos en commits.
-- Verificar que nuevos servicios usan prefijo `SERVICE_`.
+1. Verificar consistencia entre env/.env y perfiles development/test/production.
+2. Verificar que no hay secretos en commits.
+3. Verificar que nuevos servicios usan prefijo MAIL_ cuando aplique.
+4. Verificar consistencia del catalogo de enums en env-allowed-values.json.
 
 ## Checklist de hardening para produccion
 

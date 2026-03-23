@@ -1,98 +1,115 @@
 # Catalogo de Variables de Entorno
 
-Referencia central de todas las variables conocidas en el proyecto.
+Referencia central del contrato vigente por dominio.
 
-## Variables canonicas
+## 1. Base global (env/.env)
 
-### Runtime
+1. APP_ENV: perfil activo. Ejemplo: development.
+2. APP_NAME: nombre logico de aplicacion.
+3. APP_LOG_LEVEL: nivel de logs (debug, info, warn, error, fatal).
 
-1. `NODE_ENV`: requerida. Ejemplo: `development`. Define el entorno de ejecucion general.
-1. `APP_NAME`: opcional. Ejemplo: `web-ii`. Nombre logico de la aplicacion.
+## 2. Servidor y CORS (env/{APP_ENV}/server.env)
 
-### Server
+1. SERVER_BIND_PROTOCOL: http o https.
+2. SERVER_BIND_HOST: host o IP de bind.
+3. SERVER_BIND_PORT: puerto de backend.
+4. SERVER_MESSAGES_LANGUAGE: idioma de mensajes (es, en).
+5. CORS_ALLOWED_ORIGINS: lista CSV de origenes.
+6. CORS_ALLOWED_METHODS: lista CSV filtrada por catalogo permitido.
+7. CORS_ALLOWED_HEADERS: lista CSV filtrada por catalogo permitido.
+8. CORS_ALLOW_CREDENTIALS: true o false.
 
-1. `SERVER_PORT`: requerida. Ejemplo: `3000`. Puerto de escucha del backend.
-1. `SERVER_HOST`: requerida. Ejemplo: `localhost`. Host o IP de bind.
-1. `SERVER_PROTOCOL`: requerida. Ejemplo: `http`. Protocolo publico esperado.
-1. `SERVER_LANGUAGE`: opcional. Ejemplo: `es`. Idioma por defecto.
-1. `SERVER_PUBLIC_URL`: opcional. Ejemplo: `http://localhost:3000`. URL publica del backend.
-1. `SERVER_CORS_ALLOWED_ORIGINS`: requerida. Ejemplo: `http://localhost:5173`. Lista separada por coma.
+## 3. Sesion (env/{APP_ENV}/session.env)
 
-### Session
+1. SESSION_SECRET.
+2. SESSION_COOKIE_NAME.
+3. SESSION_COOKIE_SECURE.
+4. SESSION_COOKIE_HTTP_ONLY.
+5. SESSION_COOKIE_SAME_SITE.
+6. SESSION_COOKIE_MAX_AGE_SECONDS.
+7. SESSION_RESAVE.
+8. SESSION_SAVE_UNINITIALIZED.
 
-1. `SESSION_SECRET`: requerida. Clave de firma de sesion.
-1. `SESSION_COOKIE_NAME`: opcional. Ejemplo: `webii.sid`.
-1. `SESSION_COOKIE_SECURE`: requerida. `true` solo en HTTPS.
-1. `SESSION_COOKIE_HTTP_ONLY`: requerida. Recomendado `true`.
-1. `SESSION_COOKIE_MAX_AGE_MS`: requerida. TTL de cookie en milisegundos.
-1. `SESSION_RESAVE`: requerida. Flag de express-session.
-1. `SESSION_SAVE_UNINITIALIZED`: requerida. Flag de express-session.
+## 4. Auth JWT (env/{APP_ENV}/auth.env)
 
-### Auth
+1. AUTH_JWT_SECRET.
+2. AUTH_JWT_EXPIRES_IN.
+3. AUTH_JWT_ISSUER.
+4. AUTH_JWT_AUDIENCE.
+5. AUTH_JWT_ALGORITHM.
 
-1. `JWT_SECRET`: requerida. Clave de firma JWT.
-1. `JWT_EXPIRES_IN`: requerida. Ejemplo: `5m`.
+## 5. Base de datos app (env/{APP_ENV}/db.env)
 
-### Database
+1. DB_HOST.
+2. DB_PORT.
+3. DB_NAME.
+4. DB_USER.
+5. DB_PASSWORD.
+6. DB_SSL.
+7. DB_SSL_REJECT_UNAUTHORIZED.
+8. DB_POOL_MAX.
+9. DB_POOL_IDLE_TIMEOUT_MS.
+10. DB_POOL_CONNECTION_TIMEOUT_MS.
+11. DB_SCHEMA_DEFAULT.
 
-1. `DB_POSTGRES_HOST`: requerida. Ejemplo: `127.0.0.1`.
-1. `DB_POSTGRES_PORT`: requerida. Ejemplo: `5432`.
-1. `DB_POSTGRES_NAME`: requerida. Ejemplo: `webii`.
-1. `DB_POSTGRES_USER`: requerida. Usuario DB.
-1. `DB_POSTGRES_PASSWORD`: requerida. Password DB.
-1. `DB_POSTGRES_SSL`: opcional. Ejemplo: `false`.
+## 6. Servicios externos (env/{APP_ENV}/services.env)
 
-### Services
+1. MAIL_RESEND_API_KEY.
+2. MAIL_DEFAULT_FROM.
+3. MAIL_REPLY_TO.
+4. MAIL_ENABLED.
 
-1. `SERVICE_RESEND_API_KEY`: requerida si se usa envio de correos.
-1. `SERVICE_MAIL_FROM`: opcional. Ejemplo: `onboarding@resend.dev`.
+## 7. Frontend (env/{APP_ENV}/frontend.env)
 
-### Frontend
+1. FRONT_API_URL.
+2. FRONT_PUBLIC_URL.
+3. FRONT_APP_NAME.
+4. FRONT_APP_ENV.
 
-1. `VITE_API_URL`: requerida. Ejemplo: `http://localhost:3000/user`.
-1. `FRONTEND_PUBLIC_URL`: requerida para links y callbacks.
+## 8. Docker Compose (env/{APP_ENV}/docker.env)
 
-### Docker aliases
+1. POSTGRES_IMAGE.
+2. PGADMIN_IMAGE.
+3. BACKUP_IMAGE.
+4. POSTGRES_CONTAINER_NAME.
+5. PGADMIN_CONTAINER_NAME.
+6. BACKUP_CONTAINER_NAME.
+7. POSTGRES_BIND_IP.
+8. POSTGRES_BIND_PORT.
+9. PGADMIN_BIND_IP.
+10. PGADMIN_BIND_PORT.
+11. POSTGRES_USER.
+12. POSTGRES_PASSWORD.
+13. POSTGRES_DB.
+14. POSTGRES_MULTIPLE_DATABASES.
+15. RESTORE_FROM_BACKUP.
+16. PGADMIN_DEFAULT_EMAIL.
+17. PGADMIN_DEFAULT_PASSWORD.
+18. BACKUP_ON_START.
+19. BACKUP_ON_STOP.
+20. BACKUP_KEEP_DAYS.
+21. SCHEDULE.
+22. HEALTHCHECK_PORT.
 
-1. `DOCKER_POSTGRES_USER`.
-1. `DOCKER_POSTGRES_PASSWORD`.
-1. `DOCKER_POSTGRES_DB`.
-1. `DOCKER_POSTGRES_MULTIPLE_DATABASES`.
-1. `DOCKER_RESTORE_FROM_BACKUP`.
-1. `DOCKER_POSTGRES_BIND_PORT`.
-1. `DOCKER_PGADMIN_PORT`.
-1. `DOCKER_PGADMIN_DEFAULT_EMAIL`.
-1. `DOCKER_PGADMIN_DEFAULT_PASSWORD`.
-1. `DOCKER_BACKUP_ON_START`.
-1. `DOCKER_BACKUP_ON_STOP`.
-1. `DOCKER_BACKUP_KEEP_DAYS`.
-1. `DOCKER_BACKUP_SCHEDULE`.
-1. `DOCKER_BACKUP_HEALTHCHECK_PORT`.
+## 9. Valores permitidos de tipo enum
 
-## Variables usadas por docker-compose
+Catalogo central:
 
-Estas son leidas directamente por compose desde `docker.env`.
+1. backend/config/env-allowed-values.json
 
-1. `POSTGRES_USER`: credencial principal de postgres.
-1. `POSTGRES_PASSWORD`: password principal de postgres.
-1. `POSTGRES_DB`: DB por defecto.
-1. `POSTGRES_MULTIPLE_DATABASES`: DB objetivo de inicializacion/restauracion.
-1. `RESTORE_FROM_BACKUP`: habilita restauracion automatica.
-1. `PGADMIN_DEFAULT_EMAIL`: usuario de pgAdmin.
-1. `PGADMIN_DEFAULT_PASSWORD`: password de pgAdmin.
-1. `BACKUP_ON_START`: backup al inicio.
-1. `BACKUP_ON_STOP`: backup al detenerse.
-1. `BACKUP_KEEP_DAYS`: retencion de backups.
-1. `SCHEDULE`: programacion de backup.
-1. `HEALTHCHECK_PORT`: puerto healthcheck.
+Variables con control de valores concretos:
 
-## Estandar de consumo
+1. APP_ENV.
+2. APP_LOG_LEVEL.
+3. SERVER_BIND_PROTOCOL.
+4. SERVER_MESSAGES_LANGUAGE.
+5. CORS_ALLOWED_METHODS.
+6. CORS_ALLOWED_HEADERS.
+7. SESSION_COOKIE_SAME_SITE.
+8. AUTH_JWT_ALGORITHM.
 
-El codigo operativo debe consumir solo variables canonicas y no debe depender de aliases legacy.
+## 10. Politica de consumo
 
-## Politicas de seguridad
-
-- No colocar secretos reales en `.env.example`.
-- Rotar `JWT_SECRET` y `SESSION_SECRET` cuando exista sospecha de filtracion.
-- En produccion, usar valores unicos y de alta entropia.
-- Mantener fuera del repositorio cualquier archivo `.env.*` excepto `.env.example`.
+1. No usar aliases legacy.
+2. Usar solo nombres canonicos listados arriba.
+3. Si una variable nueva es enum, agregar sus valores en env-allowed-values.json.
