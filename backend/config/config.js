@@ -8,15 +8,23 @@ import yaml from 'yaml';
 export default class Config {
   constructor() {
     if (!Config.instance) {
-      this.PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
-      this.SERVER_IP = process.env.SERVER_HOST || process.env.IP || 'localhost';
+      this.APP_NAME = process.env.APP_NAME || 'web-ii';
+      this.PORT = Number(
+        process.env.SERVER_BIND_PORT || process.env.SERVER_PORT || 3000,
+      );
+      this.SERVER_IP =
+        process.env.SERVER_BIND_HOST || process.env.SERVER_HOST || 'localhost';
       this.PROTOCOL =
-        process.env.SERVER_PROTOCOL || process.env.PROTOCOL || 'http';
+        process.env.SERVER_BIND_PROTOCOL ||
+        process.env.SERVER_PROTOCOL ||
+        'http';
       this.SERVER_URL = `${this.PROTOCOL}://${this.SERVER_IP}:${this.PORT}`;
 
       this.MESSAGES = {};
       this.LANGUAGE =
-        process.env.SERVER_LANGUAGE || process.env.LANGUAGE || 'es';
+        process.env.SERVER_MESSAGES_LANGUAGE ||
+        process.env.SERVER_LANGUAGE ||
+        'es';
 
       this.STATUS_CODES = {
         OK: 200, // La solicitud se ha procesado correctamente

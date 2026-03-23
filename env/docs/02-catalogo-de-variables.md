@@ -86,23 +86,9 @@ Estas son leidas directamente por compose desde `docker.env`.
 1. `SCHEDULE`: programacion de backup.
 1. `HEALTHCHECK_PORT`: puerto healthcheck.
 
-## Variables legacy compatibles
+## Estandar de consumo
 
-No crear nuevas configuraciones con estas, usar solo como puente de migracion.
-
-1. `PORT` -> `SERVER_PORT`.
-1. `IP` -> `SERVER_HOST`.
-1. `PROTOCOL` -> `SERVER_PROTOCOL`.
-1. `LANGUAGE` -> `SERVER_LANGUAGE`.
-1. `DB_HOST` -> `DB_POSTGRES_HOST`.
-1. `DB_PORT` -> `DB_POSTGRES_PORT`.
-1. `DB_NAME` -> `DB_POSTGRES_NAME`.
-1. `DB_USER` -> `DB_POSTGRES_USER`.
-1. `DB_PASSWORD` -> `DB_POSTGRES_PASSWORD`.
-1. `SECRET` -> `SESSION_SECRET`.
-1. `RESEND_API_KEY` -> `SERVICE_RESEND_API_KEY`.
-1. `EMAIL` -> `SERVICE_MAIL_FROM`.
-1. `FRONTEND_URL` -> `FRONTEND_PUBLIC_URL`.
+El codigo operativo debe consumir solo variables canonicas y no debe depender de aliases legacy.
 
 ## Politicas de seguridad
 

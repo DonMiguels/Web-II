@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "defaultLevel": "info",
+  "levels": {
+    "debug": {
+      "severity": 10,
+      "includes": ["debug", "info", "warn", "error", "fatal"],
+      "description": "Maxima verbosidad para desarrollo y diagnostico profundo"
+    },
+    "info": {
+      "severity": 20,
+      "includes": ["info", "warn", "error", "fatal"],
+      "description": "Operacion normal con eventos principales"
+    },
+    "warn": {
+      "severity": 30,
+      "includes": ["warn", "error", "fatal"],
+      "description": "Anomalias no fatales"
+    },
+    "error": {
+      "severity": 40,
+      "includes": ["error", "fatal"],
+      "description": "Errores que afectan una accion"
+    },
+    "fatal": {
+      "severity": 50,
+      "includes": ["fatal"],
+      "description": "Errores criticos que impiden continuar"
+    }
+  },
+  "sensitiveKeys": [
+    "password",
+    "token",
+    "authorization",
+    "cookie",
+    "secret",
+    "apiKey",
+    "dbPassword",
+    "sessionSecret"
+  ],
+  "requiredFields": [
+    "timestamp",
+    "level",
+    "app",
+    "env",
+    "message",
+    "context",
+    "meta"
+  ]
+}

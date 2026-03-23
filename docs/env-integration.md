@@ -20,14 +20,13 @@ Se crean (si no existen):
 El backend carga automaticamente archivos desde `env/` en este orden:
 
 1. `.env.{NODE_ENV}`
-2. `.env`
-3. `server.env`
-4. `db.env`
-5. `auth.env`
-6. `session.env`
-7. `services.env`
-8. `frontend.env`
-9. `docker.env`
+2. `server.env`
+3. `db.env`
+4. `auth.env`
+5. `session.env`
+6. `services.env`
+7. `frontend.env`
+8. `docker.env`
 
 Archivo responsable: `backend/main.js`.
 
@@ -57,7 +56,6 @@ Archivos responsables:
 !/env/.env.example
 ```
 
-## 6) Variables legacy
+## 6) Variables canonicas
 
-Se mantiene compatibilidad temporal con variables antiguas (`PORT`, `DB_HOST`, `SECRET`, etc.).
-A mediano plazo, migrar completamente a los nombres normalizados definidos en `env/.env.example`.
+El codigo operativo consume unicamente variables canonicas definidas en `env/.env.example`.

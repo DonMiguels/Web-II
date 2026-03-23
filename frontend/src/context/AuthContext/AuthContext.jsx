@@ -2,7 +2,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/user',
+  baseURL:
+    import.meta.env.FRONT_API_URL || import.meta.env.VITE_API_URL || '/user',
   withCredentials: true,
 });
 

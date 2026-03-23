@@ -68,12 +68,12 @@ Usa esta tabla para ubicar una variable nueva en segundos.
 1. Cambiar URL/API del frontend: `frontend.env`.
 1. Cambiar postgres/pgadmin/backups en compose: `docker.env`.
 
-## Compatibilidad legacy
+## Estandar de nombres
 
-El sistema mantiene variables legacy para transicion sin corte. Ejemplos: `PORT`, `DB_HOST`, `SECRET`, `EMAIL`, `FRONTEND_URL`.
+El sistema usa exclusivamente nombres canonicos definidos en `.env.example`.
 
 Politica recomendada:
 
-1. No crear nuevas variables legacy.
-1. Mantener mapeos legacy solo durante migracion.
+1. No crear alias de variables antiguas.
+1. Mantener cada variable en su archivo de dominio.
 1. Priorizar nombres canonicos definidos en `.env.example`.

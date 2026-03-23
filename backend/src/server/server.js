@@ -14,7 +14,9 @@ class Server {
     }
 
     this.app = express();
-    this.PORT = process.env.SERVER_PORT || process.env.PORT || 3000;
+    this.PORT = Number(
+      process.env.SERVER_BIND_PORT || process.env.SERVER_PORT || 3000,
+    );
     this.configuration();
     this.routes();
     this.config = new Config();
@@ -23,13 +25,45 @@ class Server {
   }
 
   configuration() {
+    const appEnv = process.env.APP_ENV || 'development';
+
     const allowedOriginsRaw =
-      process.env.SERVER_CORS_ALLOWED_ORIGINS ||
       process.env.CORS_ALLOWED_ORIGINS ||
+      process.env.SERVER_CORS_ALLOWED_ORIGINS ||
+      process.env.FRONT_PUBLIC_URL ||
       process.env.FRONTEND_PUBLIC_URL ||
-      process.env.FRONTEND_URL ||
       'http://localhost:5173';
+
+    const allowedMethodsRaw =
+      process.env.CORS_ALLOWED_METHODS || 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
+
+    const allowedHeadersRaw =
+      process.env.CORS_ALLOWED_HEADERS || 'Content-Type,Authorization';
+
+    const allowCredentials =
+      (process.env.CORS_ALLOW_CREDENTIALS || 'true') === 'true';
+
+    const sessionCookieSecure =
+      (process.env.SESSION_COOKIE_SECURE ||
+        (appEnv === 'production' ? 'true' : 'false')) === 'true';
+
+    const sessionCookieSameSite = process.env.SESSION_COOKIE_SAME_SITE || 'lax';
+
+    const sessionMaxAgeMs = process.env.SESSION_COOKIE_MAX_AGE_SECONDS
+      ? Number(process.env.SESSION_COOKIE_MAX_AGE_SECONDS) * 1000
+      : Number(process.env.SESSION_COOKIE_MAX_AGE_MS || 5 * 60 * 1000);
+
     const allowedOrigins = allowedOriginsRaw
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const allowedMethods = allowedMethodsRaw
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+
+    const allowedHeaders = allowedHeadersRaw
       .split(',')
       .map((value) => value.trim())
       .filter(Boolean);
@@ -37,26 +71,25 @@ class Server {
     this.app.use(
       cors({
         origin: allowedOrigins,
-        credentials: true,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        credentials: allowCredentials,
+        methods: allowedMethods,
+        allowedHeaders: allowedHeaders,
       }),
     );
     this.app.use(bodyParser.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(
       session({
-        secret: process.env.SESSION_SECRET || process.env.SECRET,
+        secret: process.env.SESSION_SECRET,
         name: process.env.SESSION_COOKIE_NAME || 'webii.sid',
         resave: (process.env.SESSION_RESAVE || 'false') === 'true',
         saveUninitialized:
           (process.env.SESSION_SAVE_UNINITIALIZED || 'true') === 'true',
         cookie: {
-          secure: (process.env.SESSION_COOKIE_SECURE || 'false') === 'true',
+          secure: sessionCookieSecure,
           httpOnly: (process.env.SESSION_COOKIE_HTTP_ONLY || 'true') === 'true',
-          maxAge: Number(
-            process.env.SESSION_COOKIE_MAX_AGE_MS || 5 * 60 * 1000,
-          ),
+          sameSite: sessionCookieSameSite,
+          maxAge: sessionMaxAgeMs,
         },
       }),
     );
@@ -79,7 +112,7 @@ class Server {
       .then(() => {
         this.app.listen(this.PORT, () => {
           console.log(
-            `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} http://localhost:${this.PORT}`,
+            `${this.config.getMessage(this.config.LANGUAGE, 'server_running')} ${this.config.SERVER_URL}`,
           );
         });
       })

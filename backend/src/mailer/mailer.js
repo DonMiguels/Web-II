@@ -1,30 +1,45 @@
 import { Resend } from 'resend';
 
 const resendApiKey =
-  process.env.SERVICE_RESEND_API_KEY || process.env.RESEND_API_KEY;
+  process.env.MAIL_RESEND_API_KEY || process.env.SERVICE_RESEND_API_KEY;
 const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export default class Mailer {
   constructor() {
     this.resend = resend;
+    this.mailEnabled = (process.env.MAIL_ENABLED || 'true') === 'true';
     this.defaultFrom =
+      process.env.MAIL_DEFAULT_FROM ||
       process.env.SERVICE_MAIL_FROM ||
-      process.env.EMAIL ||
       'onboarding@resend.dev';
+    this.replyTo = process.env.MAIL_REPLY_TO;
   }
 
   async sendEmail(to, subject, html) {
+    if (!this.mailEnabled) {
+      console.warn('MAIL_ENABLED=false. Skipping email send.');
+      return { skipped: true, reason: 'mail_disabled' };
+    }
+
     if (!this.resend) {
-      console.warn('RESEND_API_KEY is not set. Skipping email send.');
+      console.warn('MAIL_RESEND_API_KEY is not set. Skipping email send.');
       return { skipped: true, reason: 'missing_api_key' };
     }
 
     try {
-      const result = await this.resend.emails.send({
+      const payload = {
         from: this.defaultFrom,
         to,
         subject,
         html,
+      };
+
+      if (this.replyTo) {
+        payload.reply_to = this.replyTo;
+      }
+
+      const result = await this.resend.emails.send({
+        ...payload,
       });
       // Resend retorna { id } o { data, error } segun versión.
       // const id = result?.id || result?.data?.id;

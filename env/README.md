@@ -34,7 +34,6 @@ Implementado en `backend/main.js`.
 Orden de lectura efectivo:
 
 1. `.env.{NODE_ENV}`
-1. `.env`
 1. `server.env`
 1. `db.env`
 1. `auth.env`

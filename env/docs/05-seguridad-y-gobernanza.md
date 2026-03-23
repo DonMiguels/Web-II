@@ -29,8 +29,6 @@
   - `VITE_*`
   - `DOCKER_*`
 
-- Legacy se mantiene temporalmente solo por compatibilidad.
-
 ## Rotacion de secretos
 
 Cuándo rotar:
@@ -50,7 +48,6 @@ Qué rotar como minimo:
 
 - Verificar que `.env.example` este al dia.
 - Verificar que no hay secretos en commits.
-- Verificar que variables legacy no aumentan.
 - Verificar que nuevos servicios usan prefijo `SERVICE_`.
 
 ## Checklist de hardening para produccion
