@@ -13,9 +13,9 @@ node setup-env.js
 Se crean (si no existen):
 
 1. env/.env
-2. env/development/*.env
-3. env/test/*.env
-4. env/production/*.env
+2. env/development/\*.env
+3. env/test/\*.env
+4. env/production/\*.env
 
 ## 2) Backend (Node + dotenv)
 
@@ -43,7 +43,7 @@ Vite usa envDir="../env" y carga env/.env + env/{APP_ENV}/frontend.env.
 
 Regla de exposicion a cliente:
 
-1. Prefijo FRONT_.
+1. Prefijo FRONT\_.
 
 Archivo responsable: frontend/vite.config.js.
 
