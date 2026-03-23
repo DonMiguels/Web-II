@@ -37,16 +37,22 @@ class Server {
       process.env.FRONTEND_PUBLIC_URL ||
       'http://localhost:5173';
 
-    const allowedMethodsCatalog =
-      envAllowedValues.CORS_ALLOWED_METHODS ||
-      ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+    const allowedMethodsCatalog = envAllowedValues.CORS_ALLOWED_METHODS || [
+      'GET',
+      'POST',
+      'PUT',
+      'PATCH',
+      'DELETE',
+      'OPTIONS',
+    ];
 
     const allowedMethodsRaw =
       process.env.CORS_ALLOWED_METHODS || allowedMethodsCatalog.join(',');
 
-    const allowedHeadersCatalog =
-      envAllowedValues.CORS_ALLOWED_HEADERS ||
-      ['Content-Type', 'Authorization'];
+    const allowedHeadersCatalog = envAllowedValues.CORS_ALLOWED_HEADERS || [
+      'Content-Type',
+      'Authorization',
+    ];
 
     const allowedHeadersRaw =
       process.env.CORS_ALLOWED_HEADERS || allowedHeadersCatalog.join(',');

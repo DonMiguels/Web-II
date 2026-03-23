@@ -33,17 +33,17 @@ Este documento define la arquitectura vigente de env y donde debe vivir cada var
 2. env/.env es solo base global de app.
 3. docker.env es exclusivo para Docker Compose.
 4. Backend no carga docker.env en runtime.
-5. Frontend solo expone FRONT_ al cliente.
+5. Frontend solo expone FRONT\_ al cliente.
 
 ## Responsabilidad por archivo
 
 1. .env: APP_ENV, APP_NAME, APP_LOG_LEVEL.
 2. server.env: bind, idioma, CORS.
 3. db.env: conexion app a PostgreSQL.
-4. auth.env: AUTH_JWT_*.
+4. auth.env: AUTH*JWT*\*.
 5. session.env: politica de sesion y cookie.
-6. services.env: MAIL_* y servicios externos.
-7. frontend.env: FRONT_*.
+6. services.env: MAIL\_\* y servicios externos.
+7. frontend.env: FRONT\_\*.
 8. docker.env: imagenes, puertos y credenciales de compose.
 
 ## Regla de decision rapida
@@ -58,14 +58,14 @@ Este documento define la arquitectura vigente de env y donde debe vivir cada var
 
 ## Convencion de nombres canonicos
 
-1. APP_* para metadatos globales.
-2. SERVER_\* y CORS_\* para backend HTTP.
-3. DB_* para conexion de aplicacion.
-4. AUTH_JWT_* para autenticacion.
-5. SESSION_* para sesion.
-6. MAIL_* para correo.
-7. FRONT_* para frontend.
-8. POSTGRES_\*, PGADMIN_\*, BACKUP_\*, SCHEDULE, HEALTHCHECK_PORT para docker.
+1. APP\_\* para metadatos globales.
+2. SERVER*\* y CORS*\* para backend HTTP.
+3. DB\_\* para conexion de aplicacion.
+4. AUTH*JWT*\* para autenticacion.
+5. SESSION\_\* para sesion.
+6. MAIL\_\* para correo.
+7. FRONT\_\* para frontend.
+8. POSTGRES*\*, PGADMIN*\*, BACKUP\_\*, SCHEDULE, HEALTHCHECK_PORT para docker.
 
 ## Catalogo de valores permitidos por enum
 

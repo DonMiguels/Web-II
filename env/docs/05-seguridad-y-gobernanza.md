@@ -22,14 +22,14 @@
 
 Canonicos vigentes:
 
-1. APP_\*.
-2. SERVER_\* y CORS_\*.
-3. DB_\*.
-4. AUTH_JWT_\*.
-5. SESSION_\*.
-6. MAIL_\*.
-7. FRONT_\*.
-8. POSTGRES_\*, PGADMIN_\*, BACKUP_\*, SCHEDULE, HEALTHCHECK_PORT.
+1. APP\_\*.
+2. SERVER*\* y CORS*\*.
+3. DB\_\*.
+4. AUTH*JWT*\*.
+5. SESSION\_\*.
+6. MAIL\_\*.
+7. FRONT\_\*.
+8. POSTGRES*\*, PGADMIN*\*, BACKUP\_\*, SCHEDULE, HEALTHCHECK_PORT.
 
 Variables enum y valores permitidos:
 
@@ -58,7 +58,7 @@ Qué rotar como minimo:
 
 1. Verificar consistencia entre env/.env y perfiles development/test/production.
 2. Verificar que no hay secretos en commits.
-3. Verificar que nuevos servicios usan prefijo MAIL_ cuando aplique.
+3. Verificar que nuevos servicios usan prefijo MAIL\_ cuando aplique.
 4. Verificar consistencia del catalogo de enums en env-allowed-values.json.
 
 ## Checklist de hardening para produccion
