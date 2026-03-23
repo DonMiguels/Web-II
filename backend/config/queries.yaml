@@ -198,5 +198,135 @@
     query: 'SELECT t.id, s.name AS sub_system, c.name AS class_name, m.name AS method_name FROM public."transaction" t JOIN public.subsystem s ON t.subsystem_id = s.id JOIN public."class" c ON t.class_id = c.id JOIN public."method" m ON t.method_id = m.id;',
     structure_params: {},
     orderArray: []
+  },
+  'insertEquipo': {
+    query: 'INSERT INTO public.equipo (codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id AS equipo_id;',
+    structure_params: { codigo: 'string', nombre: 'string', marca: 'string', modelo: 'string', serie: 'string', descripcion: 'string', ubicacion_id: 'int', estado_id: 'int', fecha_adquisicion: 'string', costo: 'float' },
+    orderArray: ['codigo', 'nombre', 'marca', 'modelo', 'serie', 'descripcion', 'ubicacion_id', 'estado_id', 'fecha_adquisicion', 'costo']
+  },
+  'getEquipoById': {
+    query: 'SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion, e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado FROM public.equipo e LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id LEFT JOIN public.estado_equipo es ON e.estado_id = es.id WHERE e.id = $1;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'getEquipoByCodigo': {
+    query: 'SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion, e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado FROM public.equipo e LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id LEFT JOIN public.estado_equipo es ON e.estado_id = es.id WHERE e.codigo = $1;',
+    structure_params: { codigo: 'string' },
+    orderArray: ['codigo']
+  },
+  'getAllEquipos': {
+    query: 'SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion, e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado FROM public.equipo e LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id LEFT JOIN public.estado_equipo es ON e.estado_id = es.id ORDER BY e.codigo;',
+    structure_params: {},
+    orderArray: []
+  },
+  'updateEquipo': {
+    query: 'UPDATE public.equipo SET nombre = $2, marca = $3, modelo = $4, serie = $5, descripcion = $6, ubicacion_id = $7, estado_id = $8, costo = $9 WHERE id = $1 RETURNING id AS equipo_id;',
+    structure_params: { id: 'int', nombre: 'string', marca: 'string', modelo: 'string', serie: 'string', descripcion: 'string', ubicacion_id: 'int', estado_id: 'int', costo: 'float' },
+    orderArray: ['id', 'nombre', 'marca', 'modelo', 'serie', 'descripcion', 'ubicacion_id', 'estado_id', 'costo']
+  },
+  'deleteEquipo': {
+    query: 'DELETE FROM public.equipo WHERE id = $1 RETURNING id AS equipo_id;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'insertUbicacion': {
+    query: 'INSERT INTO public.ubicacion (nombre, descripcion, edificio, piso, sala) VALUES ($1, $2, $3, $4, $5) RETURNING id AS ubicacion_id;',
+    structure_params: { nombre: 'string', descripcion: 'string', edificio: 'string', piso: 'string', sala: 'string' },
+    orderArray: ['nombre', 'descripcion', 'edificio', 'piso', 'sala']
+  },
+  'getUbicacionById': {
+    query: 'SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala FROM public.ubicacion WHERE id = $1;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'getUbicacionByNombre': {
+    query: 'SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala FROM public.ubicacion WHERE nombre = $1;',
+    structure_params: { nombre: 'string' },
+    orderArray: ['nombre']
+  },
+  'getAllUbicaciones': {
+    query: 'SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala FROM public.ubicacion ORDER BY nombre;',
+    structure_params: {},
+    orderArray: []
+  },
+  'updateUbicacion': {
+    query: 'UPDATE public.ubicacion SET nombre = $2, descripcion = $3, edificio = $4, piso = $5, sala = $6 WHERE id = $1 RETURNING id AS ubicacion_id;',
+    structure_params: { id: 'int', nombre: 'string', descripcion: 'string', edificio: 'string', piso: 'string', sala: 'string' },
+    orderArray: ['id', 'nombre', 'descripcion', 'edificio', 'piso', 'sala']
+  },
+  'deleteUbicacion': {
+    query: 'DELETE FROM public.ubicacion WHERE id = $1 RETURNING id AS ubicacion_id;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'insertEstadoEquipo': {
+    query: 'INSERT INTO public.estado_equipo (nombre, descripcion) VALUES ($1, $2) RETURNING id AS estado_id;',
+    structure_params: { nombre: 'string', descripcion: 'string' },
+    orderArray: ['nombre', 'descripcion']
+  },
+  'getEstadoEquipoById': {
+    query: 'SELECT id AS estado_id, nombre, descripcion FROM public.estado_equipo WHERE id = $1;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'getEstadoEquipoByNombre': {
+    query: 'SELECT id AS estado_id, nombre, descripcion FROM public.estado_equipo WHERE nombre = $1;',
+    structure_params: { nombre: 'string' },
+    orderArray: ['nombre']
+  },
+  'getAllEstadosEquipo': {
+    query: 'SELECT id AS estado_id, nombre, descripcion FROM public.estado_equipo ORDER BY nombre;',
+    structure_params: {},
+    orderArray: []
+  },
+  'updateEstadoEquipo': {
+    query: 'UPDATE public.estado_equipo SET nombre = $2, descripcion = $3 WHERE id = $1 RETURNING id AS estado_id;',
+    structure_params: { id: 'int', nombre: 'string', descripcion: 'string' },
+    orderArray: ['id', 'nombre', 'descripcion']
+  },
+  'deleteEstadoEquipo': {
+    query: 'DELETE FROM public.estado_equipo WHERE id = $1 RETURNING id AS estado_id;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'insertPrestamo': {
+    query: 'INSERT INTO public.prestamo (usuario_id, equipo_id, fecha_prestamo, fecha_devolucion_esperada, observaciones) VALUES ($1, $2, $3, $4, $5) RETURNING id AS prestamo_id;',
+    structure_params: { usuario_id: 'int', equipo_id: 'int', fecha_prestamo: 'string', fecha_devolucion_esperada: 'string', observaciones: 'string' },
+    orderArray: ['usuario_id', 'equipo_id', 'fecha_prestamo', 'fecha_devolucion_esperada', 'observaciones']
+  },
+  'getPrestamoById': {
+    query: 'SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, u.first_name || \' \' || u.last_name AS usuario_nombre, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo FROM public.prestamo p LEFT JOIN public.person u ON p.usuario_id = u.id LEFT JOIN public.equipo e ON p.equipo_id = e.id WHERE p.id = $1;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
+  },
+  'getPrestamosByUsuario': {
+    query: 'SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, u.first_name || \' \' || u.last_name AS usuario_nombre, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo FROM public.prestamo p LEFT JOIN public.person u ON p.usuario_id = u.id LEFT JOIN public.equipo e ON p.equipo_id = e.id WHERE p.usuario_id = $1 ORDER BY p.fecha_prestamo DESC;',
+    structure_params: { usuario_id: 'int' },
+    orderArray: ['usuario_id']
+  },
+  'getPrestamosByEquipo': {
+    query: 'SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, u.first_name || \' \' || u.last_name AS usuario_nombre, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo FROM public.prestamo p LEFT JOIN public.person u ON p.usuario_id = u.id LEFT JOIN public.equipo e ON p.equipo_id = e.id WHERE p.equipo_id = $1 ORDER BY p.fecha_prestamo DESC;',
+    structure_params: { equipo_id: 'int' },
+    orderArray: ['equipo_id']
+  },
+  'getAllPrestamos': {
+    query: 'SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, u.first_name || \' \' || u.last_name AS usuario_nombre, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo FROM public.prestamo p LEFT JOIN public.person u ON p.usuario_id = u.id LEFT JOIN public.equipo e ON p.equipo_id = e.id ORDER BY p.fecha_prestamo DESC;',
+    structure_params: {},
+    orderArray: []
+  },
+  'getPrestamosActivos': {
+    query: 'SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, u.first_name || \' \' || u.last_name AS usuario_nombre, e.nombre AS equipo_nombre, e.codigo AS equipo_codigo FROM public.prestamo p LEFT JOIN public.person u ON p.usuario_id = u.id LEFT JOIN public.equipo e ON p.equipo_id = e.id WHERE p.fecha_devolucion_real IS NULL ORDER BY p.fecha_prestamo DESC;',
+    structure_params: {},
+    orderArray: []
+  },
+  'updatePrestamo': {
+    query: 'UPDATE public.prestamo SET fecha_devolucion_real = $2, observaciones = $3 WHERE id = $1 RETURNING id AS prestamo_id;',
+    structure_params: { id: 'int', fecha_devolucion_real: 'string', observaciones: 'string' },
+    orderArray: ['id', 'fecha_devolucion_real', 'observaciones']
+  },
+  'deletePrestamo': {
+    query: 'DELETE FROM public.prestamo WHERE id = $1 RETURNING id AS prestamo_id;',
+    structure_params: { id: 'int' },
+    orderArray: ['id']
   }
 }
