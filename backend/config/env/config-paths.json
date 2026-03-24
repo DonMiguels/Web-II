@@ -1,6 +1,6 @@
 {
   "paths": {
-    "repoRootFromRuntime": "../..",
+    "repoRootFromRuntime": "../../..",
     "envDirectory": "env"
   },
   "runtimeConfigFiles": {

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import configPathCatalog from './env/config-paths.json' with { type: 'json' };
+import configPathCatalog from './config-paths.json' with { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +75,7 @@ class EnvValidationError extends Error {
 }
 
 let runtimeEnv = null;
+let runtimeEnvPromise = null;
 let didLoadEnvFiles = false;
 
 const normalizeBoolean = (rawValue) => {
@@ -199,7 +200,7 @@ const getDefaultValue = (rule, knownValues) => {
   return undefined;
 };
 
-const loadEnvFiles = () => {
+const loadEnvFiles = async () => {
   if (didLoadEnvFiles) {
     return;
   }
@@ -215,8 +216,11 @@ const loadEnvFiles = () => {
   );
 
   for (const filepath of envFiles) {
-    if (fs.existsSync(filepath)) {
+    try {
+      await fs.promises.access(filepath, fs.constants.F_OK);
       dotenv.config({ path: filepath, override: true });
+    } catch {
+      // Ignore missing env files and continue with the fallback chain.
     }
   }
 
@@ -295,60 +299,82 @@ const buildRuntimeEnv = (normalized) => ({
   raw: normalized,
 });
 
-export const initializeRuntimeEnv = () => {
+export const initializeRuntimeEnv = async () => {
   if (runtimeEnv) {
     return runtimeEnv;
   }
 
-  loadEnvFiles();
-
-  const normalizedValues = {};
-  const errors = [];
-  for (const rule of schema) {
-    let finalValue = readRawValue(rule);
-
-    if (finalValue === undefined) {
-      finalValue = getDefaultValue(rule, normalizedValues);
-    }
-
-    if (finalValue === undefined && rule.required) {
-      errors.push({
-        key: rule.key,
-        value: null,
-        expected: `required ${rule.type}`,
-      });
-      continue;
-    }
-
-    if (finalValue === undefined) {
-      normalizedValues[rule.key] = undefined;
-      continue;
-    }
-
-    try {
-      const parsedValue = normalizeValue(rule, finalValue);
-      normalizedValues[rule.key] = parsedValue;
-      process.env[rule.key] = formatForProcessEnv(parsedValue);
-    } catch (error) {
-      errors.push({
-        key: rule.key,
-        value: finalValue,
-        expected: `${rule.type}${rule.allowed ? ` (${rule.allowed.join(', ')})` : ''}`,
-        detail: error.message,
-      });
-    }
+  if (runtimeEnvPromise) {
+    return runtimeEnvPromise;
   }
 
-  if (errors.length > 0) {
-    throw new EnvValidationError(errors);
-  }
+  runtimeEnvPromise = (async () => {
+    await loadEnvFiles();
 
-  runtimeEnv = buildRuntimeEnv(normalizedValues);
-  return runtimeEnv;
+    const normalizedValues = {};
+    const errors = [];
+    for (const rule of schema) {
+      let finalValue = readRawValue(rule);
+
+      if (finalValue === undefined) {
+        finalValue = getDefaultValue(rule, normalizedValues);
+      }
+
+      if (finalValue === undefined && rule.required) {
+        errors.push({
+          key: rule.key,
+          value: null,
+          expected: `required ${rule.type}`,
+        });
+        continue;
+      }
+
+      if (finalValue === undefined) {
+        normalizedValues[rule.key] = undefined;
+        continue;
+      }
+
+      try {
+        const parsedValue = normalizeValue(rule, finalValue);
+        normalizedValues[rule.key] = parsedValue;
+        process.env[rule.key] = formatForProcessEnv(parsedValue);
+      } catch (error) {
+        errors.push({
+          key: rule.key,
+          value: finalValue,
+          expected: `${rule.type}${rule.allowed ? ` (${rule.allowed.join(', ')})` : ''}`,
+          detail: error.message,
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new EnvValidationError(errors);
+    }
+
+    runtimeEnv = buildRuntimeEnv(normalizedValues);
+    return runtimeEnv;
+  })();
+
+  try {
+    return await runtimeEnvPromise;
+  } catch (error) {
+    runtimeEnvPromise = null;
+    throw error;
+  }
 };
 
-export const getRuntimeEnv = () => {
+export const getRuntimeEnv = async () => {
   return runtimeEnv || initializeRuntimeEnv();
+};
+
+export const getRuntimeEnvSync = () => {
+  if (!runtimeEnv) {
+    throw new Error(
+      '[env/runtime] Runtime env is not initialized yet. Await initializeRuntimeEnv() before using synchronous access.',
+    );
+  }
+  return runtimeEnv;
 };
 
 export const formatEnvValidationErrors = (errors) => {

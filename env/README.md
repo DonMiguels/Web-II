@@ -65,6 +65,32 @@ npm --prefix backend run dev
 npm --prefix frontend run dev -- --host
 ```
 
+## Ejecutables de arranque rapido
+
+Desde la raiz del repositorio.
+
+1. Windows (PowerShell):
+
+```powershell
+.\start.ps1 -Profile development
+```
+
+1. macOS (bash):
+
+```bash
+./start-mac.sh --profile development
+```
+
+1. Probar scripts sin levantar procesos (dry-run):
+
+```powershell
+.\start.ps1 -DryRun -SkipInstall -SkipEnvSetup -Profile development
+```
+
+```bash
+./start-mac.sh --dry-run --skip-install --skip-env-setup --profile development
+```
+
 ## Estructura actual por perfiles
 
 1. env/.env

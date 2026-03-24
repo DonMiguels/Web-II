@@ -5,7 +5,7 @@ import {
 } from './config/env/runtime.js';
 
 try {
-  initializeRuntimeEnv();
+  await initializeRuntimeEnv();
 } catch (error) {
   if (error instanceof EnvValidationError) {
     console.error(formatEnvValidationErrors(error.errors));

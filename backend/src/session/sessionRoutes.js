@@ -13,11 +13,11 @@ const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
 import Tokenizer from '../tokenizer/tokenizer.js';
 import Mailer from '../mailer/mailer.js';
-import { getRuntimeEnv } from '../../config/env/runtime.js';
+import { getRuntimeEnvSync } from '../../config/env/runtime.js';
 import { createSanitizer } from '../sanitizer/sanitizer.js';
 const tokenizer = new Tokenizer();
 const mailer = new Mailer();
-const runtimeEnv = getRuntimeEnv();
+const runtimeEnv = getRuntimeEnvSync();
 const sanitizer = createSanitizer();
 
 const sanitizeOrReject = (req, res, routeKey, forceIncludePaths = []) => {
@@ -38,6 +38,22 @@ const sanitizeOrReject = (req, res, routeKey, forceIncludePaths = []) => {
   }
 
   return null;
+};
+
+const sanitizeForResponse = (payload, routeKey = 'session.response') => {
+  if (payload === null || payload === undefined) return payload;
+  if (typeof payload !== 'object') return payload;
+
+  return sanitizer.sanitizePayload(payload, { routeKey }).cleanedPayload;
+};
+
+const sendSanitizedJson = (
+  res,
+  statusCode,
+  payload,
+  routeKey = 'session.response',
+) => {
+  return res.status(statusCode).json(sanitizeForResponse(payload, routeKey));
 };
 
 // Registro de usuario
@@ -80,16 +96,26 @@ router.post('/register', async (req, res) => {
 
     const userData = await session.register(req.body);
     sessionWrapper.setSession(req, { user: userData });
-    res.json({
-      message: getMessage(config.LANGUAGE, 'registration_success'),
-      user: userData,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.OK,
+      {
+        message: getMessage(config.LANGUAGE, 'registration_success'),
+        user: userData,
+      },
+      'session.response.register',
+    );
   } catch (error) {
-    res.status(STATUS_CODES.BAD_REQUEST).json({
-      message:
-        error.message || getMessage(config.LANGUAGE, 'registration_error'),
-      error,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.BAD_REQUEST,
+      {
+        message:
+          error.message || getMessage(config.LANGUAGE, 'registration_error'),
+        error,
+      },
+      'session.response.error',
+    );
   }
 });
 
@@ -117,38 +143,64 @@ router.post('/login', async (req, res) => {
     // Validar campos de login
     const validation = validator.validateObject(req.body, loginSchema);
     if (!validation.isValid) {
-      return res.status(STATUS_CODES.BAD_REQUEST).json({
-        message: getMessage(config.LANGUAGE, 'validation_error'),
-        errors: validation.errors,
-      });
+      return sendSanitizedJson(
+        res,
+        STATUS_CODES.BAD_REQUEST,
+        {
+          message: getMessage(config.LANGUAGE, 'validation_error'),
+          errors: validation.errors,
+        },
+        'session.response.error',
+      );
     }
 
     const userData = await session.login(req.body);
     if (!userData)
-      return res
-        .status(STATUS_CODES.UNAUTHORIZED)
-        .json({ error: getMessage(config.LANGUAGE, 'login_error') });
+      return sendSanitizedJson(
+        res,
+        STATUS_CODES.UNAUTHORIZED,
+        { error: getMessage(config.LANGUAGE, 'login_error') },
+        'session.response.error',
+      );
     sessionWrapper.setSession(req, { user: userData });
-    res.json({
-      message: getMessage(config.LANGUAGE, 'login_success'),
-      user: userData,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.OK,
+      {
+        message: getMessage(config.LANGUAGE, 'login_success'),
+        user: userData,
+      },
+      'session.response.login',
+    );
   } catch (error) {
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: getMessage(config.LANGUAGE, 'server_error'),
-      error,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      {
+        message: getMessage(config.LANGUAGE, 'server_error'),
+        error,
+      },
+      'session.response.error',
+    );
   }
 });
 
 // Obtener usuario actual
 router.get('/me', async (req, res) => {
   if (!sessionWrapper.sessionExists(req)) {
-    return res
-      .status(STATUS_CODES.UNAUTHORIZED)
-      .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.UNAUTHORIZED,
+      { error: getMessage(config.LANGUAGE, 'unauthorized') },
+      'session.response.error',
+    );
   }
-  res.json(sessionWrapper.getSession(req).user);
+  return sendSanitizedJson(
+    res,
+    STATUS_CODES.OK,
+    sessionWrapper.getSession(req).user,
+    'session.response.me',
+  );
 });
 
 // Recuperacion de contrasena
@@ -171,10 +223,15 @@ router.post('/forgot-password', async (req, res) => {
 
   const validation = validator.validateObject(req.body, forgotPasswordSchema);
   if (!validation.isValid) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      message: getMessage(config.LANGUAGE, 'validation_error'),
-      errors: validation.errors,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.BAD_REQUEST,
+      {
+        message: getMessage(config.LANGUAGE, 'validation_error'),
+        errors: validation.errors,
+      },
+      'session.response.error',
+    );
   }
 
   try {
@@ -194,15 +251,25 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    return res.json({
-      message: config.getMessage(config.LANGUAGE, 'recovery_email_sent'),
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.OK,
+      {
+        message: config.getMessage(config.LANGUAGE, 'recovery_email_sent'),
+      },
+      'session.response.forgotPassword',
+    );
   } catch (error) {
     console.error('Error en forgot-password:', error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: config.getMessage(config.LANGUAGE, 'server_error'),
-      error,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      {
+        message: config.getMessage(config.LANGUAGE, 'server_error'),
+        error,
+      },
+      'session.response.error',
+    );
   }
 });
 
@@ -239,23 +306,38 @@ router.post('/reset-password', async (req, res) => {
 
   const validation = validator.validateObject(req.body, resetPasswordSchema);
   if (!validation.isValid) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      message: getMessage(config.LANGUAGE, 'validation_error'),
-      errors: validation.errors,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.BAD_REQUEST,
+      {
+        message: getMessage(config.LANGUAGE, 'validation_error'),
+        errors: validation.errors,
+      },
+      'session.response.error',
+    );
   }
 
   if (password !== confirmPassword) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      error: getMessage(config.LANGUAGE, 'passwords_do_not_match'),
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.BAD_REQUEST,
+      {
+        error: getMessage(config.LANGUAGE, 'passwords_do_not_match'),
+      },
+      'session.response.error',
+    );
   }
 
   const tokenPayload = tokenizer.verifyToken(token);
   if (!tokenPayload?.id) {
-    return res.status(STATUS_CODES.BAD_REQUEST).json({
-      error: config.getMessage(config.LANGUAGE, 'invalid_or_expired_token'),
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.BAD_REQUEST,
+      {
+        error: config.getMessage(config.LANGUAGE, 'invalid_or_expired_token'),
+      },
+      'session.response.error',
+    );
   }
 
   try {
@@ -264,32 +346,53 @@ router.post('/reset-password', async (req, res) => {
       password,
     });
     if (!userData) {
-      return res
-        .status(STATUS_CODES.NOT_FOUND)
-        .json({ error: getMessage(config.LANGUAGE, 'user_not_found') });
+      return sendSanitizedJson(
+        res,
+        STATUS_CODES.NOT_FOUND,
+        { error: getMessage(config.LANGUAGE, 'user_not_found') },
+        'session.response.error',
+      );
     }
-    return res.json({
-      message: getMessage(config.LANGUAGE, 'password_reset_success'),
-      user: userData,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.OK,
+      {
+        message: getMessage(config.LANGUAGE, 'password_reset_success'),
+        user: userData,
+      },
+      'session.response.resetPassword',
+    );
   } catch (error) {
     console.error('Error en reset-password:', error);
-    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
-      message: getMessage(config.LANGUAGE, 'server_error'),
-      error,
-    });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.INTERNAL_SERVER_ERROR,
+      {
+        message: getMessage(config.LANGUAGE, 'server_error'),
+        error,
+      },
+      'session.response.error',
+    );
   }
 });
 // Logout
 router.post('/logout', async (req, res) => {
   if (!sessionWrapper.authenticate(req))
-    return res
-      .status(STATUS_CODES.UNAUTHORIZED)
-      .json({ error: getMessage(config.LANGUAGE, 'unauthorized') });
+    return sendSanitizedJson(
+      res,
+      STATUS_CODES.UNAUTHORIZED,
+      { error: getMessage(config.LANGUAGE, 'unauthorized') },
+      'session.response.error',
+    );
   const result = await sessionWrapper.destroySession(req);
-  return res.status(result?.statusCode || STATUS_CODES.OK).json({
-    message: result?.message || getMessage(config.LANGUAGE, 'logout_success'),
-  });
+  return sendSanitizedJson(
+    res,
+    result?.statusCode || STATUS_CODES.OK,
+    {
+      message: result?.message || getMessage(config.LANGUAGE, 'logout_success'),
+    },
+    'session.response.logout',
+  );
 });
 
 export default router;

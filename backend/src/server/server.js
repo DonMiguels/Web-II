@@ -6,7 +6,7 @@ import Config from '../../config/config.js';
 import userRouter from '../session/sessionRoutes.js';
 import Security from '../security/security.js';
 import dispatcherRouter from '../dispatcher/dispatcherRoutes.js';
-import { getRuntimeEnv } from '../../config/env/runtime.js';
+import { getRuntimeEnvSync } from '../../config/env/runtime.js';
 
 class Server {
   constructor() {
@@ -15,7 +15,7 @@ class Server {
     }
 
     this.app = express();
-    this.env = getRuntimeEnv();
+    this.env = getRuntimeEnvSync();
     this.PORT = this.env.server.bindPort;
     this.configuration();
     this.routes();

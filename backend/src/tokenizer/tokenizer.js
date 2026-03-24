@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { getRuntimeEnv } from '../../config/env/runtime.js';
+import { getRuntimeEnvSync } from '../../config/env/runtime.js';
 
 /**
  * Genera un token JWT con la data del usuario
@@ -8,7 +8,7 @@ import { getRuntimeEnv } from '../../config/env/runtime.js';
  */
 export default class Tokenizer {
   constructor() {
-    const env = getRuntimeEnv();
+    const env = getRuntimeEnvSync();
     this.secret = env.auth.jwtSecret;
     this.expiresIn = env.auth.jwtExpiresIn;
     this.issuer = env.auth.jwtIssuer;

@@ -4,12 +4,12 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import yaml from 'yaml';
-import { getRuntimeEnv } from './env/runtime.js';
+import { getRuntimeEnvSync } from './env/runtime.js';
 
 export default class Config {
   constructor() {
     if (!Config.instance) {
-      const env = getRuntimeEnv();
+      const env = getRuntimeEnvSync();
 
       this.APP_NAME = env.app.name;
       this.PORT = env.server.bindPort;

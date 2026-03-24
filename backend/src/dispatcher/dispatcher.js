@@ -1,6 +1,7 @@
 import SS from '../session/sessionWrapper.js';
 import Config from '../../config/config.js';
 import Security from '../security/security.js';
+import { createSanitizer } from '../sanitizer/sanitizer.js';
 
 export default class Dispatcher {
   static instance;
@@ -11,7 +12,15 @@ export default class Dispatcher {
     this.config = new Config();
     this.session = new SS();
     this.security = new Security();
+    this.sanitizer = createSanitizer();
     Dispatcher.instance = this;
+  }
+
+  sanitizeReturnValue(payload, routeKey = 'dispatcher.response') {
+    if (payload === null || payload === undefined) return payload;
+    if (typeof payload !== 'object') return payload;
+
+    return this.sanitizer.sanitizePayload(payload, { routeKey }).cleanedPayload;
   }
 
   async toProccess(request) {
@@ -30,7 +39,10 @@ export default class Dispatcher {
         return this.config.getMessage(lang, 'missing_transaction_id');
       }
       if (!profile) {
-        return { statusCode: 400, message: 'Perfil no especificado en la petición' };
+        return this.sanitizeReturnValue(
+          { statusCode: 400, message: 'Perfil no especificado en la petición' },
+          'dispatcher.response.error',
+        );
       }
 
       const userId = this.session.getUserId(request);
@@ -40,26 +52,42 @@ export default class Dispatcher {
 
       const permissionRoute = this.security.resolveTransaction(txId);
       if (!permissionRoute) {
-        return { statusCode: 404, message: `Transacción no encontrada: ${txId}` };
+        return this.sanitizeReturnValue(
+          { statusCode: 404, message: `Transacción no encontrada: ${txId}` },
+          'dispatcher.response.error',
+        );
       }
 
       const permission = {
         ...permissionRoute,
-        profile: profile
+        profile: profile,
       };
 
       if (!this.security.hasPermission(permission)) {
         return this.config.getMessage(lang, 'missing_required_fields'); // O 'unauthorized_action'
       }
 
-      return await this.security.execute(permissionRoute, parameters);
+      const executionResult = await this.security.execute(
+        permissionRoute,
+        parameters,
+      );
 
+      return this.sanitizeReturnValue(
+        executionResult,
+        'dispatcher.response.success',
+      );
     } catch (error) {
       console.error(error);
-      return {
-        statusCode: this.config.STATUS_CODES?.INTERNAL_SERVER_ERROR || 500,
-        message: this.config.getMessage(request?.body?.lang || 'es', 'server_error'),
-      };
+      return this.sanitizeReturnValue(
+        {
+          statusCode: this.config.STATUS_CODES?.INTERNAL_SERVER_ERROR || 500,
+          message: this.config.getMessage(
+            request?.body?.lang || 'es',
+            'server_error',
+          ),
+        },
+        'dispatcher.response.error',
+      );
     }
   }
 }

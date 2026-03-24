@@ -80,6 +80,8 @@ const shouldApplyStringDefaults = (rules) => {
   );
 };
 
+const DELETE_FIELD_SYMBOL = Symbol('delete_field');
+
 export const createSanitizer = () => {
   const regexMap = new Map(
     sanitizeRegexCatalog.map((entry) => [
@@ -91,7 +93,205 @@ export const createSanitizer = () => {
     ]),
   );
 
-  const getRouteRules = (routeKey) => sanitizeRules.routeMaps[routeKey] || {};
+  const resolveByRouteKey = (catalog, routeKey) => {
+    if (!catalog || !routeKey) return null;
+    if (catalog[routeKey]) return catalog[routeKey];
+
+    const parts = String(routeKey).split('.').filter(Boolean);
+    while (parts.length > 1) {
+      parts.pop();
+      const candidate = parts.join('.');
+      if (catalog[candidate]) return catalog[candidate];
+    }
+
+    return null;
+  };
+
+  const getRouteRules = (routeKey) => {
+    return resolveByRouteKey(sanitizeRules.routeMaps, routeKey) || {};
+  };
+
+  const getActionDefinition = (actionName) => {
+    if (!actionName) return null;
+    return sanitizeRules.actionPolicy?.actions?.[actionName] || null;
+  };
+
+  const normalizeActionSpec = (actionSpecLike) => {
+    if (!actionSpecLike) return null;
+
+    if (typeof actionSpecLike === 'string') {
+      return {
+        name: actionSpecLike,
+        params: {},
+      };
+    }
+
+    if (
+      isPlainObject(actionSpecLike) &&
+      typeof actionSpecLike.name === 'string'
+    ) {
+      return {
+        name: actionSpecLike.name,
+        params: isPlainObject(actionSpecLike.params)
+          ? actionSpecLike.params
+          : {},
+      };
+    }
+
+    return null;
+  };
+
+  const getEventActionSpec = ({ routeRules, fieldRule, eventName }) => {
+    const fieldEventAction = normalizeActionSpec(
+      fieldRule?.actions?.[eventName],
+    );
+    if (fieldEventAction) return fieldEventAction;
+
+    const routeEventAction = normalizeActionSpec(
+      routeRules?.actions?.[eventName],
+    );
+    if (routeEventAction) return routeEventAction;
+
+    const globalEventAction = normalizeActionSpec(
+      sanitizeRules.actionPolicy?.[eventName]?.action,
+    );
+
+    if (!globalEventAction) return null;
+
+    return {
+      ...globalEventAction,
+      params: {
+        ...(sanitizeRules.actionPolicy?.[eventName]?.params || {}),
+        ...(globalEventAction.params || {}),
+      },
+    };
+  };
+
+  const obfuscateValue = (value, params = {}) => {
+    const text = String(value || '');
+    const visibleStart = Math.max(0, Number(params.visibleStart ?? 2));
+    const visibleEnd = Math.max(0, Number(params.visibleEnd ?? 2));
+    const minMasked = Math.max(1, Number(params.minMasked ?? 4));
+    const maskChar = String(params.maskChar ?? '*').slice(0, 1) || '*';
+
+    if (text.length <= visibleStart + visibleEnd) {
+      return maskChar.repeat(Math.max(minMasked, text.length || minMasked));
+    }
+
+    const middleLength = Math.max(
+      minMasked,
+      text.length - visibleStart - visibleEnd,
+    );
+
+    return `${text.slice(0, visibleStart)}${maskChar.repeat(middleLength)}${text.slice(text.length - visibleEnd)}`;
+  };
+
+  const sanitizeValueWithRules = (value, params = {}) => {
+    let next = String(value || '');
+    const replacementRules = Array.isArray(params.replacementRules)
+      ? params.replacementRules
+      : [];
+
+    for (const entry of replacementRules) {
+      if (!entry || typeof entry.pattern !== 'string') continue;
+      const replacement = String(entry.replacement ?? '');
+      const compiled = new RegExp(entry.pattern, entry.flags || '');
+      next = next.replace(compiled, replacement);
+    }
+
+    if (params.normalizeSpaces) next = normalizeSpaces(next);
+    if (params.trim) next = next.trim();
+
+    return next;
+  };
+
+  const applyAction = ({
+    actionSpec,
+    value,
+    eventName,
+    fieldPath,
+    actionsApplied,
+  }) => {
+    if (!sanitizeRules.behavior.executeActions) return value;
+    if (!sanitizeRules.actionPolicy?.enabled) return value;
+    if (!actionSpec?.name) return value;
+
+    const actionDefinition = getActionDefinition(actionSpec.name);
+    if (!actionDefinition) return value;
+
+    const effectiveParams = {
+      ...(actionDefinition.defaultParams || {}),
+      ...(actionSpec.params || {}),
+    };
+
+    let nextValue = value;
+
+    switch (actionSpec.name) {
+      case 'keep': {
+        nextValue = value;
+        break;
+      }
+      case 'delete': {
+        nextValue = DELETE_FIELD_SYMBOL;
+        break;
+      }
+      case 'redact': {
+        nextValue = String(effectiveParams.replacement ?? '[REDACTED]');
+        break;
+      }
+      case 'obfuscate': {
+        if (typeof value !== 'string') {
+          nextValue = value;
+        } else {
+          nextValue = obfuscateValue(value, effectiveParams);
+        }
+        break;
+      }
+      case 'sanitize': {
+        if (typeof value !== 'string') {
+          nextValue = value;
+        } else {
+          nextValue = sanitizeValueWithRules(value, effectiveParams);
+        }
+        break;
+      }
+      case 'nullify': {
+        nextValue = null;
+        break;
+      }
+      case 'empty': {
+        nextValue = '';
+        break;
+      }
+      case 'truncate': {
+        if (typeof value !== 'string') {
+          nextValue = value;
+        } else {
+          const maxLength = Math.max(
+            0,
+            Number(effectiveParams.maxLength ?? 12),
+          );
+          const suffix = String(effectiveParams.suffix ?? '...');
+          nextValue =
+            value.length > maxLength
+              ? `${value.slice(0, maxLength)}${suffix}`
+              : value;
+        }
+        break;
+      }
+      default: {
+        nextValue = value;
+      }
+    }
+
+    actionsApplied.push({
+      field: fieldPath,
+      event: eventName,
+      action: actionSpec.name,
+    });
+
+    return nextValue;
+  };
 
   const evaluateRegexKeys = ({
     regexKeys,
@@ -191,6 +391,7 @@ export const createSanitizer = () => {
     const deniedMatches = [];
     const forcedIncluded = [];
     const sanitizedAfterForce = [];
+    const actionsApplied = [];
 
     const sourcePayload = isPlainObject(payload) ? payload : {};
     const workingPayload = cloneDeep(sourcePayload);
@@ -204,9 +405,10 @@ export const createSanitizer = () => {
     });
 
     const allowedSensitivePaths = new Set(
-      sanitizeRules.sensitivePropertyPolicy.allowSensitivePathsByRoute[
-        routeKey
-      ] || [],
+      resolveByRouteKey(
+        sanitizeRules.sensitivePropertyPolicy.allowSensitivePathsByRoute,
+        routeKey,
+      ) || [],
     );
 
     const walk = (currentValue, fieldPath, depth) => {
@@ -220,20 +422,28 @@ export const createSanitizer = () => {
       }
 
       if (Array.isArray(currentValue)) {
-        return currentValue.map((entry, index) =>
-          walk(
+        const out = [];
+        currentValue.forEach((entry, index) => {
+          const nextValue = walk(
             entry,
             fieldPath ? `${fieldPath}.${index}` : String(index),
             depth + 1,
-          ),
-        );
+          );
+          if (nextValue !== DELETE_FIELD_SYMBOL) {
+            out.push(nextValue);
+          }
+        });
+        return out;
       }
 
       if (isPlainObject(currentValue)) {
         const out = {};
         for (const [key, value] of Object.entries(currentValue)) {
           const nextPath = fieldPath ? `${fieldPath}.${key}` : key;
-          out[key] = walk(value, nextPath, depth + 1);
+          const nextValue = walk(value, nextPath, depth + 1);
+          if (nextValue !== DELETE_FIELD_SYMBOL) {
+            out[key] = nextValue;
+          }
         }
         return out;
       }
@@ -270,32 +480,76 @@ export const createSanitizer = () => {
         ...(fieldRule.denyPatternKeys || []),
       ];
 
-      evaluateRegexKeys({
+      const denyKeysTriggered = evaluateRegexKeys({
         regexKeys: denyKeys,
         targetValue: transformedValue,
         fieldPath,
         deniedMatches,
       });
 
+      let finalValue = transformedValue;
+
+      if (denyKeysTriggered.length > 0) {
+        const denyActionSpec = getEventActionSpec({
+          routeRules,
+          fieldRule,
+          eventName: 'onDenyPattern',
+        });
+
+        finalValue = applyAction({
+          actionSpec: denyActionSpec,
+          value: finalValue,
+          eventName: 'onDenyPattern',
+          fieldPath,
+          actionsApplied,
+        });
+      }
+
       const propertyName = fieldPath.split('.').slice(-1)[0];
       const sensitiveByName = isSensitiveByPropertyName(propertyName);
-      const sensitiveByValue = isSensitiveByValue(transformedValue);
+      const sensitiveByValue = isSensitiveByValue(finalValue);
       const sensitiveDetected = sensitiveByName || sensitiveByValue;
 
       if (sensitiveDetected && !allowedSensitivePaths.has(fieldPath)) {
-        if (
-          sanitizeRules.sensitivePropertyPolicy.redactReplacement !==
-          transformedValue
-        ) {
+        const sensitiveActionSpec = getEventActionSpec({
+          routeRules,
+          fieldRule,
+          eventName: 'onSensitiveDetection',
+        }) || {
+          name: 'redact',
+          params: {
+            replacement:
+              sanitizeRules.sensitivePropertyPolicy.redactReplacement ||
+              '[REDACTED]',
+          },
+        };
+
+        const sensitiveValue = applyAction({
+          actionSpec: sensitiveActionSpec,
+          value: finalValue,
+          eventName: 'onSensitiveDetection',
+          fieldPath,
+          actionsApplied,
+        });
+
+        if (sensitiveValue !== finalValue) {
           changedFields.push(fieldPath);
           if (forcedIncluded.includes(fieldPath)) {
             sanitizedAfterForce.push(fieldPath);
           }
         }
-        return sanitizeRules.sensitivePropertyPolicy.redactReplacement;
+
+        return sensitiveValue;
       }
 
-      return transformedValue;
+      if (finalValue !== transformedValue) {
+        changedFields.push(fieldPath);
+        if (forcedIncluded.includes(fieldPath)) {
+          sanitizedAfterForce.push(fieldPath);
+        }
+      }
+
+      return finalValue;
     };
 
     const cleanedPayload = walk(workingPayload, '', 0);
@@ -343,6 +597,7 @@ export const createSanitizer = () => {
       rejected,
       forcedIncluded: [...new Set(forcedIncluded)],
       sanitizedAfterForce: uniqueSanitizedAfterForce,
+      actionsApplied,
       response,
     };
   };
