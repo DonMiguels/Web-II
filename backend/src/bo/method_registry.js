@@ -2,22 +2,38 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
+// Singleton que descubre subsistemas/clases/metodos y los guarda en un mapa
+// para validar rutas antes de intentar una ejecucion dinamica.
 export default class Method_registry {
   static instance;
 
   constructor() {
+    // Garantiza una unica instancia compartida durante todo el ciclo de vida.
     if (Method_registry.instance) return Method_registry.instance;
+
+    // Calcula la ruta base del modulo BO de forma segura para ES modules.
     const filename = path.dirname(fileURLToPath(import.meta.url));
     this.rootPath = path.resolve(filename, '../bo');
+
+    // Estructura esperada:
+    // {
+    //   subsystem: {
+    //     className: {
+    //       methodName: true
+    //     }
+    //   }
+    // }
     this.mapFiles = {};
     Method_registry.instance = this;
   }
 
+  // Recorre /subsystem, carga cada modulo y construye el indice de metodos.
   async initialize() {
     const subSystemsPath = path.join(this.rootPath, 'subsystem');
     let subSystemFiles = [];
 
     try {
+      // Lee archivos de subsistemas disponibles en disco.
       subSystemFiles = fs.readdirSync(subSystemsPath);
     } catch (err) {
       console.error(
@@ -28,19 +44,23 @@ export default class Method_registry {
     }
 
     for (const file of subSystemFiles) {
+      // Solo procesa modulos JS como definicion de subsistemas.
       if (!file.endsWith('.js')) continue;
 
       const subSystemName = path.basename(file, '.js');
       this.mapFiles[subSystemName] = {};
 
       try {
+        // Carga dinamica del archivo de subsistema.
         const module = await import(
           `file://${path.join(subSystemsPath, file)}`
         );
 
+        // Espera export nombrado con el mismo nombre del archivo.
         const SubSystemClass = module[subSystemName];
         if (!SubSystemClass) continue;
 
+        // Instancia el subsistema para inspeccionar sus referencias de clases.
         const subSystemInstance = new SubSystemClass();
 
         for (const [classNameKey, ClassRef] of Object.entries(
@@ -48,9 +68,11 @@ export default class Method_registry {
         )) {
           this.mapFiles[subSystemName][classNameKey] = {};
 
+          // Si la referencia de clase es construible, se instancia e inspecciona.
           if (typeof ClassRef === 'function') {
             const classInstance = new ClassRef();
 
+            // Registra metodos propios disponibles de la instancia.
             for (const methodName of Object.keys(classInstance)) {
               this.mapFiles[subSystemName][classNameKey][methodName] = true;
             }
@@ -65,10 +87,12 @@ export default class Method_registry {
     }
   }
 
+  // Fachada publica para inicializar el mapa.
   async init() {
     await this.initialize();
   }
 
+  // Busca una clave ignorando mayusculas/minusculas para tolerar variaciones.
   findKeyIgnoreCase(target, requestedKey) {
     if (!target || typeof requestedKey !== 'string') return undefined;
     return Object.keys(target).find(
@@ -76,6 +100,7 @@ export default class Method_registry {
     );
   }
 
+  // Verifica si existe la ruta completa subsystem -> class -> method.
   hasMethod(subSystem, className, functionName) {
     const subsystemKey = this.findKeyIgnoreCase(this.mapFiles, subSystem);
     const classMap = subsystemKey ? this.mapFiles[subsystemKey] : undefined;
@@ -87,6 +112,7 @@ export default class Method_registry {
     return !!methodKey;
   }
 
+  // Expone el mapa interno para validaciones y diagnostico.
   getMap() {
     return this.mapFiles;
   }

@@ -235,6 +235,8 @@ export default class Security {
         [reqBody],
       );
 
+      actionInstance = null;
+
       return {
         statusCode: 200,
         data: result,
