@@ -1,16 +1,6 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  User,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-  Bell,
-  Sun,
-  Moon,
-  Zap,
-} from "lucide-react";
+import { LayoutDashboard, Sun, Moon, Zap } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar, Inventory, Loan } from "@/components";
@@ -20,11 +10,6 @@ export const Dashboard = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleLogout = () => {
-    logout(navigate);
-  };
 
   const getRouteConfig = () => {
     switch (location.pathname) {
@@ -59,7 +44,7 @@ export const Dashboard = () => {
 
   return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] overflow-hidden">
-      <Sidebar isExpanded={isExpanded} setIsExpanded={setIsExpanded} />
+      <Sidebar />
 
       <main className="flex-1 relative flex flex-col p-8 overflow-hidden z-10">
         <motion.div
@@ -68,10 +53,7 @@ export const Dashboard = () => {
           className="flex flex-col h-full"
         >
           <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-            <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <User size={32} className="text-white" />
-              </div>
+            <div>
               <div>
                 <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                   {title}
@@ -99,56 +81,34 @@ export const Dashboard = () => {
                   <Sun size={20} className="text-yellow-400" />
                 )}
               </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-xl border-blue-500/20 cursor-pointer"
-              >
-                <Bell size={20} />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-xl border-blue-500/20 cursor-pointer"
-              >
-                <Settings size={20} />
-              </Button>
-
-              <Button
-                onClick={handleLogout}
-                variant="destructive"
-                className="rounded-xl font-bold flex items-center gap-2 px-6 shadow-lg shadow-red-500/10 cursor-pointer"
-              >
-                <LogOut size={18} /> Salir
-              </Button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
-              <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
-                Estado
-              </h3>
-              <p className="text-2xl font-semibold text-slate-900 dark:text-white">
-                Sesión Activa
-              </p>
-            </div>
+          {isHome && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
+                <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
+                  Estado
+                </h3>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-white">
+                  Sesión Activa
+                </p>
+              </div>
 
-            <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
-              <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
-                Usuario ID
-              </h3>
-              <p className="text-2xl font-semibold italic text-slate-900 dark:text-white">
-                #{user?.id || "001"}
-              </p>
-            </div>
+              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
+                <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
+                  Usuario ID
+                </h3>
+                <p className="text-2xl font-semibold italic text-slate-900 dark:text-white">
+                  #{user?.id || "001"}
+                </p>
+              </div>
 
-            <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm flex items-center justify-center">
-              <LayoutDashboard size={40} className="text-blue-500/40" />
+              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm flex items-center justify-center">
+                <LayoutDashboard size={40} className="text-blue-500/40" />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             <AnimatePresence mode="wait">
