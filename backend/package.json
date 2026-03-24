@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node main.js",
     "dev": "nodemon main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:session-sanitizer": "node test_session_sanitizer.js",
+    "test:session-http": "node test_session_http.js"
   },
   "repository": {
     "type": "git",

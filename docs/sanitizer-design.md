@@ -91,6 +91,7 @@ Each field override may include:
 - `stripHtml`
 - `toLowerCase`
 - `toUpperCase`
+- `applyGlobalDenyPatterns`: when `false`, global deny keys are not applied to that field.
 - `denyPatternKeys`
 
 ### `responsePolicy` properties
@@ -227,6 +228,12 @@ Security implication:
 
 - Force include never bypasses sanitization controls.
 
+Field-level precedence:
+
+- `denyPatternKeysGlobal` is applied by default.
+- A field can disable global deny keys with `applyGlobalDenyPatterns: false`.
+- Route/field `denyPatternKeys` are always applied.
+
 ## Session Integration
 
 File:
@@ -246,6 +253,12 @@ Per-route flow:
 - Replace `req.body` with `cleanedPayload`.
 - If rejected, return sanitizer response immediately.
 - Else continue existing validator checks and business flow.
+
+Current security policy for session credentials:
+
+- Session input allows sensitive credentials for internal auth flow.
+- Password fields in `session.register`, `session.login`, and `session.resetPassword` disable global deny keys and only reject `control_chars`.
+- Session responses still use response route keys and keep sensitive redaction enabled.
 
 ## Dispatcher Integration
 
@@ -299,6 +312,27 @@ Expected result highlights:
 - `cleanedPayload.email` becomes `user@example.com`.
 - `rejected` remains `false` when no deny pattern is matched.
 
+### Login password with `#` (allowed)
+
+Input:
+
+```json
+{
+  "username": "super_admin",
+  "password": "Admin123!@#"
+}
+```
+
+Route:
+
+- `session.login`
+
+Expected result highlights:
+
+- Password is preserved as-is for authentication.
+- No rejection is triggered by `sql_comment_sequence` for this field.
+- Rejection remains active for control chars and non-password risky fields.
+
 ### Sensitive redaction by policy
 
 Input:
@@ -341,3 +375,17 @@ Expected result highlights:
 - Add allowlist sensitive paths only when required.
 - Integrate sanitizer call before business validator.
 - Add tests for deny rejection, benign normalization, redaction, and force-include precedence.
+
+## Regression Test Command
+
+Run the session sanitizer regression suite:
+
+```bash
+npm --prefix backend run test:session-sanitizer
+```
+
+Run the session HTTP validation suite (backend must be running):
+
+```bash
+npm --prefix backend run test:session-http
+```

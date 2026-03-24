@@ -208,6 +208,20 @@ class Validator {
    */
   validateSecurity(value, category) {
     const stringValue = value.toString();
+    const normalizedCategory = String(category || '').toLowerCase();
+    const isPasswordCategory = normalizedCategory.includes('password');
+
+    if (isPasswordCategory) {
+      const containsControlChars = /[\u0000-\u001F\u007F]/.test(stringValue);
+      if (containsControlChars) {
+        return {
+          isValid: false,
+          message: `El campo ${category} contiene caracteres de control no permitidos`,
+        };
+      }
+
+      return { isValid: true, message: '' };
+    }
 
     // Prevención de XSS
     const xssPatterns = [
