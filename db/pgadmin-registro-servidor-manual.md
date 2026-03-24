@@ -33,9 +33,9 @@ Por defecto, si APP_ENV no esta definido, se usa development.
 
 Desde la raiz del repo, ejecutar en PowerShell:
 
-  $env:APP_ENV="development"
-  docker compose -f db/docker-compose.yml up -d
-  docker compose -f db/docker-compose.yml ps
+$env:APP_ENV="development"
+docker compose -f db/docker-compose.yml up -d
+docker compose -f db/docker-compose.yml ps
 
 Estados esperados:
 
@@ -129,9 +129,9 @@ Nota:
 1. Clic derecho sobre webii > Query Tool.
 2. Ejecuta:
 
-  SELECT current_database();
-  SELECT current_user;
-  SELECT now();
+SELECT current_database();
+SELECT current_user;
+SELECT now();
 
 3. Debes obtener resultados sin error.
 
@@ -139,8 +139,8 @@ Nota:
 
 Ejecuta en Query Tool:
 
-  SELECT * FROM movement_type;
-  SELECT * FROM profile;
+SELECT _ FROM movement_type;
+SELECT _ FROM profile;
 
 Debes ver filas base (loan/return/reserve y perfiles admin/operator/viewer) si initial_data.sql se aplico.
 
