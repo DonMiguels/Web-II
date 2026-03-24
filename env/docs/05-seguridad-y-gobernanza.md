@@ -33,7 +33,7 @@ Canonicos vigentes:
 
 Variables enum y valores permitidos:
 
-1. Se definen en backend/config/env-allowed-values.json.
+1. Se definen en backend/config/env/allowed-values.json.
 
 Regla:
 

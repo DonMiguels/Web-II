@@ -13,7 +13,7 @@ const getMessage = config.getMessage.bind(config);
 const { STATUS_CODES } = config;
 import Tokenizer from '../tokenizer/tokenizer.js';
 import Mailer from '../mailer/mailer.js';
-import { getRuntimeEnv } from '../../config/env-runtime.js';
+import { getRuntimeEnv } from '../../config/env/runtime.js';
 import { createSanitizer } from '../sanitizer/sanitizer.js';
 const tokenizer = new Tokenizer();
 const mailer = new Mailer();

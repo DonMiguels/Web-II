@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import yaml from 'yaml';
-import { getRuntimeEnv } from './env-runtime.js';
+import { getRuntimeEnv } from './env/runtime.js';
 
 export default class Config {
   constructor() {
@@ -165,14 +165,14 @@ export default class Config {
       if (!this.ENV_ALLOWED_VALUES) {
         const envAllowedValuesPath = path.resolve(
           this.__dirname,
-          './env-allowed-values.json',
+          './env/allowed-values.json',
         );
         const raw = fsSync.readFileSync(envAllowedValuesPath, 'utf8');
         this.ENV_ALLOWED_VALUES = JSON.parse(raw);
       }
       return this.ENV_ALLOWED_VALUES;
     } catch (err) {
-      console.error('Error cargando env-allowed-values.json:', err);
+      console.error('Error cargando env/allowed-values.json:', err);
       return {};
     }
   }

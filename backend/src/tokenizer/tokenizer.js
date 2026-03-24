@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { getRuntimeEnv } from '../../config/env-runtime.js';
+import { getRuntimeEnv } from '../../config/env/runtime.js';
 
 /**
  * Genera un token JWT con la data del usuario

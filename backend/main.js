@@ -2,7 +2,7 @@ import {
   initializeRuntimeEnv,
   EnvValidationError,
   formatEnvValidationErrors,
-} from './config/env-runtime.js';
+} from './config/env/runtime.js';
 
 try {
   initializeRuntimeEnv();
@@ -11,7 +11,7 @@ try {
     console.error(formatEnvValidationErrors(error.errors));
   } else {
     console.error(
-      '[env-runtime] Unexpected error while loading environment:',
+      '[env/runtime] Unexpected error while loading environment:',
       error,
     );
   }

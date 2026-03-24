@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import configPathCatalog from './env-config-paths.json' with { type: 'json' };
+import configPathCatalog from './env/config-paths.json' with { type: 'json' };
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -31,7 +31,7 @@ const readJsonFile = (filePath, fallbackValue) => {
     return JSON.parse(raw);
   } catch (error) {
     console.error(
-      `[env-runtime] Failed to read JSON config: ${filePath}`,
+      `[env/runtime] Failed to read JSON config: ${filePath}`,
       error,
     );
     return fallbackValue;
@@ -352,13 +352,13 @@ export const getRuntimeEnv = () => {
 };
 
 export const formatEnvValidationErrors = (errors) => {
-  const lines = ['[env-runtime] Environment validation failed:'];
+  const lines = ['[env/runtime] Environment validation failed:'];
   for (const issue of errors) {
     lines.push(
       `- ${issue.key}: value=${JSON.stringify(issue.value)} expected=${issue.expected}${issue.detail ? ` detail=${issue.detail}` : ''}`,
     );
   }
-  lines.push('[env-runtime] Validation errors JSON:');
+  lines.push('[env/runtime] Validation errors JSON:');
   lines.push(JSON.stringify(errors, null, 2));
   return lines.join('\n');
 };

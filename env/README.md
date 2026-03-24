@@ -92,7 +92,7 @@ npm --prefix frontend run dev -- --host
 
 ## Carga de variables en backend
 
-Implementado por validador central en backend/config/env-runtime.js.
+Implementado por validador central en backend/config/env/runtime.js.
 
 Orden de lectura:
 

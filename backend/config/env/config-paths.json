@@ -4,9 +4,9 @@
     "envDirectory": "env"
   },
   "runtimeConfigFiles": {
-    "allowedValues": "backend/config/env-allowed-values.json",
-    "schemaBase": "backend/config/env-validation-schema.base.json",
-    "schemaOverrides": "backend/config/env-validation-schema.overrides.json"
+    "allowedValues": "backend/config/env/allowed-values.json",
+    "schemaBase": "backend/config/env/validation-schema.base.json",
+    "schemaOverrides": "backend/config/env/validation-schema.overrides.json"
   },
   "envFilesByProfile": [
     ".env",

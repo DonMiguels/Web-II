@@ -1,4 +1,4 @@
-# db-win: solución de compatibilidad en Windows
+<!-- # db-win: solución de compatibilidad en Windows -->
 
 Este documento resume los cambios aplicados en este chat para resolver el fallo de respaldo al levantar los contenedores con Docker Compose en Windows.
 

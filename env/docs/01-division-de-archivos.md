@@ -71,7 +71,7 @@ Este documento define la arquitectura vigente de env y donde debe vivir cada var
 
 Las variables de entorno con valores cerrados se centralizan en:
 
-1. backend/config/env-allowed-values.json
+1. backend/config/env/allowed-values.json
 
 Ejemplos:
 

@@ -17,7 +17,7 @@ Reglas aprobadas:
 7. Se cargará siempre env/.env como configuración base global.
 8. APP_ENV reemplaza completamente a NODE_ENV.
 9. El backend no cargará docker.env.
-10. Se mantiene el prefijo AUTH_JWT_ y el prefijo DB_.
+10. Se mantiene el prefijo AUTH*JWT* y el prefijo DB\_.
 11. En frontend se reemplaza el prefijo VITE\_ por FRONT\_.
 
 ## Estructura de archivos de entorno aprobada
@@ -440,5 +440,5 @@ Estas variables se declaran en el contrato, pero hoy no están totalmente implem
 
 1. Arquitectura por perfiles implementada en env/development, env/test y env/production.
 2. Backend cargando base global + perfil activo por APP_ENV.
-3. Catalogo de valores enum centralizado en backend/config/env-allowed-values.json.
+3. Catalogo de valores enum centralizado en backend/config/env/allowed-values.json.
 4. Documentacion operativa alineada en env/docs y docs/env-integration.md.

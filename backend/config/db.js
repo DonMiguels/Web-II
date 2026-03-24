@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import Config from './config.js';
-import { getRuntimeEnv } from './env-runtime.js';
+import { getRuntimeEnv } from './env/runtime.js';
 const config = new Config();
 const getMessage = config.getMessage.bind(config);
 const env = getRuntimeEnv();

@@ -39,7 +39,7 @@ npm --prefix backend run dev
 Comportamiento:
 
 1. Carga env/.env.
-2. Carga env/test/*.env por dominio.
+2. Carga env/test/\*.env por dominio.
 
 ## 4. Ejecutar frontend con variables de test
 
@@ -51,7 +51,7 @@ npm --prefix frontend run dev -- --mode test
 Requisitos:
 
 1. frontend/vite.config.js carga env/.env y env/{APP_ENV}/frontend.env.
-2. Las variables publicas del cliente comienzan con FRONT_.
+2. Las variables publicas del cliente comienzan con FRONT\_.
 
 ## 5. Ejecutar Docker DB con env centralizado
 
@@ -79,14 +79,14 @@ Nota:
 1. Definir si pertenece a base global (env/.env) o a un dominio de perfil.
 2. Agregarla en development/test/production segun el dominio correspondiente.
 3. Consumirla en codigo o compose.
-4. Si es enum, registrar valores permitidos en backend/config/env-allowed-values.json.
+4. Si es enum, registrar valores permitidos en backend/config/env/allowed-values.json.
 5. Documentarla en env/docs/02-catalogo-de-variables.md.
 
 ## 7. Reglas para evitar errores comunes
 
 - No repetir una misma variable en multiples archivos salvo necesidad de fallback.
 - No mezclar variables de Docker en `db.env`.
-- No exponer secretos al frontend con prefijo FRONT_.
+- No exponer secretos al frontend con prefijo FRONT\_.
 - No usar variables legacy eliminadas.
 
 ## 8. Checklist de PR para cambios de entorno

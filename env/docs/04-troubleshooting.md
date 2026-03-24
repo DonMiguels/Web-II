@@ -56,7 +56,7 @@ Validacion:
 
 1. Revisar env/{APP_ENV}/server.env.
 2. Si hay multiples origenes, confirmar separacion por coma.
-3. Verificar catalogo en backend/config/env-allowed-values.json.
+3. Verificar catalogo en backend/config/env/allowed-values.json.
 
 Solucion:
 

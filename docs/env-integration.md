@@ -70,16 +70,16 @@ El codigo operativo consume unicamente variables canonicas del contrato vigente.
 
 Catalogo de enums permitidos:
 
-1. backend/config/env-allowed-values.json
+1. backend/config/env/allowed-values.json
 
 Schema y defaults de validacion:
 
-1. backend/config/env-validation-schema.base.json
-2. backend/config/env-validation-schema.overrides.json
+1. backend/config/env/validation-schema.base.json
+2. backend/config/env/validation-schema.overrides.json
 
 Catalogo de rutas de configuracion:
 
-1. backend/config/env-config-paths.json
+1. backend/config/env/config-paths.json
 
 ## 7) Sanitizer de payloads
 

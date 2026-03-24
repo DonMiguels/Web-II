@@ -21,16 +21,16 @@
 
 1. Etapa 1: OK - Evidencia:
 
-- Implementacion de modulo central de entorno con validacion tipada fail-fast: backend/config/env-runtime.js
+- Implementacion de modulo central de entorno con validacion tipada fail-fast: backend/config/env/runtime.js
 - Integracion de validacion en arranque: backend/main.js
 - Consumo de config central en config/db/server/tokenizer/mailer
 - Prueba negativa 1 (AUTH_JWT_SECRET ausente): backend falla con mensaje claro y detalle JSON
 - Prueba negativa 2 (DB_PORT=abc): backend falla con mensaje claro y detalle JSON
 - Prueba positiva: con valores restaurados, backend inicia correctamente
 - Restauracion confirmada de env/development/auth.env y env/development/db.env
-- Validaciones hardcode movidas a JSON: backend/config/env-allowed-values.json
-- Schema movido a JSON declarativo: backend/config/env-validation-schema.base.json
-- Overrides/defaults por entorno movidos a JSON: backend/config/env-validation-schema.overrides.json
+- Validaciones hardcode movidas a JSON: backend/config/env/allowed-values.json
+- Schema movido a JSON declarativo: backend/config/env/validation-schema.base.json
+- Overrides/defaults por entorno movidos a JSON: backend/config/env/validation-schema.overrides.json
 - Migracion legacy estricta aplicada: aliases legacy removidos del validador central
 
 1. Etapa 2: PENDIENTE - Evidencia: pendiente

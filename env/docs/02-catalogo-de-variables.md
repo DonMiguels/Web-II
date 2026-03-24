@@ -95,7 +95,7 @@ Referencia central del contrato vigente por dominio.
 
 Catalogo central:
 
-1. backend/config/env-allowed-values.json
+1. backend/config/env/allowed-values.json
 
 Variables con control de valores concretos:
 

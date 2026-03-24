@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { getRuntimeEnv } from '../../config/env-runtime.js';
+import { getRuntimeEnv } from '../../config/env/runtime.js';
 
 const env = getRuntimeEnv();
 const resendApiKey = env.services.mailResendApiKey;

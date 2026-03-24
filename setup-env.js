@@ -2,7 +2,7 @@
 import { promises as fs } from 'fs';
 import fsSync from 'fs';
 import path from 'path';
-import configPathCatalog from './backend/config/env-config-paths.json' with { type: 'json' };
+import configPathCatalog from './backend/config/env/config-paths.json' with { type: 'json' };
 
 const forceOverwrite = process.argv.includes('--force');
 
