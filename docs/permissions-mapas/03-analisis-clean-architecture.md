@@ -105,7 +105,7 @@ Y definir una regla de consistencia:
 
 ### Fase 1: endurecimiento sin romper API
 
-1. Normalizar errores con clases de error de dominio (`NotAuthorizedError`, `RouteNotFoundError`, etc.).
+1. Normalizar errores con clases de error de dominio (`NotAuthorizedError`, `RouteNotFoundError`, etc.). Estos errores deben estar definidos en el config.js
 2. Corregir `_resolveTxFromMethodRef` para no depender de `this` implícito.
 3. Consolidar endpoint de dispatcher y marcar legacy como deprecated.
 4. Corregir naming de mensaje de denegación.

@@ -160,7 +160,7 @@
     orderArray: ['profile_name']
   },
   'getPermissions': {
-    query: 'SELECT DISTINCT s.name AS sub_system, c.name AS class_name, m.name AS method_name, p.name AS profile_name FROM public.method_profile mp JOIN public.method m ON m.id = mp.method_id JOIN public.class_method cm ON cm.method_id = m.id JOIN public."class" c ON c.id = cm.class_id JOIN public.subsystem_class sc ON sc.class_id = c.id JOIN public.subsystem s ON s.id = sc.subsystem_id JOIN public.profile p ON p.id = mp.profile_id ORDER BY s.name, c.name, m.name, p.name;',
+    query: 'SELECT DISTINCT s.name AS subsystem, c.name AS class_name, m.name AS method_name, p.name AS profile_name FROM public.method_profile mp JOIN public.method m ON m.id = mp.method_id JOIN public.class_method cm ON cm.method_id = m.id JOIN public."class" c ON c.id = cm.class_id JOIN public.subsystem_class sc ON sc.class_id = c.id JOIN public.subsystem s ON s.id = sc.subsystem_id JOIN public.profile p ON p.id = mp.profile_id ORDER BY s.name, c.name, m.name, p.name;',
     structure_params: {},
     orderArray: []
   },
@@ -171,8 +171,8 @@
   },
   'insertPermission': {
     query: 'WITH ins_subsystem AS (INSERT INTO public.subsystem (name) SELECT $1::text WHERE NOT EXISTS (SELECT 1 FROM public.subsystem WHERE name = $1::text) RETURNING id), sel_subsystem AS (SELECT id FROM ins_subsystem UNION ALL SELECT id FROM public.subsystem WHERE name = $1::text ORDER BY id LIMIT 1), ins_class AS (INSERT INTO public."class" (name) SELECT $2::text WHERE NOT EXISTS (SELECT 1 FROM public."class" WHERE name = $2::text) RETURNING id), sel_class AS (SELECT id FROM ins_class UNION ALL SELECT id FROM public."class" WHERE name = $2::text ORDER BY id LIMIT 1), link_subsystem_class AS (INSERT INTO public.subsystem_class (subsystem_id, class_id) SELECT s.id, c.id FROM sel_subsystem s CROSS JOIN sel_class c ON CONFLICT (subsystem_id, class_id) DO NOTHING), ins_method AS (INSERT INTO public."method" (name) SELECT $3::text WHERE NOT EXISTS (SELECT 1 FROM public."method" WHERE name = $3::text) RETURNING id), sel_method AS (SELECT id FROM ins_method UNION ALL SELECT id FROM public."method" WHERE name = $3::text ORDER BY id LIMIT 1), link_class_method AS (INSERT INTO public.class_method (class_id, method_id) SELECT c.id, m.id FROM sel_class c CROSS JOIN sel_method m ON CONFLICT (class_id, method_id) DO NOTHING), ins_profile AS (INSERT INTO public.profile (name) SELECT $4::text WHERE NOT EXISTS (SELECT 1 FROM public.profile WHERE name = $4::text) RETURNING id), sel_profile AS (SELECT id FROM ins_profile UNION ALL SELECT id FROM public.profile WHERE name = $4::text ORDER BY id LIMIT 1), link_method_profile AS (INSERT INTO public.method_profile (method_id, profile_id) SELECT m.id, p.id FROM sel_method m CROSS JOIN sel_profile p ON CONFLICT (method_id, profile_id) DO NOTHING), ins_transaction AS (INSERT INTO public."transaction" (subsystem_id, class_id, method_id) SELECT s.id, c.id, m.id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m WHERE NOT EXISTS (SELECT 1 FROM public."transaction" t WHERE t.method_id = m.id AND t.class_id = c.id AND t.subsystem_id = s.id)) SELECT s.id AS subsystem_id, c.id AS class_id, m.id AS method_id, p.id AS profile_id FROM sel_subsystem s CROSS JOIN sel_class c CROSS JOIN sel_method m CROSS JOIN sel_profile p;',
-    structure_params: { sub_system: 'string', class_name: 'string', method_name: 'string', profile_name: 'string' },
-    orderArray: ['sub_system', 'class_name', 'method_name', 'profile_name']
+    structure_params: { subsystem: 'string', class_name: 'string', method_name: 'string', profile_name: 'string' },
+    orderArray: ['subsystem', 'class_name', 'method_name', 'profile_name']
   },
   'createEvento': {
     query: 'WITH ensure_user AS (INSERT INTO public."user" (name, password_hash, is_solvency, is_active) SELECT ''system_event_bot'', ''system_event_bot_hash'', TRUE, TRUE WHERE NOT EXISTS (SELECT 1 FROM public."user" WHERE name = ''system_event_bot'') RETURNING id), sel_user AS (SELECT id FROM ensure_user UNION ALL SELECT id FROM public."user" WHERE name = ''system_event_bot'' ORDER BY id LIMIT 1), sel_type AS (SELECT id FROM public.notification_type WHERE name = ''info'' ORDER BY id LIMIT 1) INSERT INTO public.notification (title, message, sent_at, is_read, user_id, type_id) SELECT $1, jsonb_build_object(''descripcion'', $2::text, ''fecha'', $3::text, ''hora'', $4::text, ''costo'', $5::numeric, ''capacidad'', $6::int, ''visibilidad'', $7::text, ''lugar'', $8::text)::text, (to_date($3::text, ''YYYY-MM-DD'') + ($4::text)::time)::timestamptz, FALSE, (SELECT id FROM sel_user LIMIT 1), (SELECT id FROM sel_type LIMIT 1) RETURNING id, title AS name, message AS descripcion, sent_at;',
@@ -195,7 +195,7 @@
     orderArray: []
   },
   'getTransactions': {
-    query: 'SELECT t.id, s.name AS sub_system, c.name AS class_name, m.name AS method_name FROM public."transaction" t JOIN public.subsystem s ON t.subsystem_id = s.id JOIN public."class" c ON t.class_id = c.id JOIN public."method" m ON t.method_id = m.id;',
+    query: 'SELECT t.id, s.name AS subsystem, c.name AS class_name, m.name AS method_name FROM public."transaction" t JOIN public.subsystem s ON t.subsystem_id = s.id JOIN public."class" c ON t.class_id = c.id JOIN public."method" m ON t.method_id = m.id;',
     structure_params: {},
     orderArray: []
   }

@@ -11,7 +11,7 @@ async function testExecuteAuthorized() {
 
     // 2. Crear un permiso de prueba (debe existir en permission.csv)
     const testPermission = {
-      sub_system: 'Security',
+      subsystem: 'Security',
       class: 'Person',
       method: 'createPerson',
       profile: 'admin',

@@ -10,7 +10,7 @@ const config = new Config();
  * POST /dispatcher
  * Body: {
  *   permission: {
- *     sub_system: string,
+ *     subsystem: string,
  *     class: string,
  *     method: string,
  *     profile: string,
@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
 
     // Validar campos requeridos en permission
     const { permission } = req.body;
-    const requiredFields = ['sub_system', 'class', 'method', 'profile'];
+    const requiredFields = ['subsystem', 'class', 'method', 'profile'];
     const missingFields = requiredFields.filter((field) => !permission[field]);
 
     if (missingFields.length > 0) {

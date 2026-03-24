@@ -84,7 +84,7 @@ Luego `Security.hasUserProfile(userId, profile)` consulta el mapa `userProfiles`
 
 `Security.resolveTransaction(txId)` busca en el mapa `transactions` la ruta:
 
-- `sub_system`
+- `subsystem`
 - `class`
 - `method`
 
@@ -97,7 +97,7 @@ Se crea un `permission` temporal con la ruta de transacción + perfil del reques
 `Security.hasPermission(permission)`:
 
 - normaliza campos,
-- construye clave `sub_system::class::method::profile` en minúsculas,
+- construye clave `subsystem::class::method::profile` en minúsculas,
 - verifica existencia en `permissions`.
 
 Si falla, se retorna mensaje de denegación (actualmente usa clave de mensaje genérica).
@@ -193,7 +193,7 @@ La reflexión funciona en dos capas:
 
 `Method_registry.initialize()`:
 
-- Recorre `src/bo/sub_system/*.js`.
+- Recorre `src/bo/subsystem/*.js`.
 - Importa cada módulo.
 - Instancia la clase de subsistema.
 - Recorre propiedades que representan clases internas.
@@ -216,7 +216,7 @@ Resultado: objeto `mapFiles` con forma:
 
 1. Si `registry.getMap()` está vacío, ejecuta `registry.init()`.
 2. Valida existencia con `registry.hasMethod(...)` (case-insensitive).
-3. Importa módulo `./sub_system/${subsystem}.js`.
+3. Importa módulo `./subsystem/${subsystem}.js`.
 4. Instancia clase de subsistema exportada.
 5. Busca propiedad de clase interna por comparación case-insensitive.
 6. Retorna `new InnerClassRef()`.

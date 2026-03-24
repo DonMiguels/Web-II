@@ -39,7 +39,7 @@ Estructura base esperada:
 
 ```txt
 src/bo/
-  sub_system/
+  subsystem/
     Security.js
     ...
   class/
@@ -57,7 +57,7 @@ src/bo/
 
 Rol de cada nivel:
 
-- `sub_system`: orquesta y registra clases del subsistema.
+- `subsystem`: orquesta y registra clases del subsistema.
 - `class`: implementa casos de uso y gobierna estado/contexto de flujo.
 - `method`: micro-funciones stateless reutilizables por mas de una clase.
 
@@ -98,7 +98,7 @@ Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
 
 | Origen legacy           | Destino objetivo                                  | Acción                                                                    |
 | ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `_business/ftx`         | `bo/sub_system + bo/class`                        | Convertir fachada funcional en clases de dominio por subsistema           |
+| `_business/ftx`         | `bo/subsystem + bo/class`                         | Convertir fachada funcional en clases de dominio por subsistema           |
 | `_business/atx`         | `bo/class` y `bo/method`                          | Reubicar casos de uso en clase; extraer solo piezas stateless compartidas |
 | `_business/helpers`     | `bo/method` o utilitarios de infraestructura      | Clasificar helper por naturaleza de dominio vs infraestructura            |
 | `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js` | Retirar mapeo por nombres legacy y consolidar registro canónico BO        |

@@ -14,13 +14,16 @@ export default class Method_registry {
   }
 
   async initialize() {
-    const subSystemsPath = path.join(this.rootPath, 'sub_system');
+    const subSystemsPath = path.join(this.rootPath, 'subsystem');
     let subSystemFiles = [];
 
     try {
       subSystemFiles = fs.readdirSync(subSystemsPath);
     } catch (err) {
-      console.error(`Error leyendo la carpeta de subsistemas en ${subSystemsPath}`, err);
+      console.error(
+        `Error leyendo la carpeta de subsistemas en ${subSystemsPath}`,
+        err,
+      );
       return;
     }
 
@@ -31,14 +34,18 @@ export default class Method_registry {
       this.mapFiles[subSystemName] = {};
 
       try {
-        const module = await import(`file://${path.join(subSystemsPath, file)}`);
+        const module = await import(
+          `file://${path.join(subSystemsPath, file)}`
+        );
 
         const SubSystemClass = module[subSystemName];
         if (!SubSystemClass) continue;
 
         const subSystemInstance = new SubSystemClass();
 
-        for (const [classNameKey, ClassRef] of Object.entries(subSystemInstance)) {
+        for (const [classNameKey, ClassRef] of Object.entries(
+          subSystemInstance,
+        )) {
           this.mapFiles[subSystemName][classNameKey] = {};
 
           if (typeof ClassRef === 'function') {
@@ -50,7 +57,10 @@ export default class Method_registry {
           }
         }
       } catch (err) {
-        console.error(`Error procesando el mapa para el subsistema ${file}:`, err);
+        console.error(
+          `Error procesando el mapa para el subsistema ${file}:`,
+          err,
+        );
       }
     }
   }
@@ -62,7 +72,7 @@ export default class Method_registry {
   findKeyIgnoreCase(target, requestedKey) {
     if (!target || typeof requestedKey !== 'string') return undefined;
     return Object.keys(target).find(
-      (key) => key.toLowerCase() === requestedKey.toLowerCase()
+      (key) => key.toLowerCase() === requestedKey.toLowerCase(),
     );
   }
 

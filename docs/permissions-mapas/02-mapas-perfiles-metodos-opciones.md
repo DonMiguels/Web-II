@@ -32,13 +32,13 @@ Tipo:
 
 Clave:
 
-- `sub_system::class::method::profile` (todo en minúsculas)
+- `subsystem::class::method::profile` (todo en minúsculas)
 
 Valor:
 
 ```ts
 {
-  sub_system: string,
+  subsystem: string,
   class: string,
   method: string,
   profile: string,
@@ -83,7 +83,7 @@ Uso principal:
 
 Tipo:
 
-- `Map<string, { sub_system: string, class: string, method: string }>`
+- `Map<string, { subsystem: string, class: string, method: string }>`
 
 Clave:
 
@@ -120,7 +120,7 @@ Forma:
 
 Origen:
 
-- Inspección dinámica de `src/bo/sub_system/*.js`.
+- Inspección dinámica de `src/bo/subsystem/*.js`.
 - Instanciación de clases para descubrir métodos registrados en propiedades.
 
 Uso:

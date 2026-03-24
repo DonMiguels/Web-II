@@ -2,7 +2,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Utils from '../utils/utils.js';
 import DBMS from '../dbms/dbms.js';
-import resolveExecutable from "../bo/method_resolver.js";
+import resolveExecutable from '../bo/method_resolver.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +27,7 @@ export default class Security {
     const normalize = (value) => String(value ?? '').trim();
 
     return {
-      sub_system: normalize(permission.sub_system),
+      subsystem: normalize(permission.subsystem),
       class: normalize(permission.class ?? permission.class_name),
       method: normalize(permission.method ?? permission.method_name),
       profile: normalize(permission.profile ?? permission.profile_name),
@@ -38,7 +38,7 @@ export default class Security {
   buildPermissionKey(permission = {}) {
     const normalized = this.normalizePermission(permission);
     return [
-      normalized.sub_system.toLowerCase(),
+      normalized.subsystem.toLowerCase(),
       normalized.class.toLowerCase(),
       normalized.method.toLowerCase(),
       normalized.profile.toLowerCase(),
@@ -60,7 +60,7 @@ export default class Security {
       await this.dbms.executeNamedQuery({
         nameQuery: 'insertPermission',
         params: {
-          sub_system: csvPermission.sub_system,
+          subsystem: csvPermission.subsystem,
           class_name: csvPermission.class,
           method_name: csvPermission.method,
           profile_name: csvPermission.profile,
@@ -124,7 +124,7 @@ export default class Security {
     await this.dbms.executeNamedQuery({
       nameQuery: 'insertPermission',
       params: {
-        sub_system: normalized.sub_system,
+        subsystem: normalized.subsystem,
         class_name: normalized.class,
         method_name: normalized.method,
         profile_name: normalized.profile,
@@ -193,16 +193,18 @@ export default class Security {
   async syncTransactions() {
     await this.dbmsReady;
 
-    // Supongamos que esta query trae: id, sub_system, class_name, method_name
-    const res = await this.dbms.executeNamedQuery({ nameQuery: 'getTransactions' });
+    // Supongamos que esta query trae: id, subsystem, class_name, method_name
+    const res = await this.dbms.executeNamedQuery({
+      nameQuery: 'getTransactions',
+    });
 
     this.transactions.clear();
 
     for (const row of res?.rows ?? []) {
       this.transactions.set(String(row.id), {
-        sub_system: row.sub_system,
+        subsystem: row.subsystem,
         class: row.class_name,
-        method: row.method_name
+        method: row.method_name,
       });
     }
 
@@ -215,26 +217,29 @@ export default class Security {
 
   async execute(permission, reqBody = {}) {
     try {
-      const { sub_system, class: className, method } = this.normalizePermission(permission);
+      const {
+        subsystem,
+        class: className,
+        method,
+      } = this.normalizePermission(permission);
 
       const actionInstance = await resolveExecutable({
-        subsystem: sub_system,
+        subsystem: subsystem,
         className: className,
-        method: method
+        method: method,
       });
 
       const result = await Reflect.apply(
-          actionInstance[method],
-          actionInstance,
-          [reqBody]
+        actionInstance[method],
+        actionInstance,
+        [reqBody],
       );
 
       return {
         statusCode: 200,
         data: result,
-        message: 'Ejecutado exitosamente'
+        message: 'Ejecutado exitosamente',
       };
-
     } catch (error) {
       console.error(`Error en executeAuthorized:`, error);
       throw error;
