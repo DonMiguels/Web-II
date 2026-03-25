@@ -475,11 +475,8 @@ export const createSanitizer = () => {
         }
       }
 
-      const applyGlobalDenyPatterns =
-        fieldRule.applyGlobalDenyPatterns !== false;
-
       const denyKeys = [
-        ...(applyGlobalDenyPatterns ? sanitizeRules.denyPatternKeysGlobal : []),
+        ...sanitizeRules.denyPatternKeysGlobal,
         ...(fieldRule.denyPatternKeys || []),
       ];
 
