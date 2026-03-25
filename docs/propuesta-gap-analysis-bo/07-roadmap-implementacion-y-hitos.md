@@ -76,12 +76,12 @@ Unificar reglas transversales y endurecer calidad.
 
 ## 6. Matriz de dependencias
 
-| Fase | Depende de | Riesgo principal |
-| --- | --- | --- |
-| Fase 1 | Runtime BO actual, queries base movement/inventory | Regresion en prestamos vigentes |
-| Fase 2 | Fase 1 completada | Inconsistencia de solvencia por datos historicos |
-| Fase 3 | Fase 1 y 2 completadas | Saturacion de notificaciones sin deduplicacion |
-| Fase 4 | Todas las fases previas | Cambios masivos de queries y filtros |
+| Fase   | Depende de                                         | Riesgo principal                                 |
+| ------ | -------------------------------------------------- | ------------------------------------------------ |
+| Fase 1 | Runtime BO actual, queries base movement/inventory | Regresion en prestamos vigentes                  |
+| Fase 2 | Fase 1 completada                                  | Inconsistencia de solvencia por datos historicos |
+| Fase 3 | Fase 1 y 2 completadas                             | Saturacion de notificaciones sin deduplicacion   |
+| Fase 4 | Todas las fases previas                            | Cambios masivos de queries y filtros             |
 
 ## 7. Plan de pruebas por fase
 

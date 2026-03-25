@@ -26,23 +26,23 @@ Establecer lineamientos tecnicos obligatorios para asegurar consistencia de dato
 
 ## 3. Reglas ACID por proceso
 
-| Proceso | Tablas minimas afectadas | Regla transaccional |
-| --- | --- | --- |
-| createLoanWithDetails | movement, movement_detail, inventory, item | Todo o nada; rollback completo ante stock insuficiente |
-| convertReservationToLoan | movement, movement_detail, inventory | Conversion atomica reserve->loan |
-| registerReturn | movement, movement_detail, inventory, return_status | Cierre de ciclo con reposicion atomica |
-| settleCompensation | compensation, user, audit | Pago + solvencia + auditoria en una transaccion |
+| Proceso                  | Tablas minimas afectadas                            | Regla transaccional                                    |
+| ------------------------ | --------------------------------------------------- | ------------------------------------------------------ |
+| createLoanWithDetails    | movement, movement_detail, inventory, item          | Todo o nada; rollback completo ante stock insuficiente |
+| convertReservationToLoan | movement, movement_detail, inventory                | Conversion atomica reserve->loan                       |
+| registerReturn           | movement, movement_detail, inventory, return_status | Cierre de ciclo con reposicion atomica                 |
+| settleCompensation       | compensation, user, audit                           | Pago + solvencia + auditoria en una transaccion        |
 
 ## 4. Indices recomendados
 
-| Tabla | Indice recomendado | Razon |
-| --- | --- | --- |
-| movement | (type_id, user_id, booking_date DESC) | Consultas de prestamos por usuario y tiempo |
-| movement | (actual_return_date) WHERE actual_return_date IS NULL | Prestamos activos y alertas de mora |
-| inventory | (item_id, location_id) UNIQUE | Integridad de stock por ubicacion |
-| compensation | (borrower_user_id, payment_date DESC) | Reportes por usuario |
-| notification | (user_id, is_read, sent_at DESC) | Bandeja de notificaciones |
-| user | (deleted_at) WHERE deleted_at IS NULL | Filtro de usuarios activos logicos |
+| Tabla        | Indice recomendado                                    | Razon                                       |
+| ------------ | ----------------------------------------------------- | ------------------------------------------- |
+| movement     | (type_id, user_id, booking_date DESC)                 | Consultas de prestamos por usuario y tiempo |
+| movement     | (actual_return_date) WHERE actual_return_date IS NULL | Prestamos activos y alertas de mora         |
+| inventory    | (item_id, location_id) UNIQUE                         | Integridad de stock por ubicacion           |
+| compensation | (borrower_user_id, payment_date DESC)                 | Reportes por usuario                        |
+| notification | (user_id, is_read, sent_at DESC)                      | Bandeja de notificaciones                   |
+| user         | (deleted_at) WHERE deleted_at IS NULL                 | Filtro de usuarios activos logicos          |
 
 ## 5. Politica de integridad 3NF
 
@@ -60,9 +60,9 @@ Establecer lineamientos tecnicos obligatorios para asegurar consistencia de dato
 
 ## 7. Contrato de errores de datos
 
-| Codigo | Caso | Ejemplo |
-| --- | --- | --- |
-| 409 | Conflicto de stock | No hay disponibilidad para el item solicitado |
-| 409 | Duplicado funcional | Ya existe reserva activa para el mismo item y usuario |
-| 422 | Regla temporal invalida | Fecha de devolucion menor a fecha de prestamo |
-| 422 | Regla academica invalida | Periodo inactivo para registrar movimiento |
+| Codigo | Caso                     | Ejemplo                                               |
+| ------ | ------------------------ | ----------------------------------------------------- |
+| 409    | Conflicto de stock       | No hay disponibilidad para el item solicitado         |
+| 409    | Duplicado funcional      | Ya existe reserva activa para el mismo item y usuario |
+| 422    | Regla temporal invalida  | Fecha de devolucion menor a fecha de prestamo         |
+| 422    | Regla academica invalida | Periodo inactivo para registrar movimiento            |

@@ -8,15 +8,15 @@ El principal gap no es de estructura de carpetas, sino de orquestacion transacci
 
 ## 2. Estado Actual vs Estado Objetivo
 
-| Dimension | Estado actual | Estado objetivo |
-| --- | --- | --- |
-| Cobertura funcional | Alta en CRUD, media en procesos compuestos | Cobertura total de procesos end-to-end |
-| Prestamos/devoluciones | Operan sobre movement, pero con acoplamiento debil a detalle | Flujo completo movement + movement_detail + stock + estado |
-| Apartados | Parcial por campos de reserva, sin proceso dedicado | Subsistema de reserva con expiracion y conversion a prestamo |
-| Notificaciones | CRUD manual de notificacion | Motor automatico de recordatorio y alerta por mora |
-| Reportes | Sin modulo analitico formal | Reportes de solvencia, morosos y estadistica por periodo |
-| Soft delete | Mixto: algunas entidades usan deleted_at, otras eliminacion fisica | Politica uniforme en entidades maestras |
-| Auditoria temporal | Parcial y heterogenea por entidad | created_at/updated_at estandarizado y gobernado |
+| Dimension              | Estado actual                                                      | Estado objetivo                                              |
+| ---------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Cobertura funcional    | Alta en CRUD, media en procesos compuestos                         | Cobertura total de procesos end-to-end                       |
+| Prestamos/devoluciones | Operan sobre movement, pero con acoplamiento debil a detalle       | Flujo completo movement + movement_detail + stock + estado   |
+| Apartados              | Parcial por campos de reserva, sin proceso dedicado                | Subsistema de reserva con expiracion y conversion a prestamo |
+| Notificaciones         | CRUD manual de notificacion                                        | Motor automatico de recordatorio y alerta por mora           |
+| Reportes               | Sin modulo analitico formal                                        | Reportes de solvencia, morosos y estadistica por periodo     |
+| Soft delete            | Mixto: algunas entidades usan deleted_at, otras eliminacion fisica | Politica uniforme en entidades maestras                      |
+| Auditoria temporal     | Parcial y heterogenea por entidad                                  | created_at/updated_at estandarizado y gobernado              |
 
 ## 3. Hallazgos Criticos
 

@@ -48,15 +48,15 @@ flowchart TD
 
 ## 4. Glosario
 
-| Termino | Definicion |
-| --- | --- |
-| BO | Business Object, unidad de negocio expuesta por subsystem/class/method |
-| Movimiento | Cabecera transaccional (loan, reserve, return) |
-| Movement detail | Detalle por item/cantidad afectado por un movimiento |
-| Solvencia | Estado habilitante para nuevos prestamos |
-| Mora | Retraso de devolucion respecto de fecha esperada |
-| Soft delete | Baja logica con deleted_at, sin eliminar fisicamente |
-| Auditoria temporal | Registro de created_at y updated_at en formato TIMESTAMPTZ |
+| Termino            | Definicion                                                             |
+| ------------------ | ---------------------------------------------------------------------- |
+| BO                 | Business Object, unidad de negocio expuesta por subsystem/class/method |
+| Movimiento         | Cabecera transaccional (loan, reserve, return)                         |
+| Movement detail    | Detalle por item/cantidad afectado por un movimiento                   |
+| Solvencia          | Estado habilitante para nuevos prestamos                               |
+| Mora               | Retraso de devolucion respecto de fecha esperada                       |
+| Soft delete        | Baja logica con deleted_at, sin eliminar fisicamente                   |
+| Auditoria temporal | Registro de created_at y updated_at en formato TIMESTAMPTZ             |
 
 ## 5. Checklist de aceptacion final
 

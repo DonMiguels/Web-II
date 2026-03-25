@@ -9,18 +9,18 @@
 
 ## 2. Cobertura funcional detectada por dominio
 
-| Dominio | Cobertura actual | Evidencia principal | Estado |
-| --- | --- | --- | --- |
-| Inventory/Equipment | CRUD disponible | BO y queries de item/estado | Parcialmente completo |
-| Components/Component | CRUD disponible | BO y queries de item por categoria | Parcialmente completo |
-| Loans/Loan | Alta en consulta, media en flujo | create/get/update/delete loans | Parcial |
-| Returns/Return | CRUD de movimiento tipo return | create/get/update/delete return | Parcial |
-| Notifications/Notification | CRUD disponible | create/get/list/update/mark read/delete | Parcial |
-| Compensations/Compensation | CRUD disponible | insert/get/update/delete compensation | Parcial |
-| Academic/AcademicPeriod | CRUD y activos | create/get/list/update/delete period | Parcialmente completo |
-| Audit/Audit | create y consultas | create/get/list/delete audit | Parcial |
-| Security/* | Amplia cobertura de entidades y puentes | perfiles, metodos, opciones, transacciones | Parcialmente completo |
-| Users/User | CRUD de usuario | create/get/list/update/delete user | Parcialmente completo |
+| Dominio                    | Cobertura actual                        | Evidencia principal                        | Estado                |
+| -------------------------- | --------------------------------------- | ------------------------------------------ | --------------------- |
+| Inventory/Equipment        | CRUD disponible                         | BO y queries de item/estado                | Parcialmente completo |
+| Components/Component       | CRUD disponible                         | BO y queries de item por categoria         | Parcialmente completo |
+| Loans/Loan                 | Alta en consulta, media en flujo        | create/get/update/delete loans             | Parcial               |
+| Returns/Return             | CRUD de movimiento tipo return          | create/get/update/delete return            | Parcial               |
+| Notifications/Notification | CRUD disponible                         | create/get/list/update/mark read/delete    | Parcial               |
+| Compensations/Compensation | CRUD disponible                         | insert/get/update/delete compensation      | Parcial               |
+| Academic/AcademicPeriod    | CRUD y activos                          | create/get/list/update/delete period       | Parcialmente completo |
+| Audit/Audit                | create y consultas                      | create/get/list/delete audit               | Parcial               |
+| Security/\*                | Amplia cobertura de entidades y puentes | perfiles, metodos, opciones, transacciones | Parcialmente completo |
+| Users/User                 | CRUD de usuario                         | create/get/list/update/delete user         | Parcialmente completo |
 
 ## 3. Brechas tecnicas por proceso de negocio
 

@@ -53,14 +53,14 @@
 
 ## 3. Matriz de criticidad
 
-| Requerimiento implicito | Impacto | Riesgo si no se implementa |
-| --- | --- | --- |
-| Bloqueo concurrente de stock | Alto | Sobreasignacion y inconsistencia de inventario |
-| Relacion prestamo-devolucion | Alto | Cierre operativo ambiguo y reportes incorrectos |
-| Recalculo de solvencia | Alto | Prestamos indebidos y deuda no controlada |
-| Soft delete uniforme | Alto | Perdida de trazabilidad y riesgo de auditoria |
-| Scheduler de alertas | Medio | Mora creciente y baja recuperacion de equipos |
-| KPI de prestamos | Medio | Gestion sin visibilidad para mejora continua |
+| Requerimiento implicito      | Impacto | Riesgo si no se implementa                      |
+| ---------------------------- | ------- | ----------------------------------------------- |
+| Bloqueo concurrente de stock | Alto    | Sobreasignacion y inconsistencia de inventario  |
+| Relacion prestamo-devolucion | Alto    | Cierre operativo ambiguo y reportes incorrectos |
+| Recalculo de solvencia       | Alto    | Prestamos indebidos y deuda no controlada       |
+| Soft delete uniforme         | Alto    | Perdida de trazabilidad y riesgo de auditoria   |
+| Scheduler de alertas         | Medio   | Mora creciente y baja recuperacion de equipos   |
+| KPI de prestamos             | Medio   | Gestion sin visibilidad para mejora continua    |
 
 ## 4. Criterio de completitud
 

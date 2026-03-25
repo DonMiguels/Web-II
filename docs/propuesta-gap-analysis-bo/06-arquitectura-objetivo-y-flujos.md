@@ -130,9 +130,7 @@ backend/src/bo/
   "booking_date": "2026-04-01T10:00:00Z",
   "estimated_return_date": "2026-04-08T10:00:00Z",
   "observations": "Prestamo de practicas",
-  "details": [
-    { "inventory_id": 9001, "amount": 1 }
-  ]
+  "details": [{ "inventory_id": 9001, "amount": 1 }]
 }
 ```
 

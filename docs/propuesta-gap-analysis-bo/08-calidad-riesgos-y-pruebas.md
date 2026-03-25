@@ -6,13 +6,13 @@ Definir controles de calidad y gestion de riesgos para asegurar que la propuesta
 
 ## 2. Riesgos principales
 
-| Riesgo | Probabilidad | Impacto | Mitigacion |
-| --- | --- | --- | --- |
-| Sobreasignacion de inventario por concurrencia | Media | Alto | Bloqueo FOR UPDATE + pruebas concurrentes |
-| Regresion en flujo de prestamos existente | Media | Alto | Feature flags y pruebas de contrato |
-| Reportes inconsistentes por datos historicos | Media | Medio | Vistas SQL validadas y reconciliacion |
-| Exceso de notificaciones duplicadas | Alta | Medio | Llave de deduplicacion por usuario/tipo/ventana |
-| Falta de trazabilidad por hard delete | Media | Alto | Politica global soft delete + auditoria |
+| Riesgo                                         | Probabilidad | Impacto | Mitigacion                                      |
+| ---------------------------------------------- | ------------ | ------- | ----------------------------------------------- |
+| Sobreasignacion de inventario por concurrencia | Media        | Alto    | Bloqueo FOR UPDATE + pruebas concurrentes       |
+| Regresion en flujo de prestamos existente      | Media        | Alto    | Feature flags y pruebas de contrato             |
+| Reportes inconsistentes por datos historicos   | Media        | Medio   | Vistas SQL validadas y reconciliacion           |
+| Exceso de notificaciones duplicadas            | Alta         | Medio   | Llave de deduplicacion por usuario/tipo/ventana |
+| Falta de trazabilidad por hard delete          | Media        | Alto    | Politica global soft delete + auditoria         |
 
 ## 3. Estrategia de pruebas
 
