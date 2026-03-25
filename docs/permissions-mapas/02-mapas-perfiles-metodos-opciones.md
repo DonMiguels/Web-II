@@ -246,12 +246,12 @@ En runtime del dispatcher, `transaction_id` se resuelve en ejecución durante el
 
 ## Matriz de componentes y responsabilidades
 
-| Componente                       | Estructura                                          | Rol                                                                 |
-| -------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `src/security/security.js`       | `permissions`, `userProfiles` (`Map`)               | Cache en memoria para autorización runtime                          |
-| `src/bo/method_registry.js`      | `mapFiles` (objeto)                                 | Catálogo de reflexión para rutas ejecutables                        |
-| `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)           | Control de entrada y rechazo de payload                             |
-| `src/bo/Security/*/methods`      | funciones stateless por agregado                    | Persistencia y mantenimiento de permisos/rutas en modelo BO         |
+| Componente                   | Estructura                                | Rol                                                         |
+| ---------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| `src/security/security.js`   | `permissions`, `userProfiles` (`Map`)     | Cache en memoria para autorización runtime                  |
+| `src/bo/method_registry.js`  | `mapFiles` (objeto)                       | Catálogo de reflexión para rutas ejecutables                |
+| `src/sanitizer/sanitizer.js` | `regexMap` (`Map`) + políticas (`objeto`) | Control de entrada y rechazo de payload                     |
+| `src/bo/Security/*/methods`  | funciones stateless por agregado          | Persistencia y mantenimiento de permisos/rutas en modelo BO |
 
 ## Referencias
 

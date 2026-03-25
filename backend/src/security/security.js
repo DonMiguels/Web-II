@@ -241,8 +241,11 @@ export default class Security {
   }
 
   async execute(permission, reqBody = {}) {
-    const { subsystem, class: className, method } =
-      this.normalizePermission(permission);
+    const {
+      subsystem,
+      class: className,
+      method,
+    } = this.normalizePermission(permission);
 
     try {
       const actionInstance = await resolveExecutable({
