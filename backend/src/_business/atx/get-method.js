@@ -29,8 +29,6 @@ export default async function getMethod({ subsystem, className, method }) {
     path = `#${className}/${fileName}`;
   } else if (subsystem === 'ftx') {
     path = `#${subsystem}/${className}.js`;
-  } else if (subsystem === 'eventos') {
-    path = `../ftx/${className}.js`;
   } else {
     path = `#${className}/${className}.js`;
   }

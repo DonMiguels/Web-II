@@ -1,0 +1,27 @@
+services:
+  postgres_test:
+    image: postgres:16
+    container_name: uni_postgres_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin_uni
+      POSTGRES_PASSWORD: test_password_local
+      POSTGRES_DB: webii
+    ports:
+      - '127.0.0.1:5541:5432'
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ../../db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ../../db/initial_data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+volumes:
+  postgres_test_data:
