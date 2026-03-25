@@ -79,24 +79,12 @@ Uso principal:
 
 - `hasUserProfile(userId, profile)`.
 
-### 3) `Security.transactions`
+### 3) Resolución de transacción en ejecución
 
-Tipo:
+Estado actual:
 
-- `Map<string, { subsystem: string, class: string, method: string }>`
-
-Clave:
-
-- `transactionId` (string).
-
-Origen y carga:
-
-- Query `getTransactions`.
-- Construcción en `syncTransactions()`.
-
-Uso principal:
-
-- `resolveTransaction(transactionId)`.
+- No existe cache `transactions` en `Security`.
+- La resolución de `transaction_id` se realiza en ejecución dentro del flujo de autorización.
 
 ## Mapas/objetos de reflexión dinámica
 
@@ -120,7 +108,7 @@ Forma:
 
 Origen:
 
-- Inspección dinámica de `src/bo/subsystem/*.js`.
+- Inspección dinámica de subsistemas `src/bo/<Subsystem>/<Subsystem>.js`.
 - Instanciación de clases para descubrir métodos registrados en propiedades.
 
 Uso:
@@ -270,13 +258,13 @@ Tabla principal:
 
 - `transaction`
 
-En runtime del dispatcher, esta tabla se refleja en `Security.transactions` para resolver `transaction_id`.
+En runtime del dispatcher, `transaction_id` se resuelve en ejecución durante el flujo de autorización.
 
 ## Matriz de componentes y responsabilidades
 
 | Componente                       | Estructura                                            | Rol                                                                 |
 | -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
-| `src/security/security.js`       | `permissions`, `userProfiles`, `transactions` (`Map`) | Cache en memoria para autorización runtime                          |
+| `src/security/security.js`       | `permissions`, `userProfiles` (`Map`)                 | Cache en memoria para autorización runtime                          |
 | `src/bo/method_registry.js`      | `mapFiles` (objeto)                                   | Catálogo de reflexión para rutas ejecutables                        |
 | `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)             | Control de entrada y rechazo de payload                             |
 | `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos)   | Construcción jerárquica menú-opción-perfil                          |
@@ -292,8 +280,4 @@ En runtime del dispatcher, esta tabla se refleja en `Security.transactions` para
 ## Estado legacy y destino objetivo
 
 - Todo lo listado bajo `src/_business` (atx, helpers, ftx, business.js) se clasifica como legado para efectos de evolución.
-- El modelo objetivo para nuevos desarrollos y migraciones es `src/bo` con estructura `subsystem/class/method`.
-- Los métodos que permanezcan en carpeta `method` dentro de `bo` deben cumplir dos reglas:
-  1. ser usados por más de una clase;
-  2. ser estrictamente stateless (sin almacenar estado de proceso o contexto de ejecución).
-- La entidad invocadora (clase/método de dominio) es la responsable del estado; los métodos compartidos actúan como unidad de procesamiento efímero (reciben, validan/procesan, retornan y descartan contexto).
+- El modelo objetivo para nuevos desarrollos y migraciones es `src/bo` con estructura `subsystem/class/method` y carpeta de métodos por clase en `src/bo/<Subsystem>/<Class>/methods`.

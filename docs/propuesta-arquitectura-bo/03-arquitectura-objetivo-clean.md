@@ -171,7 +171,7 @@ flowchart TB
 2. Ningun repositorio decide reglas de negocio.
 3. Ningun caso de uso accede directamente a query strings.
 4. Toda llamada cross-domain pasa por caso de uso o evento.
-5. Todos los metodos compartidos en bo/method son stateless.
+5. Todos los metodos en `src/bo/<Subsystem>/<Class>/methods` son stateless.
 
 ## Referencias
 1. [00-indice-general.md](./00-indice-general.md)

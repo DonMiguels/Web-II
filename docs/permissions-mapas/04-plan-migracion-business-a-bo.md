@@ -39,18 +39,21 @@ Estructura base esperada:
 
 ```txt
 src/bo/
-  subsystem/
-    Security.js
-    ...
-  class/
-    Person.js
-    Profile.js
-    ...
-  method/
-    createPerson.js
-    createProfile.js
-    assignProfileToUser.js
-    ...
+   Security/
+      Security.js
+      Person/Person.js
+      Profile/Profile.js
+      ...
+   Inventory/
+      Inventory.js
+      Equipment/Equipment.js
+      Equipment/methods/*.js
+      ...
+   Loans/
+      Loans.js
+      Loan/Loan.js
+      Loan/methods/*.js
+      ...
   method_registry.js
   method_resolver.js
 ```
@@ -59,28 +62,17 @@ Rol de cada nivel:
 
 - `subsystem`: orquesta y registra clases del subsistema.
 - `class`: implementa casos de uso y gobierna estado/contexto de flujo.
-- `method`: micro-funciones stateless reutilizables por mas de una clase.
+- `methods` por clase: funciones operativas del agregado en `src/bo/<Subsystem>/<Class>/methods`.
 
-## Reglas para carpeta method compartida
+## Reglas para métodos por clase
 
-Un método puede ir a `bo/method` solo si cumple simultáneamente:
+Cada método de negocio debe vivir en `src/bo/<Subsystem>/<Class>/methods` y responder al agregado de su clase.
 
-1. Reuso real por dos o mas clases.
-2. Semántica inequívoca de función stateless.
-
-Checklist para aceptar método en carpeta compartida:
+Checklist:
 
 - No almacena estado en propiedades globales o singleton mutable.
-- No depende de contexto implícito (`this`) para funcionar.
-- Recibe todos los datos por parámetros.
-- Devuelve salida determinística para la misma entrada (salvo I/O explícito).
-- No conserva referencias de datos para uso posterior.
-
-Patrones de invocación permitidos:
-
-- llamada directa desde clase,
-- encapsulación en método propio de la clase,
-- bind explícito cuando aplique.
+- Recibe datos por parámetros.
+- Encapsula acceso a query nombrada y manejo de error coherente.
 
 ## Estrategia de migración sin downtime lógico
 
@@ -98,9 +90,9 @@ Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
 
 | Origen legacy           | Destino objetivo                                  | Acción                                                                    |
 | ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `_business/ftx`         | `bo/subsystem + bo/class`                         | Convertir fachada funcional en clases de dominio por subsistema           |
-| `_business/atx`         | `bo/class` y `bo/method`                          | Reubicar casos de uso en clase; extraer solo piezas stateless compartidas |
-| `_business/helpers`     | `bo/method` o utilitarios de infraestructura      | Clasificar helper por naturaleza de dominio vs infraestructura            |
+| `_business/ftx`         | `bo/<Subsystem>/<Subsystem>.js + bo/<Subsystem>/<Class>` | Convertir fachada funcional en clases de dominio por subsistema     |
+| `_business/atx`         | `bo/<Subsystem>/<Class>/methods`                  | Reubicar casos de uso por agregado y método                               |
+| `_business/helpers`     | `bo/<Subsystem>/<Class>/methods` o utilitarios de infraestructura | Clasificar helper por naturaleza de dominio vs infraestructura |
 | `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js` | Retirar mapeo por nombres legacy y consolidar registro canónico BO        |
 
 ### Transformación por comportamiento
@@ -109,7 +101,7 @@ Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
    migrar a un gateway de ejecución centrado en `bo/method_resolver.js`.
 
 2. Operaciones ATX de permisos/opciones:
-   convertir en clases de servicio por agregado (`Profile`, `Option`, `Menu`, `Permission`) dentro de `bo/class`.
+   convertir en clases de servicio por agregado (`Profile`, `Option`, `Menu`, `Permission`) dentro de `bo/<Subsystem>/<Class>`.
 
 3. Helpers transaccionales:
    separar entre:
@@ -144,9 +136,9 @@ Entregables:
 
 ### Fase 2: Migración de dominio central de permisos
 
-1. Migrar casos de permisos por método (`method_profile`) a clases `bo/class`.
-2. Migrar casos de opciones/perfiles (`option_profile`, `option_menu`) a clases `bo/class`.
-3. Extraer funciones compartidas stateless a `bo/method` bajo reglas definidas.
+1. Migrar casos de permisos por método (`method_profile`) a clases `bo/<Subsystem>/<Class>`.
+2. Migrar casos de opciones/perfiles (`option_profile`, `option_menu`) a clases `bo/<Subsystem>/<Class>`.
+3. Extraer funciones de apoyo al directorio `methods` de cada clase.
 
 Entregables:
 
@@ -204,7 +196,7 @@ Durante convivencia, cada caso de uso migrado debe mantener:
 ### Pruebas de no regresión
 
 1. Endpoints críticos de dispatcher.
-2. Sincronización de caches (`permissions`, `transactions`, `userProfiles`).
+2. Sincronización de caches (`permissions`, `userProfiles`).
 3. Resolución dinámica en `method_registry`.
 
 ## Riesgos y mitigaciones
@@ -224,8 +216,8 @@ Durante convivencia, cada caso de uso migrado debe mantener:
 ## Checklist operativo
 
 1. Clasificar cada archivo de `_business` en:
-   - migrar a `bo/class`,
-   - migrar a `bo/method`,
+   - migrar a `bo/<Subsystem>/<Class>`,
+   - migrar a `bo/<Subsystem>/<Class>/methods`,
    - mover a infraestructura,
    - deprecar.
 2. Implementar compat layer bo-first con fallback legacy.

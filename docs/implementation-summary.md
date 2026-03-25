@@ -12,20 +12,20 @@
 
 ### 2. Existing BO Detected ✅
 
-1. **Person** - Entidad persona (`src/bo/class/Person.js`)
-2. **Profile** - Entidad perfil (`src/bo/class/Profile.js`) 
+1. **Person** - Entidad persona (`src/bo/Security/Person/Person.js`)
+2. **Profile** - Entidad perfil (`src/bo/Security/Profile/Profile.js`) 
 3. **Usuario** - Sistema de gestión de usuarios (`src/session/`)
-4. **Security** - Subsistema de seguridad (`src/bo/sub_system/Security.js`)
+4. **Security** - Subsistema de seguridad (`src/bo/Security/Security.js`)
 
 ### 3. New BO Created ✅
 
 #### 3.1 Subsistema: Inventory
-- **Equipo** - Gestión completa de equipos
-- **Ubicacion** - Gestión de ubicaciones físicas
-- **EstadoEquipo** - Catálogo de estados operativos
+- **Equipment** - Gestión completa de equipos
+- **Location** - Gestión de ubicaciones físicas
+- **EquipmentStatus** - Catálogo de estados operativos
 
 #### 3.2 Subsistema: Loans  
-- **Prestamo** - Gestión de préstamos de equipos
+- **Loan** - Gestión de préstamos de equipos
 
 ### 4. Relationships Implemented ✅
 
@@ -47,8 +47,8 @@ prestamo.usuario_id → person.id
 #### 4.2 Application Relationships
 ```javascript
 // Business Objects agrupados por subsistema
-Inventory → { Equipo, Ubicacion, EstadoEquipo }
-Loans → { Prestamo }
+Inventory → { Equipment, Location, EquipmentStatus }
+Loans → { Loan }
 Security → { Person, Profile }
 ```
 
@@ -58,22 +58,22 @@ Security → { Person, Profile }
 - ✅ `insertEquipo`, `getEquipoById`, `getEquipoByCodigo`, `getAllEquipos`, `updateEquipo`, `deleteEquipo`
 - ✅ `insertUbicacion`, `getUbicacionById`, `getUbicacionByNombre`, `getAllUbicaciones`, `updateUbicacion`, `deleteUbicacion`
 - ✅ `insertEstadoEquipo`, `getEstadoEquipoById`, `getEstadoEquipoByNombre`, `getAllEstadosEquipo`, `updateEstadoEquipo`, `deleteEstadoEquipo`
-- ✅ `insertPrestamo`, `getPrestamoById`, `getPrestamosByUsuario`, `getPrestamosByEquipo`, `getAllPrestamos`, `getPrestamosActivos`, `updatePrestamo`, `deletePrestamo`
+- ✅ `insertLoan`, `getLoanById`, `getLoansByUser`, `getLoansByEquipment`, `getAllLoans`, `getActiveLoans`, `updateLoan`, `deleteLoan`
 
-#### 5.2 Business Objects Classes (`src/bo/class/`)
-- ✅ `Equipo.js` - 6 métodos CRUD
-- ✅ `Ubicacion.js` - 6 métodos CRUD  
-- ✅ `EstadoEquipo.js` - 6 métodos CRUD
-- ✅ `Prestamo.js` - 8 métodos (CRUD + consultas especializadas)
+#### 5.2 Business Objects Classes (`src/bo/<Subsystem>/<Class>/`)
+- ✅ `Inventory/Equipment/Equipment.js` - 6 métodos CRUD
+- ✅ `Inventory/Location/Location.js` - 6 métodos CRUD  
+- ✅ `Inventory/EquipmentStatus/EquipmentStatus.js` - 6 métodos CRUD
+- ✅ `Loans/Loan/Loan.js` - 8 métodos (CRUD + consultas especializadas)
 
-#### 5.3 Methods (`src/bo/method/`)
+#### 5.3 Methods (`src/bo/<Subsystem>/<Class>/methods/`)
 - ✅ 26 archivos de métodos implementados
 - ✅ Todos usan `DBMS.executeNamedQuery()` con validación
 - ✅ Manejo consistente de errores y nulos
 
-#### 5.4 Subsystems (`src/bo/sub_system/`)
-- ✅ `Inventory.js` - Agrupa Equipo, Ubicacion, EstadoEquipo
-- ✅ `Loans.js` - Agrupa Prestamo
+#### 5.4 Subsystems (`src/bo/<Subsystem>/<Subsystem>.js`)
+- ✅ `Inventory.js` - Agrupa Equipment, Location, EquipmentStatus
+- ✅ `Loans.js` - Agrupa Loan
 - ✅ Auto-registro en `method_registry.js`
 
 #### 5.5 Security Configuration

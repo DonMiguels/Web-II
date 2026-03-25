@@ -1,0 +1,16 @@
+import DBMS from '../../../../dbms/dbms.js';
+
+export const getInventoryById = async function (params = {}) {
+  const { id } = params || {};
+  const dbms = new DBMS();
+  await dbms.init();
+  try {
+    const res = await dbms.executeNamedQuery({
+      nameQuery: 'getInventoryById',
+      params: { id },
+    });
+    return res?.rows?.[0];
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};

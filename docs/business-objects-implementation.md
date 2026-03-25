@@ -10,48 +10,46 @@ Este documento describe la implementación de Business Objects (BO) en el backen
 
 ```
 backend/src/bo/
-├── class/                    # Entidades de negocio
-│   ├── Person.js            # Entidad Persona (existente)
-│   ├── Profile.js           # Entidad Perfil (existente)
-│   ├── Equipo.js           # Entidad Equipo (nuevo)
-│   ├── Ubicacion.js        # Entidad Ubicación (nuevo)
-│   ├── EstadoEquipo.js      # Entidad Estado Equipo (nuevo)
-│   └── Prestamo.js         # Entidad Préstamo (nuevo)
-├── method/                   # Métodos de negocio
-│   ├── createPerson.js      # Métodos Persona (existente)
-│   ├── createProfile.js     # Métodos Perfil (existente)
-│   ├── createEquipo.js      # Métodos Equipo (nuevo)
-│   ├── createUbicacion.js   # Métodos Ubicación (nuevo)
-│   ├── createEstadoEquipo.js # Métodos Estado Equipo (nuevo)
-│   └── createPrestamo.js   # Métodos Préstamo (nuevo)
-└── sub_system/               # Subsistemas funcionales
-    ├── Security.js          # Subsistema Seguridad (existente)
-    ├── Inventory.js         # Subsistema Inventario (nuevo)
-    └── Loans.js            # Subsistema Préstamos (nuevo)
+├── Security/
+│   ├── Security.js
+│   ├── Person/Person.js
+│   └── Profile/Profile.js
+├── Inventory/
+│   ├── Inventory.js
+│   ├── Equipment/Equipment.js
+│   ├── Location/Location.js
+│   └── EquipmentStatus/EquipmentStatus.js
+├── Loans/
+│   ├── Loans.js
+│   └── Loan/Loan.js
+├── ... (Academic, Audit, Components, Compensations, Notifications, Returns, Users)
+├── method_registry.js
+└── method_resolver.js
 ```
 
 ### 2.2 Patrón de implementación
 
 Cada Business Object sigue el patrón establecido:
 
-1. **Class**: Entidad principal que agrupa métodos relacionados
-2. **Methods**: Funciones exportadas que usan `DBMS.executeNamedQuery()`
+1. **Subsystem**: Punto de entrada por dominio (`<Subsystem>/<Subsystem>.js`)
+2. **Class**: Entidad principal por agregado (`<Subsystem>/<Class>/<Class>.js`)
+3. **Methods**: Funciones exportadas en `<Subsystem>/<Class>/methods/*.js` que usan `DBMS.executeNamedQuery()`
 3. **Named Queries**: Consultas SQL en `config/queries.yaml` con validación
-4. **Subsystem**: Agrupación lógica de clases relacionadas
+4. **Resolver**: Resolución dinámica vía `method_registry.js` y `method_resolver.js`
 
 ## 3. Business Objects Implementados
 
-### 3.1 Equipo (Inventory)
+### 3.1 Equipment (Inventory)
 
 **Propósito**: Gestión de equipos del inventario
 
 **Queries implementadas**:
-- `insertEquipo`: Crear nuevo equipo
-- `getEquipoById`: Obtener equipo por ID
-- `getEquipoByCodigo`: Obtener equipo por código
-- `getAllEquipos`: Listar todos los equipos
-- `updateEquipo`: Actualizar equipo existente
-- `deleteEquipo`: Eliminar equipo
+- `insertEquipment`: Crear nuevo equipo
+- `getEquipmentById`: Obtener equipo por ID
+- `getEquipmentByCode`: Obtener equipo por código
+- `getAllEquipment`: Listar todos los equipos
+- `updateEquipment`: Actualizar equipo existente
+- `deleteEquipment`: Eliminar equipo
 
 **Estructura de datos**:
 ```javascript
@@ -73,17 +71,17 @@ Cada Business Object sigue el patrón establecido:
 - `ubicacion_id` → `ubicacion.id`
 - `estado_id` → `estado_equipo.id`
 
-### 3.2 Ubicacion (Inventory)
+### 3.2 Location (Inventory)
 
 **Propósito**: Gestión de ubicaciones físicas
 
 **Queries implementadas**:
-- `insertUbicacion`: Crear nueva ubicación
-- `getUbicacionById`: Obtener ubicación por ID
-- `getUbicacionByNombre`: Obtener ubicación por nombre
-- `getAllUbicaciones`: Listar todas las ubicaciones
-- `updateUbicacion`: Actualizar ubicación existente
-- `deleteUbicacion`: Eliminar ubicación
+- `insertLocation`: Crear nueva ubicación
+- `getLocationById`: Obtener ubicación por ID
+- `getLocationByName`: Obtener ubicación por nombre
+- `getAllLocations`: Listar todas las ubicaciones
+- `updateLocation`: Actualizar ubicación existente
+- `deleteLocation`: Eliminar ubicación
 
 **Estructura de datos**:
 ```javascript
@@ -96,17 +94,17 @@ Cada Business Object sigue el patrón establecido:
 }
 ```
 
-### 3.3 EstadoEquipo (Inventory)
+### 3.3 EquipmentStatus (Inventory)
 
 **Propósito**: Catálogo de estados operativos de equipos
 
 **Queries implementadas**:
-- `insertEstadoEquipo`: Crear nuevo estado
-- `getEstadoEquipoById`: Obtener estado por ID
-- `getEstadoEquipoByNombre`: Obtener estado por nombre
-- `getAllEstadosEquipo`: Listar todos los estados
-- `updateEstadoEquipo`: Actualizar estado existente
-- `deleteEstadoEquipo`: Eliminar estado
+- `insertEquipmentStatus`: Crear nuevo estado
+- `getEquipmentStatusById`: Obtener estado por ID
+- `getEquipmentStatusByName`: Obtener estado por nombre
+- `getAllEquipmentStatuses`: Listar todos los estados
+- `updateEquipmentStatus`: Actualizar estado existente
+- `deleteEquipmentStatus`: Eliminar estado
 
 **Estructura de datos**:
 ```javascript
@@ -116,19 +114,19 @@ Cada Business Object sigue el patrón establecido:
 }
 ```
 
-### 3.4 Prestamo (Loans)
+### 3.4 Loan (Loans)
 
 **Propósito**: Gestión de préstamos de equipos
 
 **Queries implementadas**:
-- `insertPrestamo`: Crear nuevo préstamo
-- `getPrestamoById`: Obtener préstamo por ID
-- `getPrestamosByUsuario`: Préstamos por usuario
-- `getPrestamosByEquipo`: Préstamos por equipo
-- `getAllPrestamos`: Listar todos los préstamos
-- `getPrestamosActivos`: Préstamos actualmente activos
-- `updatePrestamo`: Actualizar préstamo (devolución)
-- `deletePrestamo`: Eliminar préstamo
+- `insertLoan`: Crear nuevo préstamo
+- `getLoanById`: Obtener préstamo por ID
+- `getLoansByUser`: Préstamos por usuario
+- `getLoansByEquipment`: Préstamos por equipo
+- `getAllLoans`: Listar todos los préstamos
+- `getActiveLoans`: Préstamos actualmente activos
+- `updateLoan`: Actualizar préstamo (devolución)
+- `deleteLoan`: Eliminar préstamo
 
 **Estructura de datos**:
 ```javascript
@@ -150,31 +148,31 @@ Cada Business Object sigue el patrón establecido:
 
 ### 4.1 Registro de Subsistemas
 
-Los nuevos subsistemas se registran automáticamente en `method_registry.js`:
+Los subsistemas se registran automáticamente en `method_registry.js`:
 
 ```javascript
-// src/bo/sub_system/Inventory.js
+// src/bo/Inventory/Inventory.js
 export class Inventory {
     constructor() {
-        this.Equipo = Equipo;
-        this.Ubicacion = Ubicacion;
-        this.EstadoEquipo = EstadoEquipo;
+    this.Equipment = Equipment;
+    this.Location = Location;
+    this.EquipmentStatus = EquipmentStatus;
     }
 }
 
-// src/bo/sub_system/Loans.js
+// src/bo/Loans/Loans.js
 export class Loans {
     constructor() {
-        this.Prestamo = Prestamo;
+    this.Loan = Loan;
     }
 }
 ```
 
 ### 4.2 Convenciones de Nombres
 
-**Entidades**: Español (Equipo, Ubicacion, EstadoEquipo, Prestamo)
-**Métodos**: Inglés (createEquipo, getEquipoById, updateEquipo)
-**Queries**: CamelCase en YAML (insertEquipo, getEquipoById)
+**Entidades/Clases**: PascalCase en inglés (Equipment, Location, EquipmentStatus, Loan)
+**Métodos**: Inglés (createEquipment, getEquipmentById, updateEquipment)
+**Queries**: CamelCase en YAML (insertEquipment, getEquipmentById)
 **Parámetros**: snake_case en SQL (usuario_id, equipo_id, fecha_prestamo)
 
 ### 4.3 Validación de Parámetros

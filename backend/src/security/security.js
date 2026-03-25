@@ -15,7 +15,6 @@ export default class Security {
 
     this.permissions = new Map();
     this.userProfiles = new Map();
-    this.transactions = new Map();
     this.utils = new Utils();
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
@@ -188,31 +187,6 @@ export default class Security {
       this.userProfiles.set(normalizedUserId, new Set());
     }
     this.userProfiles.get(normalizedUserId).add(normalizedProfile);
-  }
-
-  async syncTransactions() {
-    await this.dbmsReady;
-
-    // Supongamos que esta query trae: id, subsystem, class_name, method_name
-    const res = await this.dbms.executeNamedQuery({
-      nameQuery: 'getTransactions',
-    });
-
-    this.transactions.clear();
-
-    for (const row of res?.rows ?? []) {
-      this.transactions.set(String(row.id), {
-        subsystem: row.subsystem,
-        class: row.class_name,
-        method: row.method_name,
-      });
-    }
-
-    return this.transactions;
-  }
-
-  resolveTransaction(transactionId) {
-    return this.transactions.get(String(transactionId));
   }
 
   async execute(permission, reqBody = {}) {

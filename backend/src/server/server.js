@@ -62,7 +62,6 @@ class Server {
   async init() {
     await this.config.init();
     await this.security.syncPermissions();
-    await this.security.syncTransactions();
     await this.security.syncUserProfiles();
   }
 

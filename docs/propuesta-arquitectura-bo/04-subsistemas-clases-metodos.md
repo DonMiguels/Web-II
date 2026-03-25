@@ -24,7 +24,7 @@ Definir la estructura tecnica objetivo del backend, detallando unidades funciona
 1. Metodos publicos exponen capacidades de negocio.
 2. Metodos privados encapsulan invariantes, validaciones y detalles internos.
 3. Servicios de clase no comparten estado mutable global.
-4. Metodos compartidos en bo/method son estrictamente stateless.
+4. Metodos por clase en `src/bo/<Subsystem>/<Class>/methods` son stateless.
 5. La comunicacion entre subsistemas pasa por casos de uso o eventos.
 
 ## Subsistema SecurityAccess

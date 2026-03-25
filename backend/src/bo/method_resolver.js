@@ -32,8 +32,8 @@ export default async function resolveExecutable({
   }
 
   try {
-    // Ruta relativa del archivo de subsistema a cargar dinamicamente.
-    const modulePath = `./subsystem/${subsystem}.js`;
+    // Ruta relativa del archivo de subsistema con la nueva estructura bo/SUBSYSTEM/SUBSYSTEM.js.
+    const modulePath = `./${subsystem}/${subsystem}.js`;
 
     const module = await import(modulePath);
 

@@ -27,34 +27,35 @@ export default class Method_registry {
     Method_registry.instance = this;
   }
 
-  // Recorre /subsystem, carga cada modulo y construye el indice de metodos.
+  // Recorre bo/<Subsystem>/<Subsystem>.js, carga cada modulo y construye el indice.
   async initialize() {
-    const subSystemsPath = path.join(this.rootPath, 'subsystem');
-    let subSystemFiles = [];
+    let subsystemDirs = [];
 
     try {
-      // Lee archivos de subsistemas disponibles en disco.
-      subSystemFiles = fs.readdirSync(subSystemsPath);
+      // Lee carpetas de primer nivel y filtra potenciales subsistemas.
+      subsystemDirs = fs
+        .readdirSync(this.rootPath, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .filter((name) => !['class', 'method', 'subsystem'].includes(name));
     } catch (err) {
-      console.error(
-        `Error leyendo la carpeta de subsistemas en ${subSystemsPath}`,
-        err,
-      );
+      console.error(`Error leyendo la carpeta BO en ${this.rootPath}`, err);
       return;
     }
 
-    for (const file of subSystemFiles) {
-      // Solo procesa modulos JS como definicion de subsistemas.
-      if (!file.endsWith('.js')) continue;
+    for (const subSystemName of subsystemDirs) {
+      const subsystemModulePath = path.join(
+        this.rootPath,
+        subSystemName,
+        `${subSystemName}.js`,
+      );
+      if (!fs.existsSync(subsystemModulePath)) continue;
 
-      const subSystemName = path.basename(file, '.js');
       this.mapFiles[subSystemName] = {};
 
       try {
         // Carga dinamica del archivo de subsistema.
-        const module = await import(
-          `file://${path.join(subSystemsPath, file)}`
-        );
+        const module = await import(`file://${subsystemModulePath}`);
 
         // Espera export nombrado con el mismo nombre del archivo.
         const SubSystemClass = module[subSystemName];
@@ -80,7 +81,7 @@ export default class Method_registry {
         }
       } catch (err) {
         console.error(
-          `Error procesando el mapa para el subsistema ${file}:`,
+          `Error procesando el mapa para el subsistema ${subSystemName}:`,
           err,
         );
       }

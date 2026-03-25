@@ -193,7 +193,7 @@ La reflexión funciona en dos capas:
 
 `Method_registry.initialize()`:
 
-- Recorre `src/bo/subsystem/*.js`.
+- Recorre carpetas de primer nivel en `src/bo` y carga `<Subsystem>/<Subsystem>.js`.
 - Importa cada módulo.
 - Instancia la clase de subsistema.
 - Recorre propiedades que representan clases internas.
@@ -216,7 +216,7 @@ Resultado: objeto `mapFiles` con forma:
 
 1. Si `registry.getMap()` está vacío, ejecuta `registry.init()`.
 2. Valida existencia con `registry.hasMethod(...)` (case-insensitive).
-3. Importa módulo `./subsystem/${subsystem}.js`.
+3. Importa módulo `./${subsystem}/${subsystem}.js`.
 4. Instancia clase de subsistema exportada.
 5. Busca propiedad de clase interna por comparación case-insensitive.
 6. Retorna `new InnerClassRef()`.
