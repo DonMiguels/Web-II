@@ -16,7 +16,7 @@
 
 ## Contexto del análisis
 
-Se analizó el flujo operativo actual (dispatcher + security + resolver), así como el subflujo ATX de administración de perfiles/métodos/opciones.
+Se analizó el flujo operativo actual (dispatcher + security + resolver) y su operación en modo BO-only.
 
 El objetivo de estas sugerencias es:
 
@@ -30,11 +30,11 @@ El objetivo de estas sugerencias es:
 1. Manejo de errores inconsistente en resolución dinámica.
    En `resolveExecutable`, ante error se usa `utils.handleError(...)` que lanza excepción serializada como string JSON. El consumidor final (`Security.execute`) no diferencia tipos de error de dominio/infraestructura.
 
-2. Potencial bug en resolución de tx en helper.
-   En `_resolveTxFromMethodRef`, si no hay `__client`, se invoca `this.setTxTransaction(...)`, pero en una función libre `this` no está garantizado.
+2. Hallazgo histórico ya cerrado: resolución de tx en helper legacy.
+   El riesgo pertenecía a un helper de `_business`, retirado del runtime actual.
 
-3. Inconsistencia de nombres de columnas en ATX vs queries.
-   Algunos ATX usan convenciones `id_option/id_profile/id_menu`, mientras varias queries usan `option_id/profile_id/menu_id`. Esto aumenta riesgo de bugs silenciosos por desalineación de esquema.
+3. Riesgo de consistencia en naming de joins.
+   Debe mantenerse una convención única de columnas (`*_id`) en queries y documentación para evitar desalineaciones.
 
 4. Duplicidad de superficies HTTP para dispatcher.
    Coexisten router activo (`src/dispatcher`) y controlador legacy (`controller/dispatcher_controller.js`) con contratos distintos, lo que complica gobernanza y trazabilidad.
@@ -50,8 +50,8 @@ El objetivo de estas sugerencias es:
 3. Convenciones de casing distribuidas.
    Parte del sistema normaliza a minúscula, parte depende de resolución case-insensitive en registro. Falta una política central.
 
-4. Datos no utilizados en `parseMOP`.
-   `txInfo` se precarga, pero no se utiliza para enriquecer o validar coherencia de salida.
+4. Hallazgo histórico ya cerrado: datos no utilizados en parser ATX.
+   `parseMOP` pertenecía al ecosistema legacy removido.
 
 ## Hallazgos de mantenibilidad y claridad
 
@@ -107,7 +107,7 @@ Y definir una regla de consistencia:
 
 1. Normalizar errores con clases de error de dominio (`NotAuthorizedError`, `RouteNotFoundError`, etc.). Estos errores deben estar definidos en el config.js
 2. Corregir `_resolveTxFromMethodRef` para no depender de `this` implícito.
-3. Consolidar endpoint de dispatcher y marcar legacy como deprecated.
+3. Consolidar endpoint de dispatcher y retirar superficie HTTP obsoleta.
 4. Corregir naming de mensaje de denegación.
 
 ### Fase 2: desacople interno
@@ -121,7 +121,7 @@ Y definir una regla de consistencia:
 1. Crear proceso de reconciliación de integridad:
    compara `method_profile` vs `option_profile` para opciones con `tx`.
 2. Publicar contrato único de nombres de columnas y DTOs.
-3. Añadir pruebas de contrato (contract tests) entre ATX y queries.
+3. Añadir pruebas de contrato (contract tests) entre BO y queries.
 
 ### Fase 4: observabilidad y operaciones
 
@@ -176,7 +176,7 @@ flowchart LR
   H --> H1[MethodRegistry]
   H --> H2[Dynamic Import + Reflect Adapter]
 
-  I[ATX Option/Method Admin Use Cases] --> J[OptionProfileRepository]
+   I[BO Option/Method Admin Use Cases] --> J[OptionProfileRepository]
   I --> K[MethodProfileRepository]
   I --> L[ConsistencyAuditor]
 ```
@@ -184,7 +184,7 @@ flowchart LR
 ## Checklist de mejora priorizada
 
 1. Corregir bug potencial de `this` en `_resolveTxFromMethodRef`.
-2. Unificar punto de entrada dispatcher y retirar/deprecar controlador legacy.
+2. Unificar punto de entrada dispatcher y retirar controlador obsoleto.
 3. Estandarizar mensajes de autorización denegada.
 4. Crear clases de error de dominio y mapeo HTTP determinístico.
 5. Definir contrato único de columnas para joins (`id_*` vs `*_id`).
@@ -204,8 +204,8 @@ flowchart LR
 
 El análisis de esta guía queda alineado con la decisión de producto/arquitectura:
 
-1. `src/_business` se mantiene solo como legado transitorio.
-2. `src/bo` es el único destino de evolución.
+1. `src/_business` fue retirado del runtime y del repositorio activo.
+2. `src/bo` es la arquitectura vigente y único destino de evolución.
 3. El patrón estructural canónico es `subsystem -> class -> method`.
 4. La carpeta `method` queda reservada para unidades stateless, compartidas entre clases y sin retención de estado.
 

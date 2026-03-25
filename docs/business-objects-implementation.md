@@ -2,13 +2,13 @@
 
 ## 1. Objetivo y alcance
 
-Este documento describe la implementación de Business Objects (BO) en el backend de Web II, extendiendo el sistema existente con nuevas entidades de dominio de negocio.
+Este documento describe la implementación de Business Objects (BO) en el backend de Web II. El runtime actual opera en modo BO-only y el ecosistema legacy fue retirado del código activo.
 
 ## 2. Arquitectura de Business Objects
 
 ### 2.1 Estructura de directorios
 
-```
+```txt
 backend/src/bo/
 ├── Security/
 │   ├── Security.js
@@ -156,6 +156,8 @@ Cada Business Object sigue el patrón establecido:
 
 ## 4. Integración con Sistema Existente
 
+Estado actual: integración consolidada sobre `src/bo`, `method_registry.js` y `method_resolver.js`, sin fallback a `src/_business`.
+
 ### 4.1 Registro de Subsistemas
 
 Los subsistemas se registran automáticamente en `method_registry.js`:
@@ -190,33 +192,27 @@ export class Loans {
 Todas las queries usan el sistema de validación del proyecto:
 
 ```yaml
-insertEquipo:
-  query: 'INSERT INTO public.equipo (...) VALUES ($1, $2, ...)'
+insertEquipment:
+  query: 'INSERT INTO public.item (...) VALUES ($1, $2, ...)'
   structure_params:
     {
-      codigo: 'string',
-      nombre: 'string',
-      marca: 'string',
-      modelo: 'string',
-      serie: 'string',
-      descripcion: 'string',
-      ubicacion_id: 'int',
-      estado_id: 'int',
-      fecha_adquisicion: 'string',
-      costo: 'float',
+      code: 'string',
+      name: 'string',
+      description: 'string',
+      equipment_status_id: 'number',
+      cost: 'number',
+      acquisition_date: 'string',
+      category_id: 'number',
     }
   orderArray:
     [
-      'codigo',
-      'nombre',
-      'marca',
-      'modelo',
-      'serie',
-      'descripcion',
-      'ubicacion_id',
-      'estado_id',
-      'fecha_adquisicion',
-      'costo',
+      'code',
+      'name',
+      'description',
+      'equipment_status_id',
+      'cost',
+      'acquisition_date',
+      'category_id',
     ]
 ```
 
@@ -226,51 +222,48 @@ insertEquipo:
 
 ```sql
 -- Crear equipo
-INSERT INTO public.equipo (codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id AS equipo_id;
+INSERT INTO public.item (code, name, description, condition_status_id, cost, acquisition_date, category_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id;
 
 -- Obtener equipo con relaciones
-SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion,
-       e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado
-FROM public.equipo e
-LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id
-LEFT JOIN public.estado_equipo es ON e.estado_id = es.id
-WHERE e.id = $1;
+SELECT i.id, i.code, i.name, i.description, i.cost, i.acquisition_date,
+       c.name AS category, cs.name AS condition_status
+FROM public.item i
+LEFT JOIN public.category c ON i.category_id = c.id
+LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id
+WHERE i.id = $1;
 ```
 
 ### 5.2 Queries de Ubicación
 
 ```sql
 -- Crear ubicación
-INSERT INTO public.ubicacion (nombre, descripcion, edificio, piso, sala)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id AS ubicacion_id;
+INSERT INTO public.location (name, description, parent_id, type_id)
+VALUES ($1, $2, $3, $4)
+RETURNING id;
 
 -- Listar ubicaciones
-SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala
-FROM public.ubicacion
-ORDER BY nombre;
+SELECT id, name, description, parent_id, type_id
+FROM public.location
+ORDER BY name;
 ```
 
 ### 5.3 Queries de Préstamo
 
 ```sql
 -- Crear préstamo
-INSERT INTO public.prestamo (usuario_id, equipo_id, fecha_prestamo, fecha_devolucion_esperada, observaciones)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id AS prestamo_id;
+INSERT INTO public.movement (user_id, type_id, period_id, booking_date, reservation_expires_at, estimated_return_date, observations)
+VALUES ($1, (SELECT id FROM public.movement_type WHERE name = 'loan'), $2, $3, $4, $5, $6)
+RETURNING id;
 
 -- Préstamos activos (sin devolución)
-SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo,
-       p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones,
-       u.first_name || ' ' || u.last_name AS usuario_nombre,
-       e.nombre AS equipo_nombre, e.codigo AS equipo_codigo
-FROM public.prestamo p
-LEFT JOIN public.person u ON p.usuario_id = u.id
-LEFT JOIN public.equipo e ON p.equipo_id = e.id
-WHERE p.fecha_devolucion_real IS NULL
-ORDER BY p.fecha_prestamo DESC;
+SELECT m.id, m.user_id, m.booking_date, m.estimated_return_date, m.actual_return_date, m.observations,
+       u.name AS user_name
+FROM public.movement m
+LEFT JOIN public."user" u ON m.user_id = u.id
+WHERE m.actual_return_date IS NULL
+ORDER BY m.booking_date DESC;
 ```
 
 ## 6. Manejo de Errores y Validación
@@ -280,34 +273,28 @@ ORDER BY p.fecha_prestamo DESC;
 Todos los métodos incluyen validación básica:
 
 ```javascript
-export const createEquipo = async function ({
-  codigo,
-  nombre,
-  marca,
-  modelo,
-  serie,
-  descripcion,
-  ubicacion_id,
-  estado_id,
-  fecha_adquisicion,
-  costo,
+export const createEquipment = async function ({
+  code,
+  name,
+  description,
+  equipment_status_id,
+  cost,
+  acquisition_date,
+  category_id,
 }) {
   const dbms = new DBMS();
   await dbms.init();
   try {
     const res = await dbms.executeNamedQuery({
-      nameQuery: 'insertEquipo',
+      nameQuery: 'insertEquipment',
       params: {
-        codigo,
-        nombre,
-        marca,
-        modelo,
-        serie: serie || '', // Default valores vacíos
-        descripcion: descripcion || '',
-        ubicacion_id: ubicacion_id || null,
-        estado_id: estado_id || null,
-        fecha_adquisicion: fecha_adquisicion || null,
-        costo: costo || 0,
+        code,
+        name,
+        description: description || '',
+        equipment_status_id: equipment_status_id || null,
+        cost: cost || 0,
+        acquisition_date: acquisition_date || null,
+        category_id: category_id || null,
       },
     });
     return res?.rows?.[0];
@@ -356,6 +343,7 @@ Los métodos proporcionan valores por defecto para campos opcionales:
 - Se mantiene compatibilidad con `DBMS.executeNamedQuery()`
 - Se respetan las convenciones de `structure_params` y `orderArray`
 - Se utiliza el mismo manejo de errores del sistema
+- El runtime de negocio es BO-only; no hay fallback a `_business`.
 
 ### 8.2 Rendimiento
 
@@ -375,22 +363,19 @@ Los métodos proporcionan valores por defecto para campos opcionales:
 
 ```javascript
 // Test de creación de equipo
-const equipo = await createEquipo({
-  codigo: 'EQ001',
-  nombre: 'Laptop Dell',
-  marca: 'Dell',
-  modelo: 'Latitude 5420',
-  serie: 'DL123456',
-  descripcion: 'Laptop para desarrollo',
-  ubicacion_id: 1,
-  estado_id: 1,
-  fecha_adquisicion: '2024-01-15',
-  costo: 1200.0,
+const equipment = await createEquipment({
+  code: 'EQ001',
+  name: 'Laptop Dell',
+  description: 'Laptop para desarrollo',
+  equipment_status_id: 1,
+  cost: 1200.0,
+  acquisition_date: '2024-01-15',
+  category_id: 1,
 });
 
 // Test de préstamos activos
-const activos = await getPrestamosActivos();
-console.log('Préstamos activos:', activos);
+const activeLoans = await getActiveLoans();
+console.log('Préstamos activos:', activeLoans);
 ```
 
 ### 9.2 Validación de Integración
@@ -410,4 +395,4 @@ La implementación de Business Objects sigue las mejores prácticas del proyecto
 ✅ **Integridad**: Validación de parámetros y manejo de errores
 ✅ **Performance**: Queries optimizadas con joins apropiados
 
-Los nuevos Business Objects están listos para ser utilizados a través del dispatcher del sistema, manteniendo la arquitectura limpia y escalable del proyecto.
+Los Business Objects están activos en producción del backend y sostienen el flujo de negocio bajo arquitectura BO-only.

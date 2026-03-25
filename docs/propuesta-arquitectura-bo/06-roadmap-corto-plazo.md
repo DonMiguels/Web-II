@@ -14,7 +14,7 @@
 Traducir la propuesta de arquitectura en un plan ejecutable, incremental y verificable, minimizando riesgo de regresion.
 
 ## Estrategia de implementacion
-1. bo-first con compatibilidad temporal.
+1. Consolidacion BO-only con contratos canonicos estables.
 2. Migracion por vertical funcional, no por capa aislada.
 3. Pruebas de contrato y regresion en cada lote.
 4. Telemetria obligatoria antes de cortes mayores.
@@ -44,8 +44,8 @@ Traducir la propuesta de arquitectura en un plan ejecutable, incremental y verif
 3. Politicas por periodo academico activo.
 4. Exportaciones con enmascaramiento de datos sensibles.
 
-### Fase 5: Cierre de migracion y deprecacion legacy
-1. Retiro de fallback legacy no utilizado.
+### Fase 5: Cierre post-migracion y limpieza operativa
+1. Verificacion final de ausencia de dependencias legacy.
 2. Limpieza de rutas/controladores duplicados.
 3. Actualizacion de documentacion y onboarding tecnico.
 
@@ -63,7 +63,7 @@ Traducir la propuesta de arquitectura en un plan ejecutable, incremental y verif
 | R-09 | Reporte de morosos por periodo | Media | Analitica | Visibilidad operativa |
 | R-10 | Reconciliacion nocturna stock-movimientos | Media | Operacion | Deteccion temprana de desbalance |
 | R-11 | Politica de solvencia versionada | Media | Dominio | Regla explicita por periodo |
-| R-12 | Limpieza de superficie HTTP legacy | Media | Arquitectura | Menor confusion de entrypoints |
+| R-12 | Limpieza final de superficie HTTP | Media | Arquitectura | Menor confusion de entrypoints |
 
 ## Dependencias y orden sugerido
 ```mermaid
@@ -78,7 +78,7 @@ flowchart LR
   H --> I[R-09 Reporte morosos]
   I --> J[R-10 Reconciliacion]
   J --> K[R-11 Solvencia versionada]
-  K --> L[R-12 Limpieza legacy]
+  K --> L[R-12 Limpieza final HTTP]
 ```
 
 ## Entregables por fase

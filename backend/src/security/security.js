@@ -15,11 +15,57 @@ export default class Security {
 
     this.permissions = new Map();
     this.userProfiles = new Map();
+    this.transactionRoutes = new Map();
     this.utils = new Utils();
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
     this.reflect = Reflect;
     Security.instance = this;
+  }
+
+  parseStructuredError(error) {
+    const fallback = {
+      statusCode: 500,
+      message: error?.message || 'Error interno',
+      error,
+    };
+
+    if (!error || typeof error.message !== 'string') return fallback;
+
+    try {
+      const parsed = JSON.parse(error.message);
+      return {
+        statusCode: Number(parsed?.statusCode) || 500,
+        message: parsed?.message || fallback.message,
+        error: parsed?.error || error,
+      };
+    } catch {
+      return fallback;
+    }
+  }
+
+  async syncTransactionRoutes() {
+    await this.dbmsReady;
+    const res = await this.dbms.executeNamedQuery({
+      nameQuery: 'getTransactionRoutes',
+    });
+
+    const routes = new Map();
+    for (const row of res?.rows ?? []) {
+      routes.set(String(row.transaction_id), {
+        subsystem: String(row.subsystem || '').trim(),
+        class: String(row.class_name || '').trim(),
+        method: String(row.method_name || '').trim(),
+      });
+    }
+
+    this.transactionRoutes = routes;
+    return this.transactionRoutes;
+  }
+
+  resolveTransaction(transactionId) {
+    if (transactionId === null || transactionId === undefined) return null;
+    return this.transactionRoutes.get(String(transactionId)) || null;
   }
 
   normalizePermission(permission = {}) {
@@ -47,6 +93,9 @@ export default class Security {
   async syncPermissions() {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
+      nameQuery: 'normalizeLegacyBoNaming',
+    });
+    await this.dbms.executeNamedQuery({
       nameQuery: 'ensureTransactionSerial',
     });
 
@@ -73,6 +122,7 @@ export default class Security {
 
     // Sincronizar perfiles de usuario
     await this.syncUserProfiles();
+    await this.syncTransactionRoutes();
 
     return this.permissions;
   }
@@ -131,6 +181,7 @@ export default class Security {
     });
 
     this.permissions.set(this.buildPermissionKey(normalized), normalized);
+    await this.syncTransactionRoutes();
   }
 
   async syncUserProfiles() {
@@ -190,35 +241,39 @@ export default class Security {
   }
 
   async execute(permission, reqBody = {}) {
+    const { subsystem, class: className, method } =
+      this.normalizePermission(permission);
+
     try {
-      const {
-        subsystem,
-        class: className,
-        method,
-      } = this.normalizePermission(permission);
-
       const actionInstance = await resolveExecutable({
-        subsystem: subsystem,
-        className: className,
-        method: method,
+        subsystem,
+        className,
+        method,
       });
-
-      const result = await Reflect.apply(
+      const result = await this.reflect.apply(
         actionInstance[method],
         actionInstance,
         [reqBody],
       );
 
-      actionInstance = null;
-
       return {
         statusCode: 200,
         data: result,
         message: 'Ejecutado exitosamente',
+        execution: {
+          engine: 'bo',
+          subsystem,
+          className,
+          method,
+        },
       };
     } catch (error) {
-      console.error(`Error en executeAuthorized:`, error);
-      throw error;
+      const parsedExecutionError = this.parseStructuredError(error);
+      return {
+        statusCode: parsedExecutionError.statusCode,
+        message: parsedExecutionError.message,
+        error: parsedExecutionError.error,
+      };
     }
   }
 }

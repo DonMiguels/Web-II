@@ -10,7 +10,6 @@
 6. [Flujos de error y códigos de salida observables](#flujos-de-error-y-códigos-de-salida-observables)
 7. [Notas de consistencia y comportamiento actual](#notas-de-consistencia-y-comportamiento-actual)
 8. [Referencias](#referencias)
-9. [Nota de migración \_business -> bo](#nota-de-migración-_business---bo)
 
 ## Resumen ejecutivo del flujo
 
@@ -30,10 +29,10 @@ El flujo operativo vigente para autorización y ejecución está centrado en:
 - El servidor registra `dispatcherRouter` en `/`, por lo que el endpoint operativo es `POST /` en el router de dispatcher.
 - Este router sí aplica sanitización por `routeKey = dispatcher.root`.
 
-### Router alterno (legacy)
+### Router alterno (no activo)
 
 - Existe un `controller/dispatcher_controller.js` con endpoints `/dispatcher`, `/dispatcher/status`, `/dispatcher/check-permission`.
-- En el servidor activo no se monta este router legacy.
+- En el servidor activo no se monta este router.
 
 ## Flujo paso a paso: desde request hasta respuesta
 
@@ -115,7 +114,7 @@ Si falla, se retorna mensaje de denegación (actualmente usa clave de mensaje ge
 Reflect.apply(actionInstance[method], actionInstance, [reqBody]);
 ```
 
-5. Envuelve respuesta:
+1. Envuelve respuesta:
 
 - `statusCode: 200`
 - `data: resultado`
@@ -245,7 +244,7 @@ Este punto es la ejecución final de la ruta autorizada.
 
 1. El servidor inicializa mapas al arranque en orden: permisos -> transacciones -> perfiles.
 2. `syncPermissions()` ya llama internamente `syncUserProfiles()`, por lo que hay sincronización repetida de perfiles en `Server.init()`.
-3. Hay coexistencia de router activo (`src/dispatcher`) y controlador legacy (`controller/dispatcher_controller.js`).
+3. El runtime de negocio es BO-only; `src/_business` fue retirado del código activo.
 4. La respuesta de permiso denegado en `Dispatcher.toProccess` usa una clave de mensaje genérica.
 
 ## Referencias
@@ -254,10 +253,3 @@ Este punto es la ejecución final de la ruta autorizada.
 - [02-mapas-perfiles-metodos-opciones.md](./02-mapas-perfiles-metodos-opciones.md)
 - [03-analisis-clean-architecture.md](./03-analisis-clean-architecture.md)
 - [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)
-
-## Nota de migración \_business -> bo
-
-- El flujo de este documento describe el runtime activo de autorización/dispatch.
-- Paralelamente existe un ecosistema legacy en `src/_business` (ATX, helpers, ftx) que será migrado.
-- El objetivo funcional final es centralizar el modelo en `src/bo` con organización `subsystem/class/method`.
-- El plan de ejecución y reglas de diseño para esa migración está en [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md).

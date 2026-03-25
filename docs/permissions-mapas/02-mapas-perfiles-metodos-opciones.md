@@ -6,21 +6,19 @@
 2. [Mapas núcleo de autorización en runtime](#mapas-núcleo-de-autorización-en-runtime)
 3. [Mapas/objetos de reflexión dinámica](#mapasobjetos-de-reflexión-dinámica)
 4. [Mapas/objetos de sanitización](#mapasobjetos-de-sanitización)
-5. [Estructuras de opciones y menús en ATX](#estructuras-de-opciones-y-menús-en-atx)
+5. [Estructuras de opciones y menús](#estructuras-de-opciones-y-menús)
 6. [Relación entre estructuras en memoria y tablas SQL](#relación-entre-estructuras-en-memoria-y-tablas-sql)
 7. [Matriz de componentes y responsabilidades](#matriz-de-componentes-y-responsabilidades)
 8. [Referencias](#referencias)
-9. [Estado legacy y destino objetivo](#estado-legacy-y-destino-objetivo)
+9. [Estado actual](#estado-actual)
 
 ## Visión general
 
-Actualmente coexisten dos universos de estructuras:
+El runtime actual está consolidado en BO-only:
 
-1. Runtime de autorización y ejecución:
-   basado en `Map` dentro de `Security` + registro de reflexión.
-
-2. Administración y modelado de menús/opciones/perfiles (ATX):
-   basado mayormente en objetos JSON jerárquicos y apoyo de tablas relacionales.
+1. Autorización y ejecución en `Security` usando `Map` en memoria.
+2. Resolución dinámica en `method_registry` + `method_resolver`.
+3. Persistencia de permisos/rutas/opciones en tablas relacionales.
 
 ## Mapas núcleo de autorización en runtime
 
@@ -83,8 +81,9 @@ Uso principal:
 
 Estado actual:
 
-- No existe cache `transactions` en `Security`.
-- La resolución de `transaction_id` se realiza en ejecución dentro del flujo de autorización.
+- Existe cache `transactionRoutes` en `Security`.
+- Se sincroniza con query `getTransactionRoutes`.
+- `resolveTransaction(transactionId)` devuelve `{ subsystem, class, method }` desde ese cache.
 
 ## Mapas/objetos de reflexión dinámica
 
@@ -168,59 +167,44 @@ Implicación:
 
 - al dispatcher le aplican reglas globales y política general, no una whitelist estricta por campo.
 
-## Estructuras de opciones y menús en ATX
+## Estructuras de opciones y menús
 
-Aunque no son `Map` de JavaScript puro, sí son objetos en memoria usados como mapas semánticos.
+El flujo vigente usa persistencia relacional y métodos BO de `Security`; no hay estructura jerárquica ATX activa en runtime.
 
-### 8) Estructura `menus` en `parseMOP`
+### 8) Estructura relacional de opciones y menús
 
 Forma:
 
 ```txt
-menus = {
-  [subsystemName]: {
-    [menuName]: {
-      description,
-      id,
-      options?: {
-        [optionName]: { description, id, tx }
-      },
-      submenus?: {
-        [submenuName]: {
-          description,
-          id,
-          options?: {
-            [optionName]: { description, id, tx }
-          }
-        }
-      }
-    }
-  }
+option_profile (option_id, profile_id)
+option_menu (menu_id, option_id)
+option (id, name, tx, ...)
+menu (id, name, id_parent, ...)
+```
+
+Uso:
+
+- Consultas por joins para resolver opciones por perfil/menú.
+- Enlace de `option.tx` con transacción autorizable del dispatcher.
+
+### 9) Estructura de entrada de autorización
+
+Estructura canónica usada por autorización/ejecución:
+
+```txt
+{
+  subsystem: string,
+  class: string,
+  method: string,
+  profile: string
 }
 ```
 
-Objetos de apoyo internos en la construcción:
+Se utiliza para:
 
-- `idToNode`: mapa `menu_id -> referencia de nodo` para enlazar jerarquía.
-- `menuInfo`: metadata precargada de menú por id.
-- `txInfo`: metadata precargada de transacción por tx (en el código actual se precarga, pero no termina de usarse para enriquecer salida final).
-
-### 9) Estructura de entrada soportada por `setMenusOptionsProfiles` y `setMenuOptionProfile`
-
-Se admiten dos formas:
-
-1. Forma jerárquica por subsistema/menú/submenú/opciones (constante).
-2. Forma compacta por perfil:
-
-```txt
-{ profile: { menu: [option, ...] } }
-```
-
-En ambas, se proyecta a joins SQL:
-
-- `option_menu`
-- `option_profile`
-- con soporte de `tx` en opción para enlazar opción a transacción/método.
+- `hasUserProfile(userId, profile)`.
+- `hasPermission(permission)`.
+- `execute(permission, reqBody)`.
 
 ## Relación entre estructuras en memoria y tablas SQL
 
@@ -267,8 +251,7 @@ En runtime del dispatcher, `transaction_id` se resuelve en ejecución durante el
 | `src/security/security.js`       | `permissions`, `userProfiles` (`Map`)               | Cache en memoria para autorización runtime                          |
 | `src/bo/method_registry.js`      | `mapFiles` (objeto)                                 | Catálogo de reflexión para rutas ejecutables                        |
 | `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)           | Control de entrada y rechazo de payload                             |
-| `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos) | Construcción jerárquica menú-opción-perfil                          |
-| `src/_business/atx/set-*.js`     | objetos de forma constante/compacta                 | Persistencia y mantenimiento de joins de permisos por opción/método |
+| `src/bo/Security/*/methods`      | funciones stateless por agregado                    | Persistencia y mantenimiento de permisos/rutas en modelo BO         |
 
 ## Referencias
 
@@ -277,7 +260,7 @@ En runtime del dispatcher, `transaction_id` se resuelve en ejecución durante el
 - [03-analisis-clean-architecture.md](./03-analisis-clean-architecture.md)
 - [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)
 
-## Estado legacy y destino objetivo
+## Estado actual
 
-- Todo lo listado bajo `src/_business` (atx, helpers, ftx, business.js) se clasifica como legado para efectos de evolución.
-- El modelo objetivo para nuevos desarrollos y migraciones es `src/bo` con estructura `subsystem/class/method` y carpeta de métodos por clase en `src/bo/<Subsystem>/<Class>/methods`.
+- `src/_business` fue retirado del runtime y del repositorio activo.
+- El modelo vigente para negocio es `src/bo` con estructura `subsystem/class/method` y carpeta de métodos por clase en `src/bo/<Subsystem>/<Class>/methods`.

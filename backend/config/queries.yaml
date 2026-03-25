@@ -206,8 +206,194 @@ insertProfile:
     profile_name: string
   orderArray:
     - profile_name
+normalizeLegacyBoNaming:
+  query: |
+    DO $$
+    DECLARE
+      v_subsystem TEXT;
+      v_old_class TEXT;
+      v_new_class TEXT;
+      v_old_method TEXT;
+      v_new_method TEXT;
+      v_subsystem_id BIGINT;
+      v_class_id BIGINT;
+      v_old_class_id BIGINT;
+      v_new_class_id BIGINT;
+      v_old_method_id BIGINT;
+      v_new_method_id BIGINT;
+    BEGIN
+      FOR v_subsystem, v_old_class, v_new_class IN
+        SELECT * FROM (
+          VALUES
+            ('Inventory', 'Equipo', 'Equipment'),
+            ('Inventory', 'Ubicacion', 'Location'),
+            ('Inventory', 'EstadoEquipo', 'EquipmentStatus'),
+            ('Loans', 'Prestamo', 'Loan')
+        ) AS class_map(subsystem_name, old_class_name, new_class_name)
+      LOOP
+        SELECT s.id INTO v_subsystem_id
+        FROM public.subsystem s
+        WHERE LOWER(s.name) = LOWER(v_subsystem)
+        LIMIT 1;
+
+        IF v_subsystem_id IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        SELECT c.id INTO v_old_class_id
+        FROM public."class" c
+        JOIN public.subsystem_class sc ON sc.class_id = c.id
+        WHERE sc.subsystem_id = v_subsystem_id
+          AND LOWER(c.name) = LOWER(v_old_class)
+        LIMIT 1;
+
+        IF v_old_class_id IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        SELECT c.id INTO v_new_class_id
+        FROM public."class" c
+        JOIN public.subsystem_class sc ON sc.class_id = c.id
+        WHERE sc.subsystem_id = v_subsystem_id
+          AND LOWER(c.name) = LOWER(v_new_class)
+        LIMIT 1;
+
+        IF v_new_class_id IS NULL THEN
+          UPDATE public."class"
+          SET name = v_new_class
+          WHERE id = v_old_class_id;
+          v_new_class_id := v_old_class_id;
+        ELSE
+          INSERT INTO public.subsystem_class (subsystem_id, class_id)
+          VALUES (v_subsystem_id, v_new_class_id)
+          ON CONFLICT (subsystem_id, class_id) DO NOTHING;
+
+          INSERT INTO public.class_method (class_id, method_id)
+          SELECT v_new_class_id, cm.method_id
+          FROM public.class_method cm
+          WHERE cm.class_id = v_old_class_id
+          ON CONFLICT (class_id, method_id) DO NOTHING;
+
+          INSERT INTO public."transaction" (subsystem_id, class_id, method_id)
+          SELECT t.subsystem_id, v_new_class_id, t.method_id
+          FROM public."transaction" t
+          WHERE t.class_id = v_old_class_id
+          ON CONFLICT (subsystem_id, class_id, method_id) DO NOTHING;
+
+          DELETE FROM public."transaction" WHERE class_id = v_old_class_id;
+          DELETE FROM public.class_method WHERE class_id = v_old_class_id;
+          DELETE FROM public.subsystem_class WHERE class_id = v_old_class_id;
+          DELETE FROM public."class" WHERE id = v_old_class_id;
+        END IF;
+      END LOOP;
+
+      FOR v_subsystem, v_new_class, v_old_method, v_new_method IN
+        SELECT * FROM (
+          VALUES
+            ('Inventory', 'Equipment', 'createEquipo', 'createEquipment'),
+            ('Inventory', 'Equipment', 'getEquipoById', 'getEquipmentById'),
+            ('Inventory', 'Equipment', 'getEquipoByCodigo', 'getEquipmentByCode'),
+            ('Inventory', 'Equipment', 'getAllEquipos', 'getAllEquipment'),
+            ('Inventory', 'Equipment', 'updateEquipo', 'updateEquipment'),
+            ('Inventory', 'Equipment', 'deleteEquipo', 'deleteEquipment'),
+            ('Inventory', 'Location', 'createUbicacion', 'createLocation'),
+            ('Inventory', 'Location', 'getUbicacionById', 'getLocationById'),
+            ('Inventory', 'Location', 'getUbicacionByNombre', 'getLocationByName'),
+            ('Inventory', 'Location', 'getAllUbicaciones', 'getAllLocations'),
+            ('Inventory', 'Location', 'updateUbicacion', 'updateLocation'),
+            ('Inventory', 'Location', 'deleteUbicacion', 'deleteLocation'),
+            ('Inventory', 'EquipmentStatus', 'createEstadoEquipo', 'createEquipmentStatus'),
+            ('Inventory', 'EquipmentStatus', 'getEstadoEquipoById', 'getEquipmentStatusById'),
+            ('Inventory', 'EquipmentStatus', 'getEstadoEquipoByNombre', 'getEquipmentStatusByName'),
+            ('Inventory', 'EquipmentStatus', 'getAllEstadosEquipo', 'getAllEquipmentStatuses'),
+            ('Inventory', 'EquipmentStatus', 'updateEstadoEquipo', 'updateEquipmentStatus'),
+            ('Inventory', 'EquipmentStatus', 'deleteEstadoEquipo', 'deleteEquipmentStatus'),
+            ('Loans', 'Loan', 'createPrestamo', 'createLoan'),
+            ('Loans', 'Loan', 'getPrestamoById', 'getLoanById'),
+            ('Loans', 'Loan', 'getPrestamosByUsuario', 'getLoansByUser'),
+            ('Loans', 'Loan', 'getPrestamosByEquipo', 'getLoansByEquipment'),
+            ('Loans', 'Loan', 'getAllPrestamos', 'getAllLoans'),
+            ('Loans', 'Loan', 'getPrestamosActivos', 'getActiveLoans'),
+            ('Loans', 'Loan', 'updatePrestamo', 'updateLoan'),
+            ('Loans', 'Loan', 'deletePrestamo', 'deleteLoan')
+        ) AS method_map(subsystem_name, class_name, old_method_name, new_method_name)
+      LOOP
+        SELECT s.id INTO v_subsystem_id
+        FROM public.subsystem s
+        WHERE LOWER(s.name) = LOWER(v_subsystem)
+        LIMIT 1;
+
+        IF v_subsystem_id IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        SELECT c.id INTO v_class_id
+        FROM public."class" c
+        JOIN public.subsystem_class sc ON sc.class_id = c.id
+        WHERE sc.subsystem_id = v_subsystem_id
+          AND LOWER(c.name) = LOWER(v_new_class)
+        LIMIT 1;
+
+        IF v_class_id IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        SELECT m.id INTO v_old_method_id
+        FROM public."method" m
+        JOIN public.class_method cm ON cm.method_id = m.id
+        WHERE cm.class_id = v_class_id
+          AND LOWER(m.name) = LOWER(v_old_method)
+        LIMIT 1;
+
+        IF v_old_method_id IS NULL THEN
+          CONTINUE;
+        END IF;
+
+        SELECT m.id INTO v_new_method_id
+        FROM public."method" m
+        JOIN public.class_method cm ON cm.method_id = m.id
+        WHERE cm.class_id = v_class_id
+          AND LOWER(m.name) = LOWER(v_new_method)
+        LIMIT 1;
+
+        IF v_new_method_id IS NULL THEN
+          UPDATE public."method"
+          SET name = v_new_method
+          WHERE id = v_old_method_id;
+          v_new_method_id := v_old_method_id;
+        ELSE
+          INSERT INTO public.class_method (class_id, method_id)
+          VALUES (v_class_id, v_new_method_id)
+          ON CONFLICT (class_id, method_id) DO NOTHING;
+
+          INSERT INTO public.method_profile (method_id, profile_id)
+          SELECT v_new_method_id, mp.profile_id
+          FROM public.method_profile mp
+          WHERE mp.method_id = v_old_method_id
+          ON CONFLICT (method_id, profile_id) DO NOTHING;
+
+          INSERT INTO public."transaction" (subsystem_id, class_id, method_id)
+          SELECT t.subsystem_id, t.class_id, v_new_method_id
+          FROM public."transaction" t
+          WHERE t.method_id = v_old_method_id
+          ON CONFLICT (subsystem_id, class_id, method_id) DO NOTHING;
+
+          DELETE FROM public."transaction" WHERE method_id = v_old_method_id;
+          DELETE FROM public.method_profile WHERE method_id = v_old_method_id;
+          DELETE FROM public.class_method WHERE method_id = v_old_method_id;
+          DELETE FROM public."method" WHERE id = v_old_method_id;
+        END IF;
+      END LOOP;
+    END;
+    $$;
+  structure_params: {}
+  orderArray: []
 getPermissions:
   query: SELECT DISTINCT s.name AS subsystem, c.name AS class_name, m.name AS method_name, p.name AS profile_name FROM public.method_profile mp JOIN public.method m ON m.id = mp.method_id JOIN public.class_method cm ON cm.method_id = m.id JOIN public."class" c ON c.id = cm.class_id JOIN public.subsystem_class sc ON sc.class_id = c.id JOIN public.subsystem s ON s.id = sc.subsystem_id JOIN public.profile p ON p.id = mp.profile_id ORDER BY s.name, c.name, m.name, p.name;
+  structure_params: {}
+  orderArray: []
+getTransactionRoutes:
+  query: SELECT t.id AS transaction_id, s.name AS subsystem, c.name AS class_name, m.name AS method_name FROM public."transaction" t JOIN public.subsystem s ON s.id = t.subsystem_id JOIN public."class" c ON c.id = t.class_id JOIN public."method" m ON m.id = t.method_id ORDER BY t.id;
   structure_params: {}
   orderArray: []
 ensureTransactionSerial:

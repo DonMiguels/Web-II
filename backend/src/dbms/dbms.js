@@ -2,7 +2,6 @@ import pool from '../../config/db.js';
 import Config from '../../config/config.js';
 import Utils from '../utils/utils.js';
 import Formatter from '../formatter/formatter.js';
-import parseMOP from '../_business/atx/parse-mop.js';
 import Debugger from '../debugger/debugger.js';
 
 export default class DBMS {
@@ -12,7 +11,6 @@ export default class DBMS {
     this.validator = validatorInstance;
     this.formatter = new Formatter();
     this.dbgr = new Debugger();
-    this.parseMOP = parseMOP;
 
     if (!DBMS.instance) {
       this.pool = pool;

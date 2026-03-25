@@ -214,4 +214,4 @@ LEFT JOIN public.equipo e ON p.equipo_id = e.id
 
 **Readiness Level**: ✅ **PRODUCTION READY**
 
-Los nuevos Business Objects están completamente implementados, documentados y listos para ser utilizados a través del dispatcher del sistema, manteniendo total compatibilidad con la arquitectura existente.
+Los Business Objects están implementados y documentados como runtime oficial de negocio a través del dispatcher del sistema en modo BO-only.

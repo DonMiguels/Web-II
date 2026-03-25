@@ -16,7 +16,7 @@
 
 ## Objetivo
 
-Definir una arquitectura desacoplada, mantenible e interoperable que conserve compatibilidad con el backend actual y acelere la evolucion bo-first.
+Definir una arquitectura desacoplada, mantenible e interoperable sobre el backend actual en modo BO-only.
 
 ## Principios rectores
 
@@ -57,7 +57,7 @@ Definir una arquitectura desacoplada, mantenible e interoperable que conserve co
 
 1. Clean architecture.
 2. Hexagonal architecture (ports and adapters).
-3. Strangler pattern para migracion gradual legacy -> bo.
+3. Strangler pattern aplicado historicamente para cerrar la migracion legacy -> BO.
 4. CQRS ligero para reportes de solo lectura.
 5. Domain events internos para desacoplar notificaciones/auditoria.
 6. Unit of work en operaciones de cambio critico.

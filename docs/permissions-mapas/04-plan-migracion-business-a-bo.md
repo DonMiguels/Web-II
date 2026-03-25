@@ -1,11 +1,18 @@
-# Plan de Migración: src/\_business (legacy) -> src/bo (subsystem/class/method)
+# Plan de Migración (Cerrado): src/\_business (legacy) -> src/bo (subsystem/class/method)
+
+## Estado actual
+
+- Migración a BO completada.
+- Runtime operativo en modo BO-only.
+- Carpeta `src/_business` removida del repositorio activo.
+- Permisos y rutas de transacción normalizados a naming canónico BO.
 
 ## Índice
 
 1. [Objetivo](#objetivo)
 2. [Principios de arquitectura definidos](#principios-de-arquitectura-definidos)
 3. [Modelo objetivo en bo](#modelo-objetivo-en-bo)
-4. [Reglas para carpeta method compartida](#reglas-para-carpeta-method-compartida)
+4. [Reglas para métodos por clase](#reglas-para-métodos-por-clase)
 5. [Estrategia de migración sin downtime lógico](#estrategia-de-migración-sin-downtime-lógico)
 6. [Mapa de transformación \_business -> bo](#mapa-de-transformación-_business---bo)
 7. [Fases detalladas de ejecución](#fases-detalladas-de-ejecución)
@@ -17,12 +24,12 @@
 
 ## Objetivo
 
-Migrar el ecosistema legacy de `src/_business` al esquema objetivo de `src/bo`, asegurando:
+Este plan documentó la migración del ecosistema legacy de `src/_business` al esquema objetivo de `src/bo`, asegurando:
 
 - organización por `subsystem -> class -> method`,
 - separación de responsabilidades,
 - desacople entre infraestructura y lógica de dominio,
-- compatibilidad gradual mientras conviven componentes legacy y nuevos.
+- migración controlada hasta retiro completo del legacy.
 
 ## Principios de arquitectura definidos
 
@@ -76,13 +83,13 @@ Checklist:
 
 ## Estrategia de migración sin downtime lógico
 
-Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
+Estrategia aplicada: estrangulamiento progresivo (strangler pattern), con cierre final BO-only.
 
-1. Mantener `src/_business` en modo compatibilidad durante transición.
-2. Migrar primero rutas críticas de ejecución y autorización.
-3. Publicar adaptadores de compatibilidad cuando sea necesario.
-4. Cambiar el punto de resolución dinámico por lotes controlados.
-5. Desactivar legacy solo tras cobertura de pruebas y equivalencia funcional.
+1. Se ejecutó migración incremental por lotes de rutas críticas.
+2. Se consolidó resolución dinámica en BO.
+3. Se migró naming legacy de clases/métodos a canónico BO.
+4. Se retiraron fallbacks y referencias runtime a legacy.
+5. Se removió `src/_business` tras validación de pruebas.
 
 ## Mapa de transformación \_business -> bo
 
@@ -156,20 +163,20 @@ Entregables:
 - porcentaje de cobertura migrada por módulo,
 - reporte de incidentes y correcciones.
 
-### Fase 4: Retiro de legacy
+### Fase 4: Retiro de legacy (completada)
 
-1. Eliminar fallback a `_business` para rutas ya migradas.
-2. Deprecar y retirar archivos sin consumo.
-3. Actualizar documentación final de arquitectura y onboarding.
+1. Fallback a `_business` eliminado.
+2. Archivos legacy retirados del runtime y del repositorio activo.
+3. Documentación actualizada al estado BO-only.
 
 Entregables:
 
-- `src/_business` en estado archivado o removido,
-- arquitectura bo como único runtime de negocio.
+- `src/_business` removido,
+- arquitectura BO como único runtime de negocio.
 
 ## Contratos mínimos de compatibilidad
 
-Durante convivencia, cada caso de uso migrado debe mantener:
+Durante la convivencia (fase histórica), cada caso de uso migrado debía mantener:
 
 1. Mismo contrato de entrada (payload).
 2. Mismo contrato de salida (shape y códigos).
@@ -215,17 +222,12 @@ Durante convivencia, cada caso de uso migrado debe mantener:
 
 ## Checklist operativo
 
-1. Clasificar cada archivo de `_business` en:
-   - migrar a `bo/<Subsystem>/<Class>`,
-   - migrar a `bo/<Subsystem>/<Class>/methods`,
-   - mover a infraestructura,
-   - deprecar.
-2. Implementar compat layer bo-first con fallback legacy.
-3. Migrar primero permisos/metodos de mayor frecuencia.
-4. Ejecutar suite de equivalencia por lote.
-5. Cortar fallback para lote validado.
-6. Repetir hasta cobertura completa.
-7. Retirar `_business` del runtime activo.
+1. Completado: clasificación y migración de componentes de `_business`.
+2. Completado: consolidación del runtime en BO-only.
+3. Completado: migración de permisos/métodos de alta frecuencia.
+4. Completado: ejecución de pruebas de validación por lotes.
+5. Completado: corte de fallback legacy.
+6. Completado: retiro de `_business` del runtime activo.
 
 ## Referencias
 

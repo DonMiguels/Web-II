@@ -23,7 +23,7 @@ Definir controles de calidad y operacion para sostener la evolucion arquitectoni
 ## Riesgos principales y mitigaciones
 | Riesgo | Impacto | Probabilidad | Mitigacion |
 |---|---|---|---|
-| Divergencia entre legacy y bo | Alto | Media | Strangler con shadow mode |
+| Regresion por cambios de naming canónico BO | Alto | Media | Migraciones idempotentes + contract tests |
 | Regresion en autorizacion | Alto | Media | Contract tests de permisos |
 | Inconsistencia de stock | Alto | Media | Lock + reconciliacion nocturna |
 | Deuda por errores no tipados | Medio | Alta | Catalogo unico de errores |

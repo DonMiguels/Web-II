@@ -24,17 +24,17 @@ Se cubren dos circuitos reales del repositorio:
 
 ## Decisión arquitectónica vigente
 
-- La carpeta `src/_business` se considera legado (legacy).
-- La carpeta `src/bo` es el destino oficial de migración y evolución.
+- La carpeta `src/_business` fue retirada del runtime y del código fuente activo.
+- La carpeta `src/bo` es la arquitectura oficial vigente de negocio.
 - El esquema objetivo en `bo` es: `subsystem -> class -> method`.
-- La estrategia de desacople para métodos compartidos y sin estado se documenta en el plan de migración.
+- La estrategia de desacople para métodos compartidos y sin estado se mantiene en BO.
 
 ## Cómo leer esta documentación
 
 - Si necesitas entender el request end-to-end, empieza por [01-flujo-dispatcher-security.md](./01-flujo-dispatcher-security.md).
 - Si necesitas inventario de mapas/objetos y su estructura exacta, ve a [02-mapas-perfiles-metodos-opciones.md](./02-mapas-perfiles-metodos-opciones.md).
 - Si necesitas decisiones de mejora (clean architecture/clean code), ve a [03-analisis-clean-architecture.md](./03-analisis-clean-architecture.md).
-- Si necesitas ejecutar la migración de `src/_business` a `src/bo`, ve a [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md).
+- Si necesitas revisar el cierre de la migración de `src/_business` a `src/bo`, ve a [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md).
 
 ## Mapa de documentos
 
@@ -48,11 +48,11 @@ Se cubren dos circuitos reales del repositorio:
    Hallazgos técnicos, riesgos, deuda de diseño y plan de evolución por fases.
 
 4. [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)
-   Plan de migración detallado del ecosistema legacy `src/_business` hacia `src/bo` con esquema `subsystem/class/method`.
+   Documento histórico de plan y cierre de migración del ecosistema legacy `src/_business` hacia `src/bo`.
 
 ## Ruta corta de lectura recomendada
 
 1. Flujo runtime: [01-flujo-dispatcher-security.md](./01-flujo-dispatcher-security.md)
 2. Estructuras de datos: [02-mapas-perfiles-metodos-opciones.md](./02-mapas-perfiles-metodos-opciones.md)
 3. Mejoras propuestas: [03-analisis-clean-architecture.md](./03-analisis-clean-architecture.md)
-4. Ejecución de migración: [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)
+4. Cierre de migración: [04-plan-migracion-business-a-bo.md](./04-plan-migracion-business-a-bo.md)

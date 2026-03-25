@@ -122,13 +122,13 @@ sequenceDiagram
 1. Modelo relacional bien orientado para trazabilidad.
 2. Mecanismo de autorizacion transaccional existente.
 3. Sanitizacion de payloads ya integrada en puntos criticos.
-4. Ruta de migracion definida de legacy hacia bo.
+4. Migracion a BO completada con runtime consolidado.
 5. Contratos de entorno centralizados por APP_ENV.
 
 ## Brechas y deuda tecnica
 
 1. Security esta sobrecargado (cache + sync + autorizacion + ejecucion).
-2. Coexistencia de piezas legacy y nuevas puede confundir ownership.
+2. Persisten referencias documentales historicas que deben mantenerse consistentes con BO-only.
 3. Resolucion dinamica requiere endurecimiento de errores y tipado de contratos.
 4. Mensajeria de denegacion no siempre semantica.
 5. Faltan metodos de dominio para cubrir el set completo de procesos minimos.
@@ -136,7 +136,7 @@ sequenceDiagram
 ## Implicaciones para la propuesta
 
 1. No se recomienda redisenar desde cero.
-2. Se recomienda evolucion incremental bo-first con cortes por lote.
+2. Se recomienda evolucion incremental sobre BO-only con cortes por lote.
 3. El esquema actual permite implementar clean architecture sin migraciones destructivas inmediatas.
 4. La prioridad tecnica es separar orquestacion, politicas de dominio, adaptadores y estado interno.
 
