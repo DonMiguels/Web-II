@@ -1,3 +1,3 @@
-export * from './ForgotSchema/ForgotSchema';
-export * from './LoginSchema/LoginSchema';
-export * from './ResetPasswordSchema/ResetPasswordSchema';
+export * from './ForgotSchema/ForgotSchema.jsx';
+export * from './LoginSchema/LoginSchema.jsx';
+export * from './ResetPasswordSchema/ResetPasswordSchema.jsx';

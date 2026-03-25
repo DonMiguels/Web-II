@@ -4,3 +4,7 @@ export * from "./reset/reset.jsx";
 export * from "./dashboard/dashboard.jsx";
 export * from "./notFound/notFound.jsx";
 export { default as Reports } from "./reports/reportes.jsx";
+export { default as Notifications } from "./notifications/notifications.jsx";
+export { default as Settings } from "./settings/settings.jsx";
+export { default as Permissions } from "./settings/permission/permission.jsx";
+export { default as AssignProfile } from "./settings/assignprofile/assignprofile.jsx";

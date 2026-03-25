@@ -1,2 +1,3 @@
-export * from "./ThemeContext/ThemeContext";
-export * from "./AuthContext/AuthContext";
+export * from "./ThemeContext/ThemeContext.jsx";
+export * from "./AuthContext/AuthContext.jsx";
+export * from "./SidebarContext/SidebarContext.jsx";
