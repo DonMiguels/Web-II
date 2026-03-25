@@ -1,15 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import {
-  Login,
-  Forgot,
-  ResetPassword,
-  Dashboard,
-  NotFound,
-  Reports,
-  Notifications,
-  Permissions,
-  AssignProfile,
-} from "@/pages";
+import { Login, Forgot, ResetPassword, Dashboard, NotFound } from "@/pages";
 import { AuthProvider } from "@/context";
 import { SidebarProvider } from "@/context";
 import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
@@ -28,14 +18,14 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/inventory" element={<Dashboard />} />
             <Route path="/loans" element={<Dashboard />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/reports" element={<Dashboard />} />
+            <Route path="/notifications" element={<Dashboard />} />
             <Route
               path="/settings"
               element={<Navigate to="/settings/permissions" replace />}
             />
-            <Route path="/settings/permissions" element={<Permissions />} />
-            <Route path="/settings/profiles" element={<AssignProfile />} />
+            <Route path="/settings/permissions" element={<Dashboard />} />
+            <Route path="/settings/profiles" element={<Dashboard />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

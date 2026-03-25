@@ -11,7 +11,7 @@ import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 
-const Notifications = () => {
+const Notifications = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -78,8 +78,10 @@ const Notifications = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans">
-      <Sidebar />
+    <div
+      className={`${embedded ? "w-full" : "flex h-screen w-full"} bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans`}
+    >
+      {!embedded && <Sidebar />}
 
       <div className="absolute top-6 right-6 md:top-8 md:right-10 z-50 flex items-center gap-4 md:gap-6">
         <Button

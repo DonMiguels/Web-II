@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/Sidebar/Sidebar";
 import logoDark from "@/assets/img/uru-logo-dark.png";
 import logoWhite from "@/assets/img/uru-logo-white.png";
 
-const AssignProfile = () => {
+const AssignProfile = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -90,7 +90,9 @@ const AssignProfile = () => {
   const selectedCount = users.filter((u) => u.checked).length;
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans">
+    <div
+      className={`${embedded ? "w-full h-full" : "flex h-screen w-full"} bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans`}
+    >
       <div
         className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
         style={{
@@ -119,9 +121,11 @@ const AssignProfile = () => {
         />
       </div>
 
-      <Sidebar />
+      {!embedded && <Sidebar />}
 
-      <div className="flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col h-screen pl-24 md:pl-28">
+      <div
+        className={`flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col min-h-0 ${embedded ? "h-full" : "h-screen pl-24 md:pl-28"}`}
+      >
         <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div

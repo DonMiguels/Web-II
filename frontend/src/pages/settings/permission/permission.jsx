@@ -9,7 +9,7 @@ import { useLocation } from "react-router-dom";
 import logoDark from "@/assets/img/uru-logo-dark.png";
 import logoWhite from "@/assets/img/uru-logo-white.png";
 
-const Permissions = () => {
+const Permissions = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
@@ -136,7 +136,9 @@ const Permissions = () => {
   }, [location.hash]);
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans">
+    <div
+      className={`${embedded ? "w-full min-h-full flex flex-col" : "flex h-screen w-full"} bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans`}
+    >
       <div
         className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
         style={{
@@ -165,9 +167,11 @@ const Permissions = () => {
         />
       </div>
 
-      <Sidebar />
+      {!embedded && <Sidebar />}
 
-      <div className="flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col h-screen pl-24 md:pl-28">
+      <div
+        className={`flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col min-h-0 ${embedded ? "w-full" : "h-screen pl-24 md:pl-28"}`}
+      >
         <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div

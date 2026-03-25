@@ -1,15 +1,27 @@
+import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { LayoutDashboard, Sun, Moon, Zap } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar, Inventory, Loan } from "@/components";
+import Notifications from "../notifications/notifications";
+import Reports from "../reports/reportes";
+import Permissions from "../settings/permission/permission";
+import AssignProfile from "../settings/assignprofile/assignprofile";
 
 export const Dashboard = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [location.pathname]);
 
   const getRouteConfig = () => {
     switch (location.pathname) {
@@ -20,16 +32,22 @@ export const Dashboard = () => {
       case "/notifications":
         return {
           title: "Notificaciones",
-          component: (
-            <div className="rounded-[32px] border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0f1115] p-8 shadow-sm">
-              <h3 className="text-2xl font-black text-slate-800 dark:text-white">
-                Notificaciones
-              </h3>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                Sección en desarrollo.
-              </p>
-            </div>
-          ),
+          component: <Notifications embedded />,
+        };
+      case "/reports":
+        return {
+          title: "Reportes",
+          component: <Reports embedded />,
+        };
+      case "/settings/permissions":
+        return {
+          title: "Configuracion",
+          component: <Permissions embedded />,
+        };
+      case "/settings/profiles":
+        return {
+          title: "Configuracion",
+          component: <AssignProfile embedded />,
         };
       default:
         return {
@@ -41,6 +59,10 @@ export const Dashboard = () => {
 
   const { title, component } = getRouteConfig();
   const isHome = location.pathname === "/dashboard";
+  const hasStandaloneHeader =
+    location.pathname === "/notifications" ||
+    location.pathname === "/reports" ||
+    location.pathname.startsWith("/settings");
 
   return (
     <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] overflow-hidden">
@@ -52,37 +74,39 @@ export const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col h-full"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-            <div>
+          {!hasStandaloneHeader && (
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
               <div>
-                <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                  {title}
-                </h1>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  URU •{" "}
-                  {new Date().toLocaleDateString("es-ES", {
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </p>
+                <div>
+                  <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                    {title}
+                  </h1>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    URU •{" "}
+                    {new Date().toLocaleDateString("es-ES", {
+                      day: "numeric",
+                      month: "long",
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleTheme}
+                  className="rounded-xl border-blue-500/20 cursor-pointer"
+                >
+                  {theme === "light" ? (
+                    <Moon size={20} />
+                  ) : (
+                    <Sun size={20} className="text-yellow-400" />
+                  )}
+                </Button>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleTheme}
-                className="rounded-xl border-blue-500/20 cursor-pointer"
-              >
-                {theme === "light" ? (
-                  <Moon size={20} />
-                ) : (
-                  <Sun size={20} className="text-yellow-400" />
-                )}
-              </Button>
-            </div>
-          </div>
+          )}
 
           {isHome && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -110,7 +134,10 @@ export const Dashboard = () => {
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div
+            ref={contentRef}
+            className="flex-1 overflow-y-scroll custom-scrollbar"
+          >
             <AnimatePresence mode="wait">
               {isHome ? (
                 <motion.div
