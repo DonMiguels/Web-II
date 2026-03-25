@@ -34,8 +34,8 @@ Cada Business Object sigue el patrón establecido:
 1. **Subsystem**: Punto de entrada por dominio (`<Subsystem>/<Subsystem>.js`)
 2. **Class**: Entidad principal por agregado (`<Subsystem>/<Class>/<Class>.js`)
 3. **Methods**: Funciones exportadas en `<Subsystem>/<Class>/methods/*.js` que usan `DBMS.executeNamedQuery()`
-3. **Named Queries**: Consultas SQL en `config/queries.yaml` con validación
-4. **Resolver**: Resolución dinámica vía `method_registry.js` y `method_resolver.js`
+4. **Named Queries**: Consultas SQL en `config/queries.yaml` con validación
+5. **Resolver**: Resolución dinámica vía `method_registry.js` y `method_resolver.js`
 
 ## 3. Business Objects Implementados
 
@@ -44,6 +44,7 @@ Cada Business Object sigue el patrón establecido:
 **Propósito**: Gestión de equipos del inventario
 
 **Queries implementadas**:
+
 - `insertEquipment`: Crear nuevo equipo
 - `getEquipmentById`: Obtener equipo por ID
 - `getEquipmentByCode`: Obtener equipo por código
@@ -52,6 +53,7 @@ Cada Business Object sigue el patrón establecido:
 - `deleteEquipment`: Eliminar equipo
 
 **Estructura de datos**:
+
 ```javascript
 {
   codigo: string,           // Código único del equipo
@@ -68,6 +70,7 @@ Cada Business Object sigue el patrón establecido:
 ```
 
 **Relaciones**:
+
 - `ubicacion_id` → `ubicacion.id`
 - `estado_id` → `estado_equipo.id`
 
@@ -76,6 +79,7 @@ Cada Business Object sigue el patrón establecido:
 **Propósito**: Gestión de ubicaciones físicas
 
 **Queries implementadas**:
+
 - `insertLocation`: Crear nueva ubicación
 - `getLocationById`: Obtener ubicación por ID
 - `getLocationByName`: Obtener ubicación por nombre
@@ -84,6 +88,7 @@ Cada Business Object sigue el patrón establecido:
 - `deleteLocation`: Eliminar ubicación
 
 **Estructura de datos**:
+
 ```javascript
 {
   nombre: string,      // Nombre de la ubicación
@@ -99,6 +104,7 @@ Cada Business Object sigue el patrón establecido:
 **Propósito**: Catálogo de estados operativos de equipos
 
 **Queries implementadas**:
+
 - `insertEquipmentStatus`: Crear nuevo estado
 - `getEquipmentStatusById`: Obtener estado por ID
 - `getEquipmentStatusByName`: Obtener estado por nombre
@@ -107,6 +113,7 @@ Cada Business Object sigue el patrón establecido:
 - `deleteEquipmentStatus`: Eliminar estado
 
 **Estructura de datos**:
+
 ```javascript
 {
   nombre: string,      // Nombre del estado (ej: OPERATIONAL, DAMAGED)
@@ -119,6 +126,7 @@ Cada Business Object sigue el patrón establecido:
 **Propósito**: Gestión de préstamos de equipos
 
 **Queries implementadas**:
+
 - `insertLoan`: Crear nuevo préstamo
 - `getLoanById`: Obtener préstamo por ID
 - `getLoansByUser`: Préstamos por usuario
@@ -129,6 +137,7 @@ Cada Business Object sigue el patrón establecido:
 - `deleteLoan`: Eliminar préstamo
 
 **Estructura de datos**:
+
 ```javascript
 {
   usuario_id: int,                    // FK a person
@@ -141,6 +150,7 @@ Cada Business Object sigue el patrón establecido:
 ```
 
 **Relaciones**:
+
 - `usuario_id` → `person.id`
 - `equipo_id` → `equipo.id`
 
@@ -153,18 +163,18 @@ Los subsistemas se registran automáticamente en `method_registry.js`:
 ```javascript
 // src/bo/Inventory/Inventory.js
 export class Inventory {
-    constructor() {
+  constructor() {
     this.Equipment = Equipment;
     this.Location = Location;
     this.EquipmentStatus = EquipmentStatus;
-    }
+  }
 }
 
 // src/bo/Loans/Loans.js
 export class Loans {
-    constructor() {
+  constructor() {
     this.Loan = Loan;
-    }
+  }
 }
 ```
 
@@ -182,19 +192,32 @@ Todas las queries usan el sistema de validación del proyecto:
 ```yaml
 insertEquipo:
   query: 'INSERT INTO public.equipo (...) VALUES ($1, $2, ...)'
-  structure_params: {
-    codigo: 'string',
-    nombre: 'string',
-    marca: 'string',
-    modelo: 'string',
-    serie: 'string',
-    descripcion: 'string',
-    ubicacion_id: 'int',
-    estado_id: 'int',
-    fecha_adquisicion: 'string',
-    costo: 'float'
-  }
-  orderArray: ['codigo', 'nombre', 'marca', 'modelo', 'serie', 'descripcion', 'ubicacion_id', 'estado_id', 'fecha_adquisicion', 'costo']
+  structure_params:
+    {
+      codigo: 'string',
+      nombre: 'string',
+      marca: 'string',
+      modelo: 'string',
+      serie: 'string',
+      descripcion: 'string',
+      ubicacion_id: 'int',
+      estado_id: 'int',
+      fecha_adquisicion: 'string',
+      costo: 'float',
+    }
+  orderArray:
+    [
+      'codigo',
+      'nombre',
+      'marca',
+      'modelo',
+      'serie',
+      'descripcion',
+      'ubicacion_id',
+      'estado_id',
+      'fecha_adquisicion',
+      'costo',
+    ]
 ```
 
 ## 5. Queries SQL Implementadas
@@ -203,16 +226,16 @@ insertEquipo:
 
 ```sql
 -- Crear equipo
-INSERT INTO public.equipo (codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+INSERT INTO public.equipo (codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING id AS equipo_id;
 
 -- Obtener equipo con relaciones
-SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion, 
-       e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado 
-FROM public.equipo e 
-LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id 
-LEFT JOIN public.estado_equipo es ON e.estado_id = es.id 
+SELECT e.id AS equipo_id, e.codigo, e.nombre, e.marca, e.modelo, e.serie, e.descripcion,
+       e.fecha_adquisicion, e.costo, u.nombre AS ubicacion, es.nombre AS estado
+FROM public.equipo e
+LEFT JOIN public.ubicacion u ON e.ubicacion_id = u.id
+LEFT JOIN public.estado_equipo es ON e.estado_id = es.id
 WHERE e.id = $1;
 ```
 
@@ -220,13 +243,13 @@ WHERE e.id = $1;
 
 ```sql
 -- Crear ubicación
-INSERT INTO public.ubicacion (nombre, descripcion, edificio, piso, sala) 
-VALUES ($1, $2, $3, $4, $5) 
+INSERT INTO public.ubicacion (nombre, descripcion, edificio, piso, sala)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id AS ubicacion_id;
 
 -- Listar ubicaciones
-SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala 
-FROM public.ubicacion 
+SELECT id AS ubicacion_id, nombre, descripcion, edificio, piso, sala
+FROM public.ubicacion
 ORDER BY nombre;
 ```
 
@@ -234,19 +257,19 @@ ORDER BY nombre;
 
 ```sql
 -- Crear préstamo
-INSERT INTO public.prestamo (usuario_id, equipo_id, fecha_prestamo, fecha_devolucion_esperada, observaciones) 
-VALUES ($1, $2, $3, $4, $5) 
+INSERT INTO public.prestamo (usuario_id, equipo_id, fecha_prestamo, fecha_devolucion_esperada, observaciones)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id AS prestamo_id;
 
 -- Préstamos activos (sin devolución)
-SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo, 
-       p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones, 
-       u.first_name || ' ' || u.last_name AS usuario_nombre, 
-       e.nombre AS equipo_nombre, e.codigo AS equipo_codigo 
-FROM public.prestamo p 
-LEFT JOIN public.person u ON p.usuario_id = u.id 
-LEFT JOIN public.equipo e ON p.equipo_id = e.id 
-WHERE p.fecha_devolucion_real IS NULL 
+SELECT p.id AS prestamo_id, p.usuario_id, p.equipo_id, p.fecha_prestamo,
+       p.fecha_devolucion_esperada, p.fecha_devolucion_real, p.observaciones,
+       u.first_name || ' ' || u.last_name AS usuario_nombre,
+       e.nombre AS equipo_nombre, e.codigo AS equipo_codigo
+FROM public.prestamo p
+LEFT JOIN public.person u ON p.usuario_id = u.id
+LEFT JOIN public.equipo e ON p.equipo_id = e.id
+WHERE p.fecha_devolucion_real IS NULL
 ORDER BY p.fecha_prestamo DESC;
 ```
 
@@ -257,35 +280,47 @@ ORDER BY p.fecha_prestamo DESC;
 Todos los métodos incluyen validación básica:
 
 ```javascript
-export const createEquipo = async function({codigo, nombre, marca, modelo, serie, descripcion, ubicacion_id, estado_id, fecha_adquisicion, costo}) {
-    const dbms = new DBMS();
-    await dbms.init();
-    try {
-        const res = await dbms.executeNamedQuery({
-            nameQuery: 'insertEquipo',
-            params: {
-                codigo,
-                nombre,
-                marca,
-                modelo,
-                serie: serie || '',        // Default valores vacíos
-                descripcion: descripcion || '',
-                ubicacion_id: ubicacion_id || null,
-                estado_id: estado_id || null,
-                fecha_adquisicion: fecha_adquisicion || null,
-                costo: costo || 0
-            },
-        });
-        return res?.rows?.[0];
-    } catch (err) {
-        throw new Error(err.message);
-    }
-}
+export const createEquipo = async function ({
+  codigo,
+  nombre,
+  marca,
+  modelo,
+  serie,
+  descripcion,
+  ubicacion_id,
+  estado_id,
+  fecha_adquisicion,
+  costo,
+}) {
+  const dbms = new DBMS();
+  await dbms.init();
+  try {
+    const res = await dbms.executeNamedQuery({
+      nameQuery: 'insertEquipo',
+      params: {
+        codigo,
+        nombre,
+        marca,
+        modelo,
+        serie: serie || '', // Default valores vacíos
+        descripcion: descripcion || '',
+        ubicacion_id: ubicacion_id || null,
+        estado_id: estado_id || null,
+        fecha_adquisicion: fecha_adquisicion || null,
+        costo: costo || 0,
+      },
+    });
+    return res?.rows?.[0];
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
 ```
 
 ### 6.2 Manejo de Nulos
 
 Los métodos proporcionan valores por defecto para campos opcionales:
+
 - Strings vacíos: `''`
 - IDs opcionales: `null`
 - Valores numéricos: `0`
@@ -350,7 +385,7 @@ const equipo = await createEquipo({
   ubicacion_id: 1,
   estado_id: 1,
   fecha_adquisicion: '2024-01-15',
-  costo: 1200.00
+  costo: 1200.0,
 });
 
 // Test de préstamos activos

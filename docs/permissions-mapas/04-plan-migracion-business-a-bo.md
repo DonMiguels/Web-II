@@ -88,12 +88,12 @@ Estrategia recomendada: estrangulamiento progresivo (strangler pattern).
 
 ### Transformación por carpetas
 
-| Origen legacy           | Destino objetivo                                  | Acción                                                                    |
-| ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `_business/ftx`         | `bo/<Subsystem>/<Subsystem>.js + bo/<Subsystem>/<Class>` | Convertir fachada funcional en clases de dominio por subsistema     |
-| `_business/atx`         | `bo/<Subsystem>/<Class>/methods`                  | Reubicar casos de uso por agregado y método                               |
-| `_business/helpers`     | `bo/<Subsystem>/<Class>/methods` o utilitarios de infraestructura | Clasificar helper por naturaleza de dominio vs infraestructura |
-| `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js` | Retirar mapeo por nombres legacy y consolidar registro canónico BO        |
+| Origen legacy           | Destino objetivo                                                  | Acción                                                             |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `_business/ftx`         | `bo/<Subsystem>/<Subsystem>.js + bo/<Subsystem>/<Class>`          | Convertir fachada funcional en clases de dominio por subsistema    |
+| `_business/atx`         | `bo/<Subsystem>/<Class>/methods`                                  | Reubicar casos de uso por agregado y método                        |
+| `_business/helpers`     | `bo/<Subsystem>/<Class>/methods` o utilitarios de infraestructura | Clasificar helper por naturaleza de dominio vs infraestructura     |
+| `_business/business.js` | `bo/method_registry.js` y `bo/method_resolver.js`                 | Retirar mapeo por nombres legacy y consolidar registro canónico BO |
 
 ### Transformación por comportamiento
 

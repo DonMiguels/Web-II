@@ -262,13 +262,13 @@ En runtime del dispatcher, `transaction_id` se resuelve en ejecución durante el
 
 ## Matriz de componentes y responsabilidades
 
-| Componente                       | Estructura                                            | Rol                                                                 |
-| -------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
-| `src/security/security.js`       | `permissions`, `userProfiles` (`Map`)                 | Cache en memoria para autorización runtime                          |
-| `src/bo/method_registry.js`      | `mapFiles` (objeto)                                   | Catálogo de reflexión para rutas ejecutables                        |
-| `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)             | Control de entrada y rechazo de payload                             |
-| `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos)   | Construcción jerárquica menú-opción-perfil                          |
-| `src/_business/atx/set-*.js`     | objetos de forma constante/compacta                   | Persistencia y mantenimiento de joins de permisos por opción/método |
+| Componente                       | Estructura                                          | Rol                                                                 |
+| -------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+| `src/security/security.js`       | `permissions`, `userProfiles` (`Map`)               | Cache en memoria para autorización runtime                          |
+| `src/bo/method_registry.js`      | `mapFiles` (objeto)                                 | Catálogo de reflexión para rutas ejecutables                        |
+| `src/sanitizer/sanitizer.js`     | `regexMap` (`Map`) + políticas (`objeto`)           | Control de entrada y rechazo de payload                             |
+| `src/_business/atx/parse-mop.js` | `menus`, `idToNode`, `menuInfo`, `txInfo` (objetos) | Construcción jerárquica menú-opción-perfil                          |
+| `src/_business/atx/set-*.js`     | objetos de forma constante/compacta                 | Persistencia y mantenimiento de joins de permisos por opción/método |
 
 ## Referencias
 

@@ -1,6 +1,7 @@
 # Arquitectura Objetivo con Clean Architecture y Clean Code
 
 ## Indice
+
 1. [Objetivo](#objetivo)
 2. [Principios rectores](#principios-rectores)
 3. [Capas y responsabilidades](#capas-y-responsabilidades)
@@ -14,9 +15,11 @@
 11. [Referencias](#referencias)
 
 ## Objetivo
+
 Definir una arquitectura desacoplada, mantenible e interoperable que conserve compatibilidad con el backend actual y acelere la evolucion bo-first.
 
 ## Principios rectores
+
 1. Un caso de uso por intencion de negocio.
 2. Dependencias dirigidas hacia adentro (hacia dominio).
 3. Sin logica de negocio en controladores, rutas o repositorios.
@@ -25,27 +28,33 @@ Definir una arquitectura desacoplada, mantenible e interoperable que conserve co
 6. Estado interno encapsulado y no expuesto por API.
 
 ## Capas y responsabilidades
+
 ### Interface Adapters
+
 1. Reciben request y validan contrato.
 2. Invocan caso de uso.
 3. Traducen resultado a respuesta HTTP.
 
 ### Application
+
 1. Orquestan dominio y puertos.
 2. Gestionan transacciones de negocio.
 3. Publican eventos internos.
 
 ### Domain
+
 1. Entidades y value objects.
 2. Politicas de negocio y reglas invariantes.
 3. Maquinas de estado de procesos.
 
 ### Infrastructure
+
 1. Repositorios SQL.
 2. Scheduler, notificador, cache.
 3. Adaptadores de logger y sanitizer.
 
 ## Patrones aplicados
+
 1. Clean architecture.
 2. Hexagonal architecture (ports and adapters).
 3. Strangler pattern para migracion gradual legacy -> bo.
@@ -54,7 +63,9 @@ Definir una arquitectura desacoplada, mantenible e interoperable que conserve co
 6. Unit of work en operaciones de cambio critico.
 
 ## Contratos y puertos
+
 ### Puertos de aplicacion
+
 1. PermissionRepositoryPort.
 2. TransactionRouteRepositoryPort.
 3. UserProfileRepositoryPort.
@@ -67,6 +78,7 @@ Definir una arquitectura desacoplada, mantenible e interoperable que conserve co
 10. PeriodRepositoryPort.
 
 ### Contratos base sugeridos
+
 ```txt
 PermissionKey = lower(subsystem) + '::' + lower(class) + '::' + lower(method) + '::' + lower(profile)
 
@@ -87,12 +99,14 @@ UseCaseResult = {
 ```
 
 ## Politica de errores
+
 1. Error de dominio: violacion de regla de negocio, mapeado a 4xx.
 2. Error de autorizacion: acceso denegado por perfil/permiso.
 3. Error de infraestructura: base de datos, red o integracion externa.
 4. Error inesperado: mapeado a 500 con mensaje generico.
 
 Clases sugeridas:
+
 1. DomainValidationError.
 2. NotAuthorizedError.
 3. NotFoundRouteError.
@@ -100,6 +114,7 @@ Clases sugeridas:
 5. InfrastructureError.
 
 ## Politica de seguridad transversal
+
 1. Sanitizar payload antes de validacion de negocio.
 2. Resolver identidad de sesion antes de autorizacion.
 3. Autorizar por transaction_id y perfil.
@@ -107,6 +122,7 @@ Clases sugeridas:
 5. Enmascarar secretos en logs.
 
 ## Topologia objetivo de carpetas
+
 ```txt
 backend/src/
   application/
@@ -141,6 +157,7 @@ backend/src/
 ```
 
 ## Diagrama de componentes
+
 ```mermaid
 flowchart TB
   H[HTTP Router/Controller] --> U[Application Use Cases]
@@ -167,6 +184,7 @@ flowchart TB
 ```
 
 ## Reglas de interoperabilidad interna
+
 1. Ninguna clase de dominio importa Express o DBMS.
 2. Ningun repositorio decide reglas de negocio.
 3. Ningun caso de uso accede directamente a query strings.
@@ -174,6 +192,7 @@ flowchart TB
 5. Todos los metodos en `src/bo/<Subsystem>/<Class>/methods` son stateless.
 
 ## Referencias
+
 1. [00-indice-general.md](./00-indice-general.md)
 2. [04-subsistemas-clases-metodos.md](./04-subsistemas-clases-metodos.md)
 3. [05-estados-internos-y-privacidad.md](./05-estados-internos-y-privacidad.md)
