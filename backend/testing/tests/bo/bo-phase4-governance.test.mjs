@@ -1,4 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import pool from '../../../config/db.js';
+import yaml from 'yaml';
 import { deleteLoan } from '../../../src/bo/Loans/Loan/methods/deleteLoan.js';
 import { deleteReturn } from '../../../src/bo/Returns/Return/methods/deleteReturn.js';
 import { deleteNotification } from '../../../src/bo/Notifications/Notification/methods/deleteNotification.js';
@@ -7,6 +10,23 @@ import { deleteAcademicPeriod } from '../../../src/bo/Academic/AcademicPeriod/me
 import { deleteComponent } from '../../../src/bo/Components/Component/methods/deleteComponent.js';
 import { deleteInventory } from '../../../src/bo/Inventory/Inventory/methods/deleteInventory.js';
 import Security from '../../../src/security/security.js';
+import Utils from '../../../src/utils/utils.js';
+
+function loadQueryCatalog() {
+  const queriesPath = path.resolve(process.cwd(), 'config/queries.yaml');
+  return yaml.parse(fs.readFileSync(queriesPath, 'utf8')) || {};
+}
+
+function getDeleteQueryKeys(queries) {
+  return Object.entries(queries)
+    .filter(
+      ([, definition]) =>
+        typeof definition?.query === 'string' &&
+        /\bDELETE\s+FROM\b/i.test(definition.query),
+    )
+    .map(([queryKey]) => queryKey)
+    .sort();
+}
 
 function parseDomainError(error) {
   try {
@@ -86,6 +106,56 @@ async function createInventoryFixture({ amount = 3 } = {}) {
 }
 
 describe('Phase 4 governance', () => {
+  test('catalogo legacy evita hard-delete en entidades con soft-delete disponible', () => {
+    const queries = loadQueryCatalog();
+    const softDeleteExpectedKeys = [
+      'deleteEstadoEquipo',
+      'deleteInventario',
+      'deleteCompensacion',
+      'deletePeriodoAcademico',
+    ];
+
+    for (const queryKey of softDeleteExpectedKeys) {
+      const statement = String(queries?.[queryKey]?.query || '');
+      expect(statement).not.toMatch(/\bDELETE\s+FROM\b/i);
+    }
+  });
+
+  test('hard-delete residual permanece acotado a whitelist aprobada', () => {
+    const queries = loadQueryCatalog();
+    const allowedDeleteKeys = [
+      'delClassMethod',
+      'delMenuOption',
+      'delProfileMethod',
+      'delProfileOption',
+      'delUserProfile',
+      'deleteAudit',
+      'deleteAuditoria',
+      'deleteDevolucion',
+      'deleteLoan',
+      'deleteNotificacion',
+      'deleteNotification',
+      'deletePrestamo',
+      'deleteReturn',
+      'deleteSecurityClass',
+      'deleteSecurityMenu',
+      'deleteSecurityMethod',
+      'deleteSecurityOption',
+      'deleteSecurityProfile',
+      'deleteSecuritySubsystem',
+      'deleteSecurityTransaction',
+      'normalizeLegacyBoNaming',
+      'removeSecurityClassMethod',
+      'removeSecurityMethodProfile',
+      'removeSecurityOptionMenu',
+      'removeSecurityOptionProfile',
+      'removeSecuritySubsystemClass',
+      'removeSecurityUserProfile',
+    ].sort();
+
+    expect(getDeleteQueryKeys(queries)).toEqual(allowedDeleteKeys);
+  });
+
   test('bloquea hard-delete en entidades historicas', async () => {
     await expectHardDeleteBlocked(deleteLoan, { id: 999999 });
     await expectHardDeleteBlocked(deleteReturn, { id: 999999 });
@@ -185,5 +255,62 @@ describe('Phase 4 governance', () => {
     expect(failure.observability?.process_name).toContain(
       'dispatcher:Users.User.metodoInexistenteFase4',
     );
+  });
+
+  test('Security.execute conserva codigo de dominio en errores de negocio', async () => {
+    const security = new Security();
+
+    const failure = await security.execute(
+      {
+        subsystem: 'Loans',
+        class: 'Loan',
+        method: 'deleteLoan',
+      },
+      {
+        id: 999999,
+      },
+    );
+
+    expect(failure.statusCode).toBe(409);
+    expect(failure.code).toBe('HARD_DELETE_BLOCKED');
+    expect(failure.error?.code).toBe('HARD_DELETE_BLOCKED');
+    expect(failure.observability?.status_code).toBe(409);
+    expect(failure.observability?.process_name).toContain(
+      'dispatcher:Loans.Loan.deleteLoan',
+    );
+  });
+
+  test('Security.parseStructuredError normaliza errores no estructurados', () => {
+    const security = new Security();
+    const fallback = security.parseStructuredError(
+      new Error('error-no-estructurado'),
+    );
+
+    expect(fallback.statusCode).toBe(500);
+    expect(fallback.code).toBe('UNEXPECTED_ERROR');
+    expect(fallback.message).toBe('error-no-estructurado');
+    expect(fallback.details?.original_message).toBe('error-no-estructurado');
+  });
+
+  test('Utils.handleError expone code y details de forma uniforme', () => {
+    const utils = new Utils();
+
+    try {
+      utils.handleError({
+        message: 'conflicto de negocio',
+        statusCode: 409,
+        error: {
+          code: '23505',
+          detail: 'duplicate key value violates unique constraint',
+        },
+      });
+      throw new Error('Se esperaba error estructurado y no ocurrio');
+    } catch (error) {
+      const payload = JSON.parse(error.message);
+      expect(payload.statusCode).toBe(409);
+      expect(payload.code).toBe('CONFLICT');
+      expect(payload.details?.code).toBe('23505');
+      expect(payload.details?.detail).toContain('duplicate key');
+    }
   });
 });

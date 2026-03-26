@@ -13,20 +13,19 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 4. Implementacion BO en backend/src/bo.
 5. SQL de soporte de reporteria de fase 2 en db/initdb/04-phase2-report-views.sql.
 6. Pruebas automatizadas en backend/testing/tests.
-7. Ejecucion real de pruebas BO en esta sesion:
-   - APP_ENV=test npm run test:bo:setup-db
-   - APP_ENV=test npm run test:bo
-   - npm run test:bo:teardown-db
-   - Resultado: 13 suites, 39 tests, 100% PASS.
+7. Resultados obtenidos en esta conversacion:
+   - Consolidacion del arbol de pruebas en backend/testing/tests/{bo,dispatcher,security,session}.
+   - APP_ENV=test npm run test:bo con resultado 13 suites, 46 tests, 100% PASS.
+   - npm run test:session-sanitizer con resultado 7/7 pruebas exitosas tras ajuste de precedencia applyGlobalDenyPatterns.
 
 ## 2. Resultado global por fase
 
-| Fase                                        | Estado                                                | Cumplimiento de criterios de salida (Roadmap 07) | Veredicto                                     |
-| ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | --------------------------------------------- |
-| Fase 1 - Procesos transaccionales core      | Implementada y validada                               | 3 de 3                                           | Completada exitosamente                       |
-| Fase 2 - Solvencia, compensacion y reportes | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                       |
-| Fase 3 - Notificaciones y automatizacion    | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                       |
-| Fase 4 - Estandarizacion y gobierno tecnico | Implementada parcialmente y validada de forma parcial | 0 de 2 (criterio estricto de 07)                 | No completada exitosamente (parcial avanzada) |
+| Fase                                        | Estado                                                | Cumplimiento de criterios de salida (Roadmap 07) | Veredicto                                                        |
+| ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
+| Fase 1 - Procesos transaccionales core      | Implementada y validada                               | 3 de 3                                           | Completada exitosamente                                          |
+| Fase 2 - Solvencia, compensacion y reportes | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                                          |
+| Fase 3 - Notificaciones y automatizacion    | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                                          |
+| Fase 4 - Estandarizacion y gobierno tecnico | Implementada parcialmente con hardening adicional     | 0 de 2 (criterio estricto de 07)                 | No completada exitosamente, con avance sustancial en cierre      |
 
 ## 3. Resultado detallado por fase
 
@@ -46,11 +45,11 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 3. Returns/ReturnProcess con cierre de prestamo y reposicion de stock.
    - Evidencia: backend/src/bo/Returns/ReturnProcess/methods/registerReturn.js
 
-4. Pruebas E2E de ciclo completo.
-   - Evidencia: backend/testing/tests/bo-phase1-core-processes.test.mjs
-   - Evidencia: backend/testing/tests/bo-phase1-concurrency-e2e.test.mjs
-   - Evidencia: backend/testing/tests/bo-phase1-reservation-job-transactions.test.mjs
-   - Evidencia: backend/testing/tests/bo-phase1-returnprocess-closure.test.mjs
+4. Pruebas E2E de ciclo completo (arbol consolidado).
+   - Evidencia: backend/testing/tests/bo/bo-phase1-core-processes.test.mjs
+   - Evidencia: backend/testing/tests/bo/bo-phase1-concurrency-e2e.test.mjs
+   - Evidencia: backend/testing/tests/bo/bo-phase1-reservation-job-transactions.test.mjs
+   - Evidencia: backend/testing/tests/bo/bo-phase1-returnprocess-closure.test.mjs
 
 ### Resultado de criterios de salida
 
@@ -93,7 +92,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 1. Solvencia recalculada de forma consistente.
    - createCompensationFromDamage marca usuario no solvente.
    - settleCompensation recalcula is_solvency con base en compensaciones pendientes + mora activa.
-   - Validado por bo-phase2-solvency-comp-reports.test.mjs.
+   - Validado por backend/testing/tests/bo/bo-phase2-solvency-comp-reports.test.mjs.
 
 2. Reportes reproducibles con filtros de periodo y estado.
    - Reportes con filtros por periodo/estado/fechas y reglas deterministas.
@@ -122,7 +121,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 
 1. Recordatorios previos al vencimiento en ventana configurable.
    - sendReturnReminderBatch usa window_hours parametrizable.
-   - Validado por test de fase 3.
+   - Validado por backend/testing/tests/bo/bo-phase3-notification-scheduler.test.mjs.
 
 2. Alertas por retraso emitidas de forma periodica.
    - sendOverdueAlertBatch emite alertas por prestamos vencidos y respeta cooldown dedup_hours.
@@ -138,31 +137,41 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 ### Entregables roadmap vs evidencia
 
 1. Politica uniforme de soft delete.
-   - Avance: implementada en varias entidades (ej.: User, Component, Equipment, Location, Compensation).
-   - Avance: bloqueo explicito de hard delete en entidades historicas (Loan, Return, Notification, Audit, AcademicPeriod).
-   - Brecha: aun existe delete fisico en algunas rutas (ej.: deleteInventory en BO + query deleteInventory).
+   - Avance: migradas rutas clave de inventario y academico a baja logica en queries.
+   - Avance: get/update de Equipment, Location, EquipmentStatus, Component, Inventory y AcademicPeriod ahora filtran deleted_at IS NULL y actualizan updated_at de forma explicita.
+   - Avance: deleteInventory, deleteEquipmentStatus y deleteAcademicPeriod migrados a UPDATE con deleted_at/updated_at (y is_active = FALSE cuando aplica).
+   - Brecha: todavia existen DELETE fisicos en queries de catalogos/relaciones y debe definirse whitelist oficial para cierre estricto.
 
 2. Reglas de metacampos temporales en entidades maestras.
-   - Avance: muchas tablas tienen created_at/updated_at (y algunas deleted_at), con trigger set_updated_at.
-   - Brecha: no es homogeneo en todo el modelo maestro (ej.: period no define created_at/updated_at/deleted_at; location tiene deleted_at pero no created_at/updated_at).
+   - Avance: schema incorpora created_at/updated_at/deleted_at (segun aplica) en category, condition_status_type, location, inventory, period_type y period.
+   - Avance: cobertura del trigger set_updated_at ampliada para category, condition_status_type, location, period_type y period.
+   - Brecha: falta validacion exhaustiva transversal sobre todo el modelo maestro y normalizacion documental de la politica.
 
 3. Catalogo de errores de dominio y observabilidad por proceso.
-   - Avance: backend/src/bo/\_shared/domainError.js y backend/src/bo/\_shared/processObservability.js.
-   - Avance: metodos de proceso Fase 1-3 retornan metadata process_name/transaction_id/status_code/duration_ms.
-   - Brecha: no todos los metodos BO CRUD legacy usan el mismo contrato de error/observabilidad.
+   - Avance: Security.execute ahora normaliza codigos de dominio, estandariza contrato de error y agrega observabilidad en exito/fallo.
+   - Avance: manejo explicito de metodo no disponible con contrato 404 + code NOT_FOUND + metadata de proceso.
+   - Avance: preservacion de codigos de negocio (ej. HARD_DELETE_BLOCKED en 409) al propagar errores de dominio via Security.execute.
+   - Avance: normalizacion de fallback 500 + UNEXPECTED_ERROR para errores no estructurados.
+   - Avance: Utils.handleError (componente transversal) ahora incluye code de dominio y details normalizados en todos los errores estructurados del BO.
+   - Evidencia de prueba: backend/testing/tests/bo/bo-phase4-governance.test.mjs cubre soft-delete de inventario, contrato estandarizado de Security.execute y controles de whitelist de hard-delete residual.
+
+4. Hardening de sanitizacion de sesion derivado de la conversacion.
+   - Avance: se restauro precedencia applyGlobalDenyPatterns en sanitizer para reglas por campo/ruta.
+   - Avance: passwords de session.login/session.register/session.resetPassword usan applyGlobalDenyPatterns: false y denyPatternKeys especificos (control_chars), evitando falsos positivos por sql_comment_sequence en '#'.
+   - Resultado validado: npm run test:session-sanitizer -> 7/7 PASS.
 
 ### Resultado de criterios de salida (Roadmap 07, criterio estricto)
 
 1. Eliminacion fisica reducida a catalogos estrictamente permitidos.
-   - Resultado: no cumplido totalmente (aun hay hard delete fuera de catalogo estricto en ciertas rutas).
+   - Resultado: no cumplido totalmente. Se corrigieron rutas operativas relevantes, pero falta inventario formal y whitelist institucional de hard delete permitido.
 
 2. Trazabilidad temporal homogenea en entidades maestras.
-   - Resultado: no cumplido totalmente (metacampos temporales no uniformes en todo el dominio maestro).
+   - Resultado: no cumplido totalmente. La cobertura mejoro de forma importante, pero aun no existe cierre formal de homogeneidad transversal.
 
 ### Conclusiones de fase 4
 
-- Estado: parcial avanzada, no cerrada al 100% segun criterios de salida del roadmap.
-- Resultado operativo: existe base de gobierno tecnico, pero falta estandarizacion completa y cierre de brechas residuales.
+- Estado: parcial avanzada con avances sustanciales adicionales validados en esta conversacion.
+- Resultado operativo: se fortalecio la base de gobierno tecnico (soft delete, metacampos, observabilidad y sanitizer de sesion), pero no se alcanza aun el cierre estricto de la fase.
 
 ## 4. Fase siguiente recomendada
 
@@ -172,20 +181,21 @@ Como Fase 1, 2 y 3 estan satisfactorias y Fase 4 no esta cerrada completamente, 
 
 Objetivo inmediato para declarar Fase 4 completada exitosamente:
 
-1. Eliminar hard delete residual en entidades no catalogo.
-2. Homogeneizar metacampos temporales en entidades maestras definidas como obligatorias.
-3. Unificar contrato de errores de dominio y observabilidad en todo BO publico.
+1. Inventariar todos los DELETE fisicos restantes y clasificarlos en permitido/no permitido segun una whitelist formal.
+2. Finalizar homogeneizacion temporal en entidades maestras pendientes y documentar politica unica de auditoria temporal.
+3. Completar estandarizacion de errores y observabilidad en todo BO publico (incluyendo CRUD legacy que aun no devuelven contrato uniforme).
 
 ## 5. Cobertura de requerimientos explicitos e implicitos (02 + processes)
 
 ## 5.1 Requerimientos explicitos
 
-Estado general: alto cumplimiento funcional en procesos core y de soporte.
+Estado general: alto cumplimiento funcional en procesos core y de soporte, con mejoras adicionales en la conversacion.
 
 1. Prestamos, apartado, devolucion: cubiertos por Fase 1 y validados por suites dedicadas.
 2. Compensacion, reportes (solvencia/morosos/estadistica): cubiertos por Fase 2.
 3. Notificaciones (recordatorio/alerta): cubiertas por Fase 3.
-4. Inventario, equipos, componentes, ubicaciones, seguridad, auditoria, periodo academico: disponibles en BO y queries, con brechas de gobernanza transversal pendientes en Fase 4.
+4. Inventario, equipos, componentes, ubicaciones, seguridad, auditoria, periodo academico: disponibles en BO y queries; se redujo brecha de gobernanza transversal al migrar rutas criticas a soft-delete.
+5. Sanitizacion de credenciales de sesion: corregida para permitir passwords validos con '#', manteniendo rechazo de control chars.
 
 ## 5.2 Requerimientos implicitos criticos
 
@@ -193,24 +203,25 @@ Estado general: alto cumplimiento funcional en procesos core y de soporte.
 2. Relacion prestamo-devolucion y cierre de ciclo: cubierta.
 3. Recalculo de solvencia por mora/compensacion: cubierto.
 4. Scheduler y deduplicacion de notificaciones: cubierto.
-5. Soft delete uniforme y trazabilidad temporal homogenea: cobertura parcial (principal brecha activa).
+5. Soft delete uniforme y trazabilidad temporal homogenea: cobertura parcial alta, aun pendiente cierre formal completo.
+6. Mantenibilidad de pruebas y tiempo de ejecucion: mejorado por consolidacion de arbol unico de tests.
 
 ## 6. Sugerencias breves para cumplir totalmente requerimientos explicitos e implicitos
 
-1. Convertir deleteInventory (y cualquier delete operativo residual) a baja logica o bloqueo de hard delete con DOMAIN_ERROR_CODES.HARD_DELETE_BLOCKED.
-2. Definir una lista oficial de "catalogos con hard delete permitido" y aplicar validacion automatica en CI contra queries/methods.
-3. Normalizar metacampos temporales en entidades maestras faltantes (ej.: period, location u otras definidas por politica) y alinear todas las lecturas con filtros de baja logica cuando corresponda.
-4. Extender pruebas de Fase 4 para cubrir inventario, ubicacion, periodo academico y validacion de contrato de error/observabilidad en CRUD legacy, no solo en procesos nuevos.
+1. Definir y aprobar la whitelist de catalogos/relaciones con hard delete permitido.
+2. Instrumentar verificacion automatica en CI que falle ante hard delete fuera de whitelist.
+3. Completar matriz de metacampos temporales por entidad maestra (created_at, updated_at, deleted_at, trigger) y cerrar brechas detectadas.
+4. Extender pruebas de Fase 4 para cubrir los casos residuales de gobernanza (hard delete no permitido, contratos de error, observabilidad).
 5. Incorporar una matriz trazable Requerimiento(02/processes) -> Metodo BO -> Query -> Test para detectar huecos antes de liberar.
-6. Agregar monitoreo operativo minimo por proceso (errores 4xx/5xx, latencia, conflictos de concurrencia, volumen de notificaciones deduplicadas) para validar en produccion los implicitos de estabilidad.
+6. Mantener como baseline de calidad: APP_ENV=test npm run test:bo (13 suites/46 tests) + npm run test:session-sanitizer (7/7).
 
 ## 7. Estado final de implementacion (segun analisis actual)
 
 1. Fase 1: Completada exitosamente.
 2. Fase 2: Completada exitosamente.
 3. Fase 3: Completada exitosamente.
-4. Fase 4: Parcial avanzada (pendiente de cierre estricto).
+4. Fase 4: Parcial avanzada con hardening adicional validado, pendiente de cierre estricto.
 
-Concluson ejecutiva:
+Conclusion ejecutiva:
 
-El sistema ya cumple de forma robusta el nucleo transaccional, financiero-operativo y de automatizacion. El cierre total del roadmap depende de completar el hardening de gobierno tecnico de Fase 4 para lograr estandarizacion transversal sin excepciones.
+El sistema mantiene un cumplimiento robusto del nucleo transaccional, financiero-operativo y de automatizacion. Durante esta conversacion se consolidaron pruebas, se mejoro la gobernanza de soft-delete/metacampos y se estandarizo mejor el contrato de ejecucion/observabilidad, pero el cierre total del roadmap todavia depende de completar la gobernanza transversal de Fase 4 sin excepciones.
