@@ -1435,7 +1435,7 @@ updateEquipment:
     - equipment_status_id
     - cost
 deleteEquipment:
-  query: UPDATE public.item SET deleted_at = NOW() WHERE id = $1 RETURNING id AS equipo_id;
+  query: UPDATE public.item SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING id AS equipo_id;
   structure_params:
     id: int
   orderArray:
@@ -1483,7 +1483,7 @@ updateLocation:
     - parent_id
     - type_id
 deleteLocation:
-  query: UPDATE public.location SET deleted_at = NOW() WHERE id = $1 RETURNING id AS ubicacion_id;
+  query: UPDATE public.location SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING id AS ubicacion_id;
   structure_params:
     id: int
   orderArray:
@@ -1695,7 +1695,7 @@ updateComponent:
     - equipment_status_id
     - cost
 deleteComponent:
-  query: UPDATE public.item SET deleted_at = NOW() WHERE id = $1 RETURNING id AS componente_id;
+  query: UPDATE public.item SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 RETURNING id AS componente_id;
   structure_params:
     id: int
   orderArray:

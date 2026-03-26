@@ -1,5 +1,10 @@
 import DBMS from '../../../../dbms/dbms.js';
 import { buildOverdueAlertTemplate } from './templates.js';
+import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function toPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -8,6 +13,7 @@ function toPositiveInt(value, fallback) {
 }
 
 export const sendOverdueAlertBatch = async function (params = {}) {
+  const processContext = startProcessContext('sendOverdueAlertBatch');
   const { dedup_hours, limit, reference_time } = params || {};
 
   const dedupHours = toPositiveInt(dedup_hours, 24);
@@ -114,10 +120,11 @@ export const sendOverdueAlertBatch = async function (params = {}) {
       candidate_count: candidates.rowCount,
       created_count: createdCount,
       skipped_dedup_count: skippedDedupCount,
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    rethrowAsDomainError(err, 'Error ejecutando sendOverdueAlertBatch');
   } finally {
     await dbms.endTransaction(client);
   }

@@ -76,9 +76,15 @@ export default class Dispatcher {
         },
       );
 
+      const executionStatusCode = Number(executionResult?.statusCode) || 200;
+      const executionRouteKey =
+        executionStatusCode >= 400
+          ? 'dispatcher.response.error'
+          : 'dispatcher.response.success';
+
       return this.sanitizeReturnValue(
         executionResult,
-        'dispatcher.response.success',
+        executionRouteKey,
       );
     } catch (error) {
       console.error(error);

@@ -1,5 +1,10 @@
 import DBMS from '../../../../dbms/dbms.js';
 import { buildReturnReminderTemplate } from './templates.js';
+import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function toPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -8,6 +13,7 @@ function toPositiveInt(value, fallback) {
 }
 
 export const sendReturnReminderBatch = async function (params = {}) {
+  const processContext = startProcessContext('sendReturnReminderBatch');
   const { window_hours, dedup_hours, limit, reference_time } = params || {};
 
   const windowHours = toPositiveInt(window_hours, 24);
@@ -115,10 +121,11 @@ export const sendReturnReminderBatch = async function (params = {}) {
       candidate_count: candidates.rowCount,
       created_count: createdCount,
       skipped_dedup_count: skippedDedupCount,
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    rethrowAsDomainError(err, 'Error ejecutando sendReturnReminderBatch');
   } finally {
     await dbms.endTransaction(client);
   }

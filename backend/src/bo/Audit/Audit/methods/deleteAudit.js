@@ -1,18 +1,11 @@
-import DBMS from "../../../../dbms/dbms.js";
+import { DOMAIN_ERROR_CODES, throwDomainError } from '../../../_shared/domainError.js';
 
 export const deleteAudit = async function(params = {}) {
-  const { id } = params || {};
-  const dbms = new DBMS();
-  await dbms.init();
-  try {
-    const res = await dbms.executeNamedQuery({
-      nameQuery: 'deleteAudit',
-      params: {
-        id,
-      },
-    });
-    return res?.rows?.[0];
-  } catch (err) {
-    throw new Error(err.message);
-  }
+  throwDomainError({
+    statusCode: 409,
+    code: DOMAIN_ERROR_CODES.HARD_DELETE_BLOCKED,
+    message:
+      'La auditoria es append-only y no admite eliminacion fisica.',
+    details: params,
+  });
 };

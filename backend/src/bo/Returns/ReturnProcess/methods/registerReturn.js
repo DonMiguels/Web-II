@@ -1,4 +1,9 @@
 import DBMS from '../../../../dbms/dbms.js';
+import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function normalizeReturnDetails(paramsDetails, loanDetails) {
   if (!Array.isArray(paramsDetails) || paramsDetails.length === 0) {
@@ -17,6 +22,7 @@ function normalizeReturnDetails(paramsDetails, loanDetails) {
 }
 
 export const registerReturn = async function (params = {}) {
+  const processContext = startProcessContext('registerReturn');
   const { loan_id, user_id, return_date, details, observations } = params || {};
 
   if (!loan_id || !return_date) {
@@ -257,10 +263,11 @@ export const registerReturn = async function (params = {}) {
       loan_id,
       return_movement_id: returnMovementId,
       closed: !hasPendingDetails,
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    rethrowAsDomainError(err, 'Error ejecutando registerReturn');
   } finally {
     await dbms.endTransaction(client);
   }

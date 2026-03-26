@@ -1,4 +1,9 @@
 import DBMS from '../../../../dbms/dbms.js';
+import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function throwBusinessError(statusCode, message) {
   throw new Error(
@@ -23,6 +28,7 @@ function normalizeAmount(value, defaultValue = 0) {
 }
 
 export const createCompensationFromDamage = async function (params = {}) {
+  const processContext = startProcessContext('createCompensationFromDamage');
   const {
     movement_detail_id,
     processed_by_user_id,
@@ -167,10 +173,11 @@ export const createCompensationFromDamage = async function (params = {}) {
       amount_paid: Number(inserted.rows[0].amount_paid),
       payment_date: inserted.rows[0].payment_date,
       status: initialAmount > 0 ? 'created_with_payment' : 'created_pending',
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    rethrowAsDomainError(err, 'Error ejecutando createCompensationFromDamage');
   } finally {
     await dbms.endTransaction(client);
   }

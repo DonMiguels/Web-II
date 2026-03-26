@@ -13,6 +13,7 @@ async function createFixture({ stock = 2, tagPrefix = 'p3' } = {}) {
   const tag = `${tagPrefix}${Date.now().toString(36)}${Math.floor(
     Math.random() * 1_000_000,
   ).toString(36)}`;
+  const docToken = `${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-6)}`;
 
   const categoryType = await pool.query(
     `INSERT INTO public.category_type (name, description) VALUES ($1, $2) RETURNING id`,
@@ -67,7 +68,7 @@ async function createFixture({ stock = 2, tagPrefix = 'p3' } = {}) {
   const person = await pool.query(
     `INSERT INTO public.person (document_id, first_name, last_name, phone, address) VALUES ($1, $2, $3, $4, $5) RETURNING id`,
     [
-      `DOC-${tag}`.slice(0, 20),
+      `DOC-${docToken}`,
       `Name${tag}`.slice(0, 30),
       `Last${tag}`.slice(0, 30),
       '+1000000000',
@@ -113,6 +114,9 @@ describe('Phase 3 notification scheduler', () => {
     });
 
     expect(firstRun.created_count).toBeGreaterThanOrEqual(1);
+    expect(firstRun.observability?.process_name).toBe('sendReturnReminderBatch');
+    expect(firstRun.observability?.status_code).toBe(200);
+    expect(firstRun.observability?.transaction_id).toBeTruthy();
 
     const secondRun = await sendReturnReminderBatch({
       window_hours: 2,
@@ -161,6 +165,9 @@ describe('Phase 3 notification scheduler', () => {
     });
 
     expect(firstRun.created_count).toBeGreaterThanOrEqual(1);
+    expect(firstRun.observability?.process_name).toBe('sendOverdueAlertBatch');
+    expect(firstRun.observability?.status_code).toBe(200);
+    expect(firstRun.observability?.transaction_id).toBeTruthy();
 
     const secondRun = await sendOverdueAlertBatch({
       dedup_hours: 24,

@@ -1,4 +1,9 @@
 import DBMS from '../../../../dbms/dbms.js';
+import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function throwBusinessError(statusCode, message) {
   throw new Error(
@@ -19,6 +24,7 @@ function toOptionalIso(value) {
 }
 
 export const settleCompensation = async function (params = {}) {
+  const processContext = startProcessContext('settleCompensation');
   const {
     compensation_id,
     processed_by_user_id,
@@ -131,6 +137,7 @@ export const settleCompensation = async function (params = {}) {
       amount_paid: paidAmount,
       is_solvency: isSolvent,
       status: 'settled',
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
@@ -142,7 +149,7 @@ export const settleCompensation = async function (params = {}) {
       throwBusinessError(422, 'payment_method_type_id invalido');
     }
 
-    throw new Error(err.message);
+    rethrowAsDomainError(err, 'Error ejecutando settleCompensation');
   } finally {
     await dbms.endTransaction(client);
   }

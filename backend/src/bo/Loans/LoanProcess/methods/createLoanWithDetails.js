@@ -1,5 +1,12 @@
 import DBMS from '../../../../dbms/dbms.js';
 import { getRuntimeEnvSync } from '../../../../../config/env/runtime.js';
+import {
+  rethrowAsDomainError,
+} from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
 
 function throwBusinessError(statusCode, message) {
   throw new Error(
@@ -29,6 +36,7 @@ function assertDetails(details) {
 }
 
 export const createLoanWithDetails = async function (params = {}) {
+  const processContext = startProcessContext('createLoanWithDetails');
   const {
     user_id,
     period_id,
@@ -213,10 +221,14 @@ export const createLoanWithDetails = async function (params = {}) {
       loan_id: loanId,
       detail_count: details.length,
       status: 'loan_created',
+      observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    if (err?.message?.includes('Stock insuficiente')) {
+      rethrowAsDomainError(err, 'Conflicto de stock para crear prestamo');
+    }
+    rethrowAsDomainError(err, 'Error ejecutando createLoanWithDetails');
   } finally {
     await dbms.endTransaction(client);
   }
