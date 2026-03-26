@@ -11,6 +11,10 @@ import { deleteComponent } from '../../../src/bo/Components/Component/methods/de
 import { deleteInventory } from '../../../src/bo/Inventory/Inventory/methods/deleteInventory.js';
 import Security from '../../../src/security/security.js';
 import Utils from '../../../src/utils/utils.js';
+import {
+  PHASE4_HARD_DELETE_WHITELIST,
+  PHASE4_SOFT_DELETE_REQUIRED_KEYS,
+} from '../../utils/phase4-governance-config.mjs';
 
 function loadQueryCatalog() {
   const queriesPath = path.resolve(process.cwd(), 'config/queries.yaml');
@@ -108,14 +112,8 @@ async function createInventoryFixture({ amount = 3 } = {}) {
 describe('Phase 4 governance', () => {
   test('catalogo legacy evita hard-delete en entidades con soft-delete disponible', () => {
     const queries = loadQueryCatalog();
-    const softDeleteExpectedKeys = [
-      'deleteEstadoEquipo',
-      'deleteInventario',
-      'deleteCompensacion',
-      'deletePeriodoAcademico',
-    ];
 
-    for (const queryKey of softDeleteExpectedKeys) {
+    for (const queryKey of PHASE4_SOFT_DELETE_REQUIRED_KEYS) {
       const statement = String(queries?.[queryKey]?.query || '');
       expect(statement).not.toMatch(/\bDELETE\s+FROM\b/i);
     }
@@ -123,37 +121,8 @@ describe('Phase 4 governance', () => {
 
   test('hard-delete residual permanece acotado a whitelist aprobada', () => {
     const queries = loadQueryCatalog();
-    const allowedDeleteKeys = [
-      'delClassMethod',
-      'delMenuOption',
-      'delProfileMethod',
-      'delProfileOption',
-      'delUserProfile',
-      'deleteAudit',
-      'deleteAuditoria',
-      'deleteDevolucion',
-      'deleteLoan',
-      'deleteNotificacion',
-      'deleteNotification',
-      'deletePrestamo',
-      'deleteReturn',
-      'deleteSecurityClass',
-      'deleteSecurityMenu',
-      'deleteSecurityMethod',
-      'deleteSecurityOption',
-      'deleteSecurityProfile',
-      'deleteSecuritySubsystem',
-      'deleteSecurityTransaction',
-      'normalizeLegacyBoNaming',
-      'removeSecurityClassMethod',
-      'removeSecurityMethodProfile',
-      'removeSecurityOptionMenu',
-      'removeSecurityOptionProfile',
-      'removeSecuritySubsystemClass',
-      'removeSecurityUserProfile',
-    ].sort();
 
-    expect(getDeleteQueryKeys(queries)).toEqual(allowedDeleteKeys);
+    expect(getDeleteQueryKeys(queries)).toEqual(PHASE4_HARD_DELETE_WHITELIST);
   });
 
   test('bloquea hard-delete en entidades historicas', async () => {

@@ -64,11 +64,14 @@ Nota: En BO publico se bloquean hard-deletes historicos con DOMAIN_ERROR_CODES.H
 Se agrego cobertura en:
 
 1. backend/testing/tests/bo/bo-phase4-governance.test.mjs
+2. backend/testing/utils/check-phase4-governance.mjs
+3. backend/testing/utils/phase4-governance-config.mjs
 
 Controles nuevos:
 
 1. Las keys legacy con soporte soft-delete no deben volver a usar DELETE FROM.
 2. El conjunto de DELETE FROM debe permanecer acotado a la whitelist aprobada.
+3. El gate puede ejecutarse de forma independiente para CI con: npm run test:bo:governance.
 
 ## 5. Siguientes tareas de cierre
 

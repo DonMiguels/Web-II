@@ -8,6 +8,7 @@ Repo: Web-II (branch dev)
 Se realizo analisis funcional, tecnico y de pruebas sobre:
 
 1. Documentacion de propuesta-gap-analysis-bo (00 al 09, con foco en 07).
+   - Complemento actual: 11-inventario-hard-delete-residual.md, 12-estandar-bo-transversal.md y 13-matriz-trazabilidad-requerimiento-bo-query-test.md.
 2. Requerimientos explicitos e implicitos de 02-requerimientos-explicitos-e-implicitos.md.
 3. Lista de procesos de negocio en ai/processes.txt.
 4. Implementacion BO en backend/src/bo.
@@ -15,6 +16,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 6. Pruebas automatizadas en backend/testing/tests.
 7. Resultados obtenidos en esta conversacion:
    - Consolidacion del arbol de pruebas en backend/testing/tests/{bo,dispatcher,security,session}.
+   - npm run test:bo:governance con verificacion automatizada de whitelist hard-delete y claves soft-delete obligatorias.
    - APP_ENV=test npm run test:bo con resultado 13 suites, 46 tests, 100% PASS.
    - npm run test:session-sanitizer con resultado 7/7 pruebas exitosas tras ajuste de precedencia applyGlobalDenyPatterns.
 
@@ -140,6 +142,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
    - Avance: migradas rutas clave de inventario y academico a baja logica en queries.
    - Avance: get/update de Equipment, Location, EquipmentStatus, Component, Inventory y AcademicPeriod ahora filtran deleted_at IS NULL y actualizan updated_at de forma explicita.
    - Avance: deleteInventory, deleteEquipmentStatus y deleteAcademicPeriod migrados a UPDATE con deleted_at/updated_at (y is_active = FALSE cuando aplica).
+   - Avance: whitelist tecnica de hard-delete residual consolidada en backend/testing/utils/phase4-governance-config.mjs y gate de CI en backend/testing/utils/check-phase4-governance.mjs.
    - Brecha: todavia existen DELETE fisicos en queries de catalogos/relaciones y debe definirse whitelist oficial para cierre estricto.
 
 2. Reglas de metacampos temporales en entidades maestras.
@@ -154,6 +157,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
    - Avance: normalizacion de fallback 500 + UNEXPECTED_ERROR para errores no estructurados.
    - Avance: Utils.handleError (componente transversal) ahora incluye code de dominio y details normalizados en todos los errores estructurados del BO.
    - Evidencia de prueba: backend/testing/tests/bo/bo-phase4-governance.test.mjs cubre soft-delete de inventario, contrato estandarizado de Security.execute y controles de whitelist de hard-delete residual.
+   - Avance: matriz trazable baseline Requerimiento -> Metodo BO -> Query -> Test publicada en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md.
 
 4. Hardening de sanitizacion de sesion derivado de la conversacion.
    - Avance: se restauro precedencia applyGlobalDenyPatterns en sanitizer para reglas por campo/ruta.
@@ -210,10 +214,12 @@ Estado general: alto cumplimiento funcional en procesos core y de soporte, con m
 
 1. Definir y aprobar la whitelist de catalogos/relaciones con hard delete permitido.
 2. Instrumentar verificacion automatica en CI que falle ante hard delete fuera de whitelist.
+   - Estado actual: implementado tecnicamente mediante npm run test:bo:governance.
+   - Pendiente: incorporacion formal en pipeline institucional y aprobacion de whitelist por negocio/arquitectura.
 3. Completar matriz de metacampos temporales por entidad maestra (created_at, updated_at, deleted_at, trigger) y cerrar brechas detectadas.
 4. Extender pruebas de Fase 4 para cubrir los casos residuales de gobernanza (hard delete no permitido, contratos de error, observabilidad).
-5. Incorporar una matriz trazable Requerimiento(02/processes) -> Metodo BO -> Query -> Test para detectar huecos antes de liberar.
-6. Mantener como baseline de calidad: APP_ENV=test npm run test:bo (13 suites/46 tests) + npm run test:session-sanitizer (7/7).
+5. Expandir la matriz trazable baseline (docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md) hasta cubrir el 100% de CRUD legacy y rutas de compatibilidad.
+6. Mantener como baseline de calidad: npm run test:bo:governance + APP_ENV=test npm run test:bo (13 suites/46 tests) + npm run test:session-sanitizer (7/7).
 
 ## 7. Estado final de implementacion (segun analisis actual)
 

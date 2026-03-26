@@ -105,9 +105,12 @@ Todo cambio BO debe verificar:
    - contrato Security.execute validado para 404 y 409.
 2. backend/testing/tests/session/test_session_sanitizer.js:
    - credenciales de sesion con simbolos validos sin falsos positivos.
+3. backend/testing/utils/check-phase4-governance.mjs:
+   - gate rapido sin DB para CI sobre whitelist de DELETE y claves que deben permanecer en soft-delete.
+   - catalogo fuente unico en backend/testing/utils/phase4-governance-config.mjs.
 
 ## 7. Pendientes para cierre total de Fase 4
 
-1. Formalizar whitelist aprobada por negocio/arquitectura en CI.
+1. Obtener aprobacion formal negocio/arquitectura sobre la whitelist ya instrumentada tecnicamente en CI.
 2. Completar homogeneizacion de contratos en CRUD legacy fuera del camino publico BO.
-3. Publicar matriz trazable Requerimiento -> Metodo BO -> Query -> Test.
+3. Expandir la matriz baseline publicada en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md hasta cobertura total de rutas legacy.
