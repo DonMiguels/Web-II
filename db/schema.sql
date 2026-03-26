@@ -213,6 +213,7 @@ CREATE TABLE IF NOT EXISTS movement (
     booking_date TIMESTAMPTZ NOT NULL,
     reservation_expires_at TIMESTAMPTZ NOT NULL,
     estimated_return_date TIMESTAMPTZ,
+    renewal_count INTEGER NOT NULL DEFAULT 0,
     actual_return_date TIMESTAMPTZ,
     observations TEXT,
     user_id BIGINT NOT NULL REFERENCES "user"(id) ON DELETE RESTRICT, -- evita borrar usuario con movimientos historicos
@@ -616,6 +617,7 @@ COMMENT ON COLUMN movement.id IS 'Identificador del movimiento. Ejemplo real: 34
 COMMENT ON COLUMN movement.booking_date IS 'Fecha/hora de registro del movimiento. Ejemplo real: 2026-03-20 10:15:00+00.';
 COMMENT ON COLUMN movement.reservation_expires_at IS 'Fecha/hora de caducidad de reserva. Ejemplo real: 2026-03-20 18:00:00+00.';
 COMMENT ON COLUMN movement.estimated_return_date IS 'Fecha estimada de devolucion. Ejemplo real: 2026-03-27 18:00:00+00.';
+COMMENT ON COLUMN movement.renewal_count IS 'Cantidad de renovaciones aplicadas al prestamo. Ejemplo real: 1.';
 COMMENT ON COLUMN movement.actual_return_date IS 'Fecha real de devolucion. Ejemplo real: 2026-03-28 09:30:00+00.';
 COMMENT ON COLUMN movement.observations IS 'Notas del movimiento. Ejemplo real: Prestamo para practica de laboratorio.';
 COMMENT ON COLUMN movement.user_id IS 'FK al usuario que realiza el movimiento. Ejemplo real: user_id=45.';

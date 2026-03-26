@@ -1,20 +1,62 @@
 import DBMS from '../../../../dbms/dbms.js';
+import { getRuntimeEnvSync } from '../../../../../config/env/runtime.js';
+import {
+  DOMAIN_ERROR_CODES,
+  rethrowAsDomainError,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../../../_shared/processObservability.js';
+
+const DEFAULT_MAX_LOAN_RENEWALS = 2;
+
+function parseDateStrict(rawValue, fieldName) {
+  const parsed = new Date(rawValue);
+  if (Number.isNaN(parsed.getTime())) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: `Fecha invalida para ${fieldName}`,
+    });
+  }
+
+  return parsed;
+}
 
 export const renewLoan = async function (params = {}) {
+  const processContext = startProcessContext('renewLoan');
   const { loan_id, estimated_return_date, observations } = params || {};
 
   if (!loan_id || !estimated_return_date) {
-    throw new Error('loan_id y estimated_return_date son obligatorios');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'loan_id y estimated_return_date son obligatorios',
+    });
   }
+
+  const nextEstimatedReturnDate = parseDateStrict(
+    estimated_return_date,
+    'estimated_return_date',
+  );
+
+  const runtimeEnv = getRuntimeEnvSync();
+  const maxLoanRenewals = Number(
+    runtimeEnv?.limits?.maxLoanRenewals || DEFAULT_MAX_LOAN_RENEWALS,
+  );
 
   const dbms = new DBMS();
   await dbms.init();
   const client = await dbms.beginTransaction();
 
   try {
+    await client.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+
     const loanResult = await client.query(
       `
-        SELECT id, actual_return_date
+        SELECT id, booking_date, estimated_return_date, actual_return_date, period_id, renewal_count
         FROM public.movement
         WHERE id = $1
           AND type_id = (SELECT id FROM public.movement_type WHERE name = 'loan')
@@ -24,11 +66,89 @@ export const renewLoan = async function (params = {}) {
     );
 
     if (loanResult.rowCount === 0) {
-      throw new Error('Prestamo no encontrado');
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: 'Prestamo no encontrado',
+      });
     }
 
-    if (loanResult.rows[0].actual_return_date) {
-      throw new Error('No se puede renovar un prestamo cerrado');
+    const loanRow = loanResult.rows[0];
+
+    if (loanRow.actual_return_date) {
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'No se puede renovar un prestamo cerrado',
+      });
+    }
+
+    const now = new Date();
+    if (
+      loanRow.estimated_return_date &&
+      new Date(loanRow.estimated_return_date) < now
+    ) {
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'No se puede renovar un prestamo vencido',
+      });
+    }
+
+    const currentEstimatedReturnDate = parseDateStrict(
+      loanRow.estimated_return_date,
+      'current_estimated_return_date',
+    );
+    if (nextEstimatedReturnDate <= currentEstimatedReturnDate) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message:
+          'estimated_return_date debe ser mayor a la fecha de devolucion actual',
+      });
+    }
+
+    const bookingDate = parseDateStrict(loanRow.booking_date, 'booking_date');
+    if (nextEstimatedReturnDate < bookingDate) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'estimated_return_date no puede ser menor que booking_date',
+      });
+    }
+
+    const periodResult = await client.query(
+      `
+        SELECT id, is_active
+        FROM public.period
+        WHERE id = $1
+        FOR SHARE
+      `,
+      [loanRow.period_id],
+    );
+
+    if (periodResult.rowCount === 0) {
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: `Periodo no encontrado: ${loanRow.period_id}`,
+      });
+    }
+
+    if (!periodResult.rows[0].is_active) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'No se puede renovar un prestamo en periodo inactivo',
+      });
+    }
+
+    if (Number(loanRow.renewal_count || 0) >= maxLoanRenewals) {
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: `Se alcanzo el limite de ${maxLoanRenewals} renovaciones por prestamo`,
+      });
     }
 
     const updated = await client.query(
@@ -36,18 +156,30 @@ export const renewLoan = async function (params = {}) {
         UPDATE public.movement
         SET estimated_return_date = $2,
             observations = COALESCE($3, observations),
+            renewal_count = renewal_count + 1,
             updated_at = NOW()
         WHERE id = $1
-        RETURNING id AS loan_id, estimated_return_date
+        RETURNING id AS loan_id, estimated_return_date, renewal_count
       `,
       [loan_id, estimated_return_date, observations || null],
     );
 
     await dbms.commitTransaction(client);
-    return updated.rows[0];
+    return {
+      ...updated.rows[0],
+      status: 'loan_renewed',
+      observability: buildProcessMetadata(processContext, 200),
+    };
   } catch (err) {
     await dbms.rollbackTransaction(client);
-    throw new Error(err.message);
+    if (err?.code === '40001' || err?.code === '40P01') {
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'Conflicto concurrente detectado al renovar prestamo',
+      });
+    }
+    rethrowAsDomainError(err, 'Error ejecutando renewLoan');
   } finally {
     await dbms.endTransaction(client);
   }

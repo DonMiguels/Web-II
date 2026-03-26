@@ -249,6 +249,7 @@ const buildRuntimeEnv = (normalized) => ({
   },
   limits: {
     maxActiveLoansGlobal: normalized.MAX_ACTIVE_LOANS_GLOBAL,
+    maxLoanRenewals: normalized.MAX_LOAN_RENEWALS,
   },
   cors: {
     allowedOrigins: normalized.CORS_ALLOWED_ORIGINS,

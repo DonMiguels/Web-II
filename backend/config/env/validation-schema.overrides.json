@@ -8,6 +8,7 @@
     "SERVER_BIND_PORT": 3000,
     "SERVER_MESSAGES_LANGUAGE": "es",
     "MAX_ACTIVE_LOANS_GLOBAL": 5,
+    "MAX_LOAN_RENEWALS": 2,
     "CORS_ALLOWED_ORIGINS": ["http://localhost:5173"],
     "CORS_ALLOWED_METHODS": [
       "GET",

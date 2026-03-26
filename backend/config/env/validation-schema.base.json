@@ -50,6 +50,13 @@
     "required": false
   },
   {
+    "key": "MAX_LOAN_RENEWALS",
+    "type": "integer",
+    "min": 1,
+    "max": 20,
+    "required": false
+  },
+  {
     "key": "CORS_ALLOWED_ORIGINS",
     "type": "csv",
     "required": true

@@ -147,6 +147,82 @@ describe('Phase 1 core processes', () => {
     });
 
     expect(Number(renewed.loan_id)).toBe(Number(created.loan_id));
+    expect(Number(renewed.renewal_count)).toBe(1);
+  });
+
+  test('createLoanWithDetails exige periodo academico activo', async () => {
+    const fixture = await createFixture({ stock: 1 });
+
+    await pool.query(`UPDATE public.period SET is_active = FALSE WHERE id = $1`, [
+      fixture.period_id,
+    ]);
+
+    await expect(
+      createLoanWithDetails({
+        user_id: fixture.user_id,
+        period_id: fixture.period_id,
+        booking_date: nowIso(),
+        reservation_expires_at: futureIso(20),
+        estimated_return_date: futureIso(120),
+        observations: 'inactive-period',
+        details: [{ inventory_id: fixture.inventory_id, amount: 1 }],
+      }),
+    ).rejects.toThrow('422');
+  });
+
+  test('renewLoan aplica limite maximo de renovaciones por prestamo', async () => {
+    const fixture = await createFixture({ stock: 2 });
+
+    const created = await createLoanWithDetails({
+      user_id: fixture.user_id,
+      period_id: fixture.period_id,
+      booking_date: nowIso(),
+      reservation_expires_at: futureIso(30),
+      estimated_return_date: futureIso(180),
+      observations: 'renew-limit',
+      details: [{ inventory_id: fixture.inventory_id, amount: 1 }],
+    });
+
+    await renewLoan({
+      loan_id: created.loan_id,
+      estimated_return_date: futureIso(360),
+      observations: 'renew-1',
+    });
+    await renewLoan({
+      loan_id: created.loan_id,
+      estimated_return_date: futureIso(540),
+      observations: 'renew-2',
+    });
+
+    await expect(
+      renewLoan({
+        loan_id: created.loan_id,
+        estimated_return_date: futureIso(720),
+        observations: 'renew-3',
+      }),
+    ).rejects.toThrow('409');
+  });
+
+  test('renewLoan bloquea renovacion de prestamos en mora', async () => {
+    const fixture = await createFixture({ stock: 1 });
+
+    const created = await createLoanWithDetails({
+      user_id: fixture.user_id,
+      period_id: fixture.period_id,
+      booking_date: pastIso(240),
+      reservation_expires_at: pastIso(180),
+      estimated_return_date: pastIso(60),
+      observations: 'renew-overdue',
+      details: [{ inventory_id: fixture.inventory_id, amount: 1 }],
+    });
+
+    await expect(
+      renewLoan({
+        loan_id: created.loan_id,
+        estimated_return_date: futureIso(240),
+        observations: 'renew-overdue-attempt',
+      }),
+    ).rejects.toThrow('409');
   });
 
   test('reserva puede convertirse a prestamo y expirar sin dejar stock bloqueado', async () => {
