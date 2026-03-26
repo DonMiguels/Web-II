@@ -153,9 +153,10 @@ describe('Phase 1 core processes', () => {
   test('createLoanWithDetails exige periodo academico activo', async () => {
     const fixture = await createFixture({ stock: 1 });
 
-    await pool.query(`UPDATE public.period SET is_active = FALSE WHERE id = $1`, [
-      fixture.period_id,
-    ]);
+    await pool.query(
+      `UPDATE public.period SET is_active = FALSE WHERE id = $1`,
+      [fixture.period_id],
+    );
 
     await expect(
       createLoanWithDetails({

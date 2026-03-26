@@ -38,8 +38,7 @@ function assertLoanDates({
     throwDomainError({
       statusCode: 422,
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
-      message:
-        'reservation_expires_at no puede ser menor que booking_date',
+      message: 'reservation_expires_at no puede ser menor que booking_date',
     });
   }
 
@@ -53,8 +52,7 @@ function assertLoanDates({
       throwDomainError({
         statusCode: 422,
         code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
-        message:
-          'estimated_return_date no puede ser menor que booking_date',
+        message: 'estimated_return_date no puede ser menor que booking_date',
       });
     }
   }
@@ -130,7 +128,11 @@ export const createLoanWithDetails = async function (params = {}) {
     });
   }
 
-  assertLoanDates({ booking_date, reservation_expires_at, estimated_return_date });
+  assertLoanDates({
+    booking_date,
+    reservation_expires_at,
+    estimated_return_date,
+  });
   const normalizedDetails = buildNormalizedDetails(details);
 
   const runtimeEnv = getRuntimeEnvSync();

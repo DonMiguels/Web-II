@@ -1,9 +1,26 @@
 import DBMS from '../../../../dbms/dbms.js';
-import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  DOMAIN_ERROR_CODES,
+  rethrowAsDomainError,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
 import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+
+function parseDateStrict(rawValue, fieldName) {
+  const parsed = new Date(rawValue);
+  if (Number.isNaN(parsed.getTime())) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: `Fecha invalida para ${fieldName}`,
+    });
+  }
+
+  return parsed;
+}
 
 function normalizeReturnDetails(paramsDetails, loanDetails) {
   if (!Array.isArray(paramsDetails) || paramsDetails.length === 0) {
@@ -14,11 +31,45 @@ function normalizeReturnDetails(paramsDetails, loanDetails) {
     }));
   }
 
-  return paramsDetails.map((d) => ({
-    movement_detail_id: Number(d.movement_detail_id),
-    returned_amount: Number(d.returned_amount),
-    observations: d.observations || null,
-  }));
+  const groupedDetails = new Map();
+
+  for (const detail of paramsDetails) {
+    const movementDetailId = Number(detail?.movement_detail_id);
+    const returnedAmount = Number(detail?.returned_amount);
+
+    if (!Number.isInteger(movementDetailId)) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'Cada detail de retorno requiere movement_detail_id valido',
+      });
+    }
+
+    if (!Number.isInteger(returnedAmount) || returnedAmount <= 0) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'Cada detail de retorno requiere returned_amount mayor a cero',
+      });
+    }
+
+    const key = String(movementDetailId);
+    const current = groupedDetails.get(key);
+    if (!current) {
+      groupedDetails.set(key, {
+        movement_detail_id: movementDetailId,
+        returned_amount: returnedAmount,
+        observations: detail?.observations || null,
+      });
+      continue;
+    }
+
+    current.returned_amount += returnedAmount;
+  }
+
+  return Array.from(groupedDetails.values()).sort(
+    (left, right) => left.movement_detail_id - right.movement_detail_id,
+  );
 }
 
 export const registerReturn = async function (params = {}) {
@@ -26,17 +77,25 @@ export const registerReturn = async function (params = {}) {
   const { loan_id, user_id, return_date, details, observations } = params || {};
 
   if (!loan_id || !return_date) {
-    throw new Error('loan_id y return_date son obligatorios');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'loan_id y return_date son obligatorios',
+    });
   }
+
+  const returnDate = parseDateStrict(return_date, 'return_date');
 
   const dbms = new DBMS();
   await dbms.init();
   const client = await dbms.beginTransaction();
 
   try {
+    await client.query('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE');
+
     const loanResult = await client.query(
       `
-        SELECT id, user_id, period_id, estimated_return_date, actual_return_date
+        SELECT id, user_id, period_id, booking_date, estimated_return_date, actual_return_date
         FROM public.movement
         WHERE id = $1
           AND type_id = (SELECT id FROM public.movement_type WHERE name = 'loan')
@@ -46,12 +105,58 @@ export const registerReturn = async function (params = {}) {
     );
 
     if (loanResult.rowCount === 0) {
-      throw new Error('No existe prestamo valido para cerrar');
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: 'No existe prestamo valido para cerrar',
+      });
     }
 
     const loan = loanResult.rows[0];
     if (loan.actual_return_date) {
-      throw new Error('El prestamo ya fue cerrado previamente');
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'El prestamo ya fue cerrado previamente',
+      });
+    }
+
+    const loanBookingDate = parseDateStrict(
+      loan.booking_date,
+      'loan_booking_date',
+    );
+    if (returnDate < loanBookingDate) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'return_date no puede ser menor que booking_date del prestamo',
+      });
+    }
+
+    const periodResult = await client.query(
+      `
+        SELECT id, is_active
+        FROM public.period
+        WHERE id = $1
+        FOR UPDATE
+      `,
+      [loan.period_id],
+    );
+
+    if (periodResult.rowCount === 0) {
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: `Periodo no encontrado: ${loan.period_id}`,
+      });
+    }
+
+    if (!periodResult.rows[0].is_active) {
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'No se puede registrar devolucion en un periodo inactivo',
+      });
     }
 
     const loanDetailsResult = await client.query(
@@ -59,12 +164,17 @@ export const registerReturn = async function (params = {}) {
         SELECT id, inventory_id, amount
         FROM public.movement_detail
         WHERE movement_id = $1
+        FOR UPDATE
       `,
       [loan_id],
     );
 
     if (loanDetailsResult.rowCount === 0) {
-      throw new Error('No se puede cerrar un prestamo sin detail asociado');
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'No se puede cerrar un prestamo sin detail asociado',
+      });
     }
 
     const loanDetails = loanDetailsResult.rows;
@@ -140,9 +250,11 @@ export const registerReturn = async function (params = {}) {
     for (const detail of normalizedDetails) {
       const original = detailMap.get(Number(detail.movement_detail_id));
       if (!original) {
-        throw new Error(
-          `Detail de prestamo no encontrado: ${detail.movement_detail_id}`,
-        );
+        throwDomainError({
+          statusCode: 404,
+          code: DOMAIN_ERROR_CODES.NOT_FOUND,
+          message: `Detail de prestamo no encontrado: ${detail.movement_detail_id}`,
+        });
       }
 
       if (
@@ -150,9 +262,11 @@ export const registerReturn = async function (params = {}) {
         detail.returned_amount <= 0 ||
         detail.returned_amount > Number(original.amount)
       ) {
-        throw new Error(
-          `Cantidad de retorno invalida para detail ${detail.movement_detail_id}`,
-        );
+        throwDomainError({
+          statusCode: 422,
+          code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+          message: `Cantidad de retorno invalida para detail ${detail.movement_detail_id}`,
+        });
       }
 
       const priorReturned =
@@ -163,9 +277,11 @@ export const registerReturn = async function (params = {}) {
       const remainingAmount = Number(original.amount) - priorReturned;
 
       if (requestedReturned > remainingAmount) {
-        throw new Error(
-          `La devolucion excede el saldo pendiente del detail ${detail.movement_detail_id}`,
-        );
+        throwDomainError({
+          statusCode: 409,
+          code: DOMAIN_ERROR_CODES.CONFLICT,
+          message: `La devolucion excede el saldo pendiente del detail ${detail.movement_detail_id}`,
+        });
       }
 
       await client.query(
@@ -271,6 +387,13 @@ export const registerReturn = async function (params = {}) {
     };
   } catch (err) {
     await dbms.rollbackTransaction(client);
+    if (err?.code === '40001' || err?.code === '40P01') {
+      throwDomainError({
+        statusCode: 409,
+        code: DOMAIN_ERROR_CODES.CONFLICT,
+        message: 'Conflicto concurrente detectado al registrar devolucion',
+      });
+    }
     rethrowAsDomainError(err, 'Error ejecutando registerReturn');
   } finally {
     await dbms.endTransaction(client);
