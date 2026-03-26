@@ -23,6 +23,30 @@ export const Dashboard = () => {
     }
   }, [location.pathname]);
 
+  const getSettingsTitle = () => {
+    if (location.pathname === "/settings/profiles") {
+      return "CONFIGURACION - ASIGNAR PERFIL";
+    }
+
+    if (location.pathname === "/settings/permissions") {
+      const hashTitleMap = {
+        "#mantenimiento": "MANTENIMIENTO",
+        "#persona": "PERSONA",
+        "#usuario": "USUARIO",
+        "#grupo": "GRUPO",
+        "#perfil": "PERFIL",
+        "#subsistema": "SUB-SISTEMA",
+        "#clase": "CLASE",
+        "#metodo": "METODO",
+      };
+
+      const sectionTitle = hashTitleMap[location.hash] || "ASIGNAR PERMISO";
+      return `CONFIGURACION - ${sectionTitle}`;
+    }
+
+    return "CONFIGURACION";
+  };
+
   const getRouteConfig = () => {
     switch (location.pathname) {
       case "/inventory":
@@ -41,12 +65,12 @@ export const Dashboard = () => {
         };
       case "/settings/permissions":
         return {
-          title: "Configuracion",
+          title: getSettingsTitle(),
           component: <Permissions embedded />,
         };
       case "/settings/profiles":
         return {
-          title: "Configuracion",
+          title: getSettingsTitle(),
           component: <AssignProfile embedded />,
         };
       default:
@@ -59,13 +83,16 @@ export const Dashboard = () => {
 
   const { title, component } = getRouteConfig();
   const isHome = location.pathname === "/dashboard";
-  const hasStandaloneHeader =
-    location.pathname === "/notifications" ||
-    location.pathname === "/reports" ||
-    location.pathname.startsWith("/settings");
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] overflow-hidden">
+    <div className="relative flex h-screen w-full overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
+        style={{
+          backgroundImage: `linear-gradient(${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px), linear-gradient(90deg, ${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px)`,
+          backgroundSize: "45px 45px",
+        }}
+      />
       <Sidebar />
 
       <main className="flex-1 relative flex flex-col p-8 overflow-hidden z-10">
@@ -74,8 +101,8 @@ export const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col h-full"
         >
-          {!hasStandaloneHeader && (
-            <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+          {
+            <div className="flex flex-col md:flex-row items-center justify-between mb-8 mt-2 md:mt-3 gap-4">
               <div>
                 <div>
                   <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
@@ -106,7 +133,7 @@ export const Dashboard = () => {
                 </Button>
               </div>
             </div>
-          )}
+          }
 
           {isHome && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

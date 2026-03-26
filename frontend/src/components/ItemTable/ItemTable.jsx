@@ -60,7 +60,7 @@ export const ItemTable = ({
           type="button"
           onClick={() => onView?.(item)}
           title="Ver detalle"
-          className="text-blue-500 hover:text-blue-700 transition-colors p-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-xl cursor-pointer"
+          className="text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl cursor-pointer"
         >
           <Eye size={18} />
         </button>
@@ -68,7 +68,7 @@ export const ItemTable = ({
           type="button"
           onClick={() => onEdit?.(item)}
           title={category === "equipos" ? "Editar equipo" : "Editar componente"}
-          className="text-amber-500 hover:text-amber-700 transition-colors p-2 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-xl cursor-pointer"
+          className="text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 transition-colors p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl cursor-pointer"
         >
           <Pencil size={18} />
         </button>

@@ -22,7 +22,7 @@ export const Table = ({
           <div className="flex gap-3">
             <button
               onClick={onDeleteClick}
-              className="flex items-center justify-center w-10 h-10 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all duration-300 cursor-pointer group"
+              className="flex items-center justify-center w-10 h-10 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white rounded-xl transition-all duration-300 cursor-pointer group"
             >
               <Trash2 size={18} />
             </button>
@@ -36,7 +36,7 @@ export const Table = ({
         ) : null}
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto custom-scrollbar">
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-slate-50 dark:bg-white/5 uppercase text-[10px] font-black tracking-widest text-slate-500 border-b border-slate-100 dark:border-white/5">

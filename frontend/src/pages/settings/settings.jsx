@@ -26,7 +26,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="flex h-screen w-full bg-slate-50 dark:bg-[#0a0a0c] overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden">
       <Sidebar />
 
       <main

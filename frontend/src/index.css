@@ -44,6 +44,8 @@
 }
 
 :root {
+  --theme-transition-duration: 320ms;
+  --theme-transition-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -79,6 +81,23 @@
   --accent-color: #2563eb;
   --bg-main: #f8fafc;
   --grid-color: rgba(0, 0, 0, 0.3);
+}
+
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition-property:
+    background-color, border-color, color, fill, stroke, box-shadow, opacity;
+  transition-duration: var(--theme-transition-duration);
+  transition-timing-function: var(--theme-transition-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-transitioning *,
+  .theme-transitioning *::before,
+  .theme-transitioning *::after {
+    transition-duration: 1ms;
+  }
 }
 
 .dark {
@@ -125,6 +144,12 @@
   body {
     @apply bg-background text-foreground;
     @apply bg-background text-foreground;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
   }
 }
 

@@ -110,7 +110,7 @@ export const LoansTable = ({
               <button
                 type="button"
                 onClick={() => onView(loan)}
-                className="p-2 rounded-xl text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                className="p-2 rounded-xl text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                 title="Ver detalle"
               >
                 <Eye size={18} />
@@ -118,7 +118,7 @@ export const LoansTable = ({
               <button
                 type="button"
                 onClick={() => onEdit(loan)}
-                className="p-2 rounded-xl text-amber-500 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+                className="p-2 rounded-xl text-black dark:text-white hover:text-black/80 dark:hover:text-white/80 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
                 title="Editar préstamo"
               >
                 <Pencil size={18} />

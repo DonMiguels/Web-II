@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Package,
   HandCoins,
@@ -25,11 +25,52 @@ const SidebarItem = ({
   onClick,
   children,
   isExpanded,
+  submenuOpen,
+  onToggleChildren,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const hasChildren = Boolean(children?.length);
-  const showChildren = hasChildren && isExpanded;
+  const showChildren = hasChildren && isExpanded && submenuOpen;
+
+  const submenuVariants = {
+    closed: {
+      height: 0,
+      opacity: 0,
+      marginTop: 0,
+      transition: {
+        duration: 0.18,
+        ease: "easeInOut",
+        when: "afterChildren",
+        staggerChildren: 0.03,
+        staggerDirection: -1,
+      },
+    },
+    open: {
+      height: "auto",
+      opacity: 1,
+      marginTop: 4,
+      transition: {
+        duration: 0.24,
+        ease: "easeOut",
+        when: "beforeChildren",
+        staggerChildren: 0.05,
+      },
+    },
+  };
+
+  const submenuItemVariants = {
+    closed: {
+      opacity: 0,
+      x: -8,
+      transition: { duration: 0.12, ease: "easeInOut" },
+    },
+    open: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.16, ease: "easeOut" },
+    },
+  };
 
   const isChildActive = (childUrl) =>
     `${location.pathname}${location.hash}` === childUrl;
@@ -37,7 +78,13 @@ const SidebarItem = ({
   return (
     <div className="flex flex-col w-full relative">
       <div
-        onClick={onClick}
+        onClick={() => {
+          if (hasChildren) {
+            onToggleChildren?.();
+            return;
+          }
+          onClick?.();
+        }}
         className={`relative flex items-center h-12 mx-3 cursor-pointer transition-colors duration-200 group z-10 ${
           active
             ? "text-blue-600 dark:text-white"
@@ -48,6 +95,12 @@ const SidebarItem = ({
           <motion.div
             layoutId="activeSidebarTab"
             className="absolute inset-0 bg-blue-50 dark:bg-white/10 rounded-md z-0"
+          />
+        )}
+        {active && (
+          <motion.div
+            layoutId="activeSidebarPill"
+            className="absolute -left-px top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-blue-600 z-20"
           />
         )}
         <div className="w-12 h-12 flex items-center justify-center shrink-0 relative z-20">
@@ -68,7 +121,7 @@ const SidebarItem = ({
                 {hasChildren && (
                   <ChevronDown
                     size={16}
-                    className="transition-transform rotate-180"
+                    className={`transition-transform ${submenuOpen ? "rotate-180" : "rotate-0"}`}
                   />
                 )}
               </div>
@@ -77,23 +130,35 @@ const SidebarItem = ({
         </AnimatePresence>
       </div>
 
-      {showChildren && (
-        <div className="flex flex-col gap-1 px-3 mt-1 overflow-hidden">
-          {children.map((child) => (
-            <div
-              key={child.url}
-              onClick={() => navigate(child.url)}
-              className={`flex items-center h-10 pl-12 rounded-md cursor-pointer transition-all ${
-                isChildActive(child.url)
-                  ? "text-blue-600 dark:text-white font-bold bg-slate-50 dark:bg-white/5"
-                  : "text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-medium"
-              }`}
-            >
-              <span className="text-sm">{child.title}</span>
+      <AnimatePresence initial={false}>
+        {showChildren && (
+          <motion.div
+            key="submenu"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={submenuVariants}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-1 px-3">
+              {children.map((child) => (
+                <motion.div
+                  key={child.url}
+                  variants={submenuItemVariants}
+                  onClick={() => navigate(child.url)}
+                  className={`flex items-center h-10 pl-12 rounded-md cursor-pointer transition-all ${
+                    isChildActive(child.url)
+                      ? "text-blue-600 dark:text-white font-bold bg-slate-50 dark:bg-white/5"
+                      : "text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 font-medium"
+                  }`}
+                >
+                  <span className="text-sm">{child.title}</span>
+                </motion.div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -106,6 +171,7 @@ export const Sidebar = () => {
   const location = useLocation();
   const { isExpanded, setIsExpanded } = useSidebar();
   const isSettingsMode = location.pathname.startsWith("/settings");
+  const [isMaintenanceMenuOpen, setIsMaintenanceMenuOpen] = useState(true);
 
   const lastMainRoute =
     (typeof window !== "undefined" &&
@@ -119,6 +185,27 @@ export const Sidebar = () => {
 
     window.localStorage.setItem(SIDEBAR_LAST_MAIN_ROUTE_KEY, location.pathname);
   }, [isSettingsMode, location.pathname]);
+
+  useEffect(() => {
+    if (!isSettingsMode) {
+      return;
+    }
+
+    const maintenanceHashes = [
+      "#persona",
+      "#usuario",
+      "#grupo",
+      "#perfil",
+      "#subsistema",
+      "#clase",
+      "#metodo",
+      "#mantenimiento",
+    ];
+
+    if (maintenanceHashes.includes(location.hash)) {
+      setIsMaintenanceMenuOpen(true);
+    }
+  }, [isSettingsMode, location.hash]);
 
   const mainMenuConfig = useMemo(
     () => [
@@ -236,6 +323,20 @@ export const Sidebar = () => {
               key={item.url}
               {...item}
               onClick={() => navigate(item.url)}
+              onToggleChildren={() => {
+                if (!item.children) {
+                  return;
+                }
+
+                if (!isExpanded) {
+                  setIsExpanded(true);
+                  setIsMaintenanceMenuOpen(true);
+                  return;
+                }
+
+                setIsMaintenanceMenuOpen((prev) => !prev);
+              }}
+              submenuOpen={item.children ? isMaintenanceMenuOpen : false}
               active={checkActive(item)}
               isExpanded={isExpanded}
             />

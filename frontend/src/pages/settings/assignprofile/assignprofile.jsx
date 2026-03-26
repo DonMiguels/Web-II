@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, Sun, Moon, Search, UserPlus } from "lucide-react";
+import { ChevronDown, Sun, Moon, Search } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
-
-import logoDark from "@/assets/img/uru-logo-dark.png";
-import logoWhite from "@/assets/img/uru-logo-white.png";
 
 const AssignProfile = ({ embedded = false }) => {
   const { user } = useAuth();
@@ -91,73 +88,71 @@ const AssignProfile = ({ embedded = false }) => {
 
   return (
     <div
-      className={`${embedded ? "w-full h-full" : "flex h-screen w-full"} bg-slate-50 dark:bg-[#0a0a0c] transition-colors duration-500 relative overflow-hidden font-sans`}
+      className={`${embedded ? "w-full h-full" : "flex h-screen w-full"} transition-colors duration-500 relative overflow-hidden font-sans`}
     >
-      <div
-        className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
-        style={{
-          backgroundImage: `linear-gradient(${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px), linear-gradient(90deg, ${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px)`,
-          backgroundSize: "45px 45px",
-        }}
-      />
-
-      <div className="absolute top-6 right-6 md:top-8 md:right-10 z-50 flex items-center gap-4 md:gap-6">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleTheme}
-          className="rounded-xl border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-[#0f1115]/50 backdrop-blur-md h-10 w-10 hover:scale-105 transition-transform shadow-sm"
-        >
-          {theme === "light" ? (
-            <Moon size={18} />
-          ) : (
-            <Sun size={18} className="text-yellow-400" />
-          )}
-        </Button>
-        <img
-          src={theme === "dark" ? logoDark : logoWhite}
-          alt="URU Logo"
-          className="w-28 md:w-32 h-auto object-contain transition-all duration-500 hidden md:block pointer-events-none"
+      {!embedded && (
+        <div
+          className="absolute inset-0 z-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `linear-gradient(${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px), linear-gradient(90deg, ${theme === "dark" ? "#ffffff" : "#000000"} 1px, transparent 1px)`,
+            backgroundSize: "45px 45px",
+          }}
         />
-      </div>
+      )}
+
+      {!embedded && (
+        <div className="absolute top-6 right-6 md:top-8 md:right-10 z-50 flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-xl border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-[#0f1115]/50 backdrop-blur-md h-10 w-10 hover:scale-105 transition-transform shadow-sm"
+          >
+            {theme === "light" ? (
+              <Moon size={18} />
+            ) : (
+              <Sun size={18} className="text-yellow-400" />
+            )}
+          </Button>
+        </div>
+      )}
 
       {!embedded && <Sidebar />}
 
       <div
         className={`flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col min-h-0 ${embedded ? "h-full" : "h-screen pl-24 md:pl-28"}`}
       >
-        <div className="absolute top-0 left-0 w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between mb-4 md:mb-6 shrink-0 relative z-10"
-        >
-          <div className="flex items-center gap-5 w-full md:w-auto">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                Configuración
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[9px] md:text-[10px] mt-1">
-                GESTIÓN DE PERFILES • {new Date().toLocaleDateString()}
-              </p>
+        {!embedded && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`${embedded ? "w-full" : "w-full max-w-6xl mx-auto"} flex flex-col md:flex-row items-center justify-between mb-4 md:mb-6 shrink-0 relative z-10`}
+          >
+            <div className="flex items-center gap-5 w-full md:w-auto">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+                  CONFIGURACION - ASIGNAR PERFIL
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-[9px] md:text-[10px] mt-1">
+                  GESTIÓN DE PERFILES • {new Date().toLocaleDateString()}
+                </p>
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="w-full max-w-6xl mx-auto flex-1 flex flex-col relative z-10 pb-4 h-full min-h-0"
+          className={`${embedded ? "w-full" : "w-full max-w-6xl mx-auto"} flex-1 flex flex-col relative z-10 pb-4 h-full min-h-0`}
         >
-          <div className="w-full flex flex-col bg-white/80 dark:bg-[#0f1115]/80 backdrop-blur-md p-6 md:p-8 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-2xl h-full min-h-0">
-            <div className="flex items-center gap-3 mb-6 shrink-0">
-              <UserPlus className="text-blue-500" size={24} />
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Asignar Perfil
-              </h2>
-            </div>
-
+          <div
+            className={`${
+              embedded
+                ? "w-full flex flex-col h-full min-h-0"
+                : "w-full flex flex-col bg-white/80 dark:bg-[#0f1115]/80 backdrop-blur-md p-6 md:p-8 rounded-[28px] border border-slate-100 dark:border-white/5 shadow-2xl h-full min-h-0"
+            }`}
+          >
             <form
               onSubmit={handleAssign}
               className="flex flex-col flex-1 h-full min-h-0 gap-6"
@@ -177,7 +172,7 @@ const AssignProfile = ({ embedded = false }) => {
                       placeholder="Nombre o cédula..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-900 dark:text-white text-sm transition-all"
+                      className="w-full bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-xl py-3 pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500/20 text-slate-700 dark:text-slate-200 text-sm transition-all"
                     />
                   </div>
                 </div>
@@ -190,7 +185,7 @@ const AssignProfile = ({ embedded = false }) => {
                     <select
                       value={profile}
                       onChange={(e) => setProfile(e.target.value)}
-                      className="w-full bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none text-slate-900 dark:text-white text-sm transition-all cursor-pointer"
+                      className="w-full bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-xl py-3 px-4 outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none text-slate-700 dark:text-slate-200 text-sm transition-all cursor-pointer"
                     >
                       <option value="" className="dark:bg-[#0a0a0c]">
                         Seleccionar perfil a asignar...
@@ -229,7 +224,7 @@ const AssignProfile = ({ embedded = false }) => {
                   </span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto bg-white dark:bg-[#0a0a0c] border border-slate-200 dark:border-white/10 rounded-xl p-4 custom-scrollbar">
                   {filteredUsers.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {filteredUsers.map((u) => (
@@ -278,7 +273,7 @@ const AssignProfile = ({ embedded = false }) => {
                 <Button
                   type="submit"
                   disabled={!profile || selectedCount === 0}
-                  className="w-full md:w-auto md:ml-auto md:min-w-[200px] flex justify-center bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 uppercase tracking-widest text-[11px] disabled:opacity-50 disabled:active:scale-100"
+                  className="w-full md:w-auto md:ml-auto md:min-w-[200px] flex justify-center bg-blue-600 hover:bg-blue-700 text-white font-black py-6 rounded-xl shadow-sm transition-all active:scale-95 uppercase tracking-widest text-[11px] disabled:opacity-50 disabled:active:scale-100"
                 >
                   Asignar Perfil
                 </Button>

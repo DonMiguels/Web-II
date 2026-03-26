@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/users",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/user",
   withCredentials: true,
 });
 
@@ -17,8 +17,12 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const res = await api.get("/me");
-      if (res.data.loggedIn) {
-        setUser(res.data.user);
+      // Backend can return either { loggedIn, user } or the user object directly.
+      const userFromSession = res.data?.user || res.data;
+      if (userFromSession && typeof userFromSession === "object") {
+        setUser(userFromSession);
+      } else {
+        setUser(null);
       }
     } catch {
       setUser(null);
@@ -49,7 +53,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       const message =
-        err.response?.data?.message || "Error en la autenticación";
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Error en la autenticación";
       setAuthError(message);
       throw new Error(message);
     } finally {
@@ -79,6 +85,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       const message =
         err.response?.data?.message ||
+        err.response?.data?.error ||
         "Error al enviar el correo de recuperación";
       setAuthError(message);
       throw new Error(message);
@@ -99,7 +106,9 @@ export const AuthProvider = ({ children }) => {
       return res.data;
     } catch (err) {
       const message =
-        err.response?.data?.message || "Error al restablecer la contraseña";
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Error al restablecer la contraseña";
       setAuthError(message);
       throw new Error(message);
     } finally {
