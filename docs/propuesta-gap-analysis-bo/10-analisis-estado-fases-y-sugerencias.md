@@ -17,6 +17,8 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 7. Resultados obtenidos en esta conversacion:
    - Consolidacion del arbol de pruebas en backend/testing/tests/{bo,dispatcher,security,session}.
    - npm run test:bo:governance con verificacion automatizada de whitelist hard-delete y claves soft-delete obligatorias.
+   - Homogeneizacion temporal transversal aplicada en schema para entidades maestras objetivo con trigger set_updated_at extendido.
+   - Matriz legacy expandida al 100% de rutas heredadas (81) en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md.
    - APP_ENV=test npm run test:bo con resultado 13 suites, 46 tests, 100% PASS.
    - npm run test:session-sanitizer con resultado 7/7 pruebas exitosas tras ajuste de precedencia applyGlobalDenyPatterns.
 
@@ -148,7 +150,9 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
 2. Reglas de metacampos temporales en entidades maestras.
    - Avance: schema incorpora created_at/updated_at/deleted_at (segun aplica) en category, condition_status_type, location, inventory, period_type y period.
    - Avance: cobertura del trigger set_updated_at ampliada para category, condition_status_type, location, period_type y period.
-   - Brecha: falta validacion exhaustiva transversal sobre todo el modelo maestro y normalizacion documental de la politica.
+   - Avance adicional: homogeneizacion aplicada en feature, location_type, movement_type, payment_method_type, return_status_type, audit_type, audit, notification_type, profile, option, subsystem, menu, class y method.
+   - Avance adicional: prueba de gobernanza valida presencia de metacampos y trigger updated_at en entidades maestras objetivo.
+   - Brecha: pendiente cierre institucional de politica temporal unica para todas las rutas de compatibilidad legacy.
 
 3. Catalogo de errores de dominio y observabilidad por proceso.
    - Avance: Security.execute ahora normaliza codigos de dominio, estandariza contrato de error y agrega observabilidad en exito/fallo.
@@ -157,7 +161,7 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
    - Avance: normalizacion de fallback 500 + UNEXPECTED_ERROR para errores no estructurados.
    - Avance: Utils.handleError (componente transversal) ahora incluye code de dominio y details normalizados en todos los errores estructurados del BO.
    - Evidencia de prueba: backend/testing/tests/bo/bo-phase4-governance.test.mjs cubre soft-delete de inventario, contrato estandarizado de Security.execute y controles de whitelist de hard-delete residual.
-   - Avance: matriz trazable baseline Requerimiento -> Metodo BO -> Query -> Test publicada en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md.
+   - Avance: matriz trazable expandida al 100% de rutas legacy identificadas (81) en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md.
 
 4. Hardening de sanitizacion de sesion derivado de la conversacion.
    - Avance: se restauro precedencia applyGlobalDenyPatterns en sanitizer para reglas por campo/ruta.
@@ -218,7 +222,7 @@ Estado general: alto cumplimiento funcional en procesos core y de soporte, con m
    - Pendiente: incorporacion formal en pipeline institucional y aprobacion de whitelist por negocio/arquitectura.
 3. Completar matriz de metacampos temporales por entidad maestra (created_at, updated_at, deleted_at, trigger) y cerrar brechas detectadas.
 4. Extender pruebas de Fase 4 para cubrir los casos residuales de gobernanza (hard delete no permitido, contratos de error, observabilidad).
-5. Expandir la matriz trazable baseline (docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md) hasta cubrir el 100% de CRUD legacy y rutas de compatibilidad.
+5. Usar la matriz legacy 100% como backlog de migracion incremental legacy -> canonico por dominio.
 6. Mantener como baseline de calidad: npm run test:bo:governance + APP_ENV=test npm run test:bo (13 suites/46 tests) + npm run test:session-sanitizer (7/7).
 
 ## 7. Estado final de implementacion (segun analisis actual)

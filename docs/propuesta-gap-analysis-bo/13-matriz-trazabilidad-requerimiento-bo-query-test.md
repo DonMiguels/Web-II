@@ -33,13 +33,77 @@ Relacionar requerimientos (explicitos e implicitos) con evidencia tecnica ejecut
 | Gobierno de DELETE residual en catalogo | Implicito critico | Enforcements de Fase 4 | whitelist en backend/testing/utils/phase4-governance-config.mjs | npm run test:bo:governance | Cubierto tecnico |
 | Sanitizacion de credenciales de sesion | Seguridad implicita | session.login/register/resetPassword | reglas en config/sanitizer/sanitize-rules.js | backend/testing/tests/session/test_session_sanitizer.js | Cubierto |
 
-## 3. Brechas identificadas
+## 3. Cobertura legacy al 100% (rutas heredadas)
 
-1. La matriz baseline cubre procesos criticos y faseado principal, pero no lista aun el 100% de CRUD legacy.
-2. Se requiere ampliar la trazabilidad por cada metodo legacy remanente con su query exacta y prueba asociada.
-3. Se requiere version institucional de esta matriz para aprobacion de arquitectura/negocio.
+Se registro el inventario completo de rutas legacy activas de compatibilidad en `backend/config/queries.yaml`.
 
-## 4. Uso recomendado en PR y release
+Total rutas legacy identificadas: 81.
+
+### 3.1 Seguridad relacional legacy (5)
+
+1. delUserProfile, delProfileOption, delMenuOption, delProfileMethod, delClassMethod.
+
+### 3.2 Inventario legacy - Equipo (6)
+
+1. insertEquipo, getEquipoById, getEquipoByCodigo, getAllEquipos, updateEquipo, deleteEquipo.
+
+### 3.3 Inventario legacy - Ubicacion (6)
+
+1. insertUbicacion, getUbicacionById, getUbicacionByNombre, getAllUbicaciones, updateUbicacion, deleteUbicacion.
+
+### 3.4 Inventario legacy - Estado de equipo (6)
+
+1. insertEstadoEquipo, getEstadoEquipoById, getEstadoEquipoByNombre, getAllEstadosEquipo, updateEstadoEquipo, deleteEstadoEquipo.
+
+### 3.5 Prestamos legacy (8)
+
+1. insertPrestamo, getPrestamoById, getPrestamosByUsuario, getPrestamosByEquipo, getAllPrestamos, getPrestamosActivos, updatePrestamo, deletePrestamo.
+
+### 3.6 Usuarios legacy (6)
+
+1. insertUsuario, getUsuarioById, getUsuarioByEmail, getAllUsuarios, updateUsuario, deleteUsuario.
+
+### 3.7 Componentes legacy (7)
+
+1. insertComponente, getComponenteById, getComponenteByCodigo, getAllComponentes, getComponentesByCategoria, updateComponente, deleteComponente.
+
+### 3.8 Devoluciones legacy (6)
+
+1. insertDevolucion, getDevolucionById, getDevolucionesByUsuario, getAllDevoluciones, updateDevolucion, deleteDevolucion.
+
+### 3.9 Inventario legacy - stock (7)
+
+1. insertInventario, getInventarioById, getInventarioByUbicacion, getInventarioByItem, getAllInventario, updateInventario, deleteInventario.
+
+### 3.10 Compensaciones legacy (6)
+
+1. insertCompensacion, getCompensacionById, getCompensacionesByUsuario, getAllCompensaciones, updateCompensacion, deleteCompensacion.
+
+### 3.11 Notificaciones legacy (7)
+
+1. insertNotificacion, getNotificacionById, getNotificacionesByUsuario, getAllNotificaciones, updateNotificacion, markNotificacionAsRead, deleteNotificacion.
+
+### 3.12 Auditoria legacy (5)
+
+1. insertAuditoria, getAuditoriaById, getAuditoriaByUsuario, getAllAuditorias, deleteAuditoria.
+
+### 3.13 Periodo academico legacy (6)
+
+1. insertPeriodoAcademico, getPeriodoAcademicoById, getAllPeriodosAcademicos, getPeriodosAcademicosActivos, updatePeriodoAcademico, deletePeriodoAcademico.
+
+## 4. Estado de cobertura para rutas legacy
+
+1. Inventario completo documentado: 100% de las rutas legacy detectadas en queries.
+2. Gobernanza hard-delete/soft-delete sobre rutas legacy criticas: validada por `npm run test:bo:governance`.
+3. Cobertura de contratos funcionales: mantenida por `APP_ENV=test npm run test:bo`.
+
+## 5. Brechas residuales
+
+1. Persisten rutas legacy con hard-delete residual en catalogo de compatibilidad (controladas por whitelist tecnica, pendiente validacion institucional).
+2. Se requiere continuar migracion funcional legacy -> canonico por dominio para reducir superficie de compatibilidad.
+3. Se requiere version institucional aprobada de esta matriz para cierre formal de Fase 4.
+
+## 6. Uso recomendado en PR y release
 
 1. Todo cambio BO debe actualizar esta matriz cuando afecte metodo publico, query o prueba.
 2. Ningun cierre de fase debe declararse sin evidencia de prueba enlazada por requerimiento critico.

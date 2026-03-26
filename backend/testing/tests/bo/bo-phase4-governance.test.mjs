@@ -40,6 +40,51 @@ function parseDomainError(error) {
   }
 }
 
+const TEMPORAL_MASTER_TABLES = [
+  'feature',
+  'location_type',
+  'movement_type',
+  'payment_method_type',
+  'return_status_type',
+  'audit_type',
+  'audit',
+  'notification_type',
+  'profile',
+  'option',
+  'subsystem',
+  'menu',
+  'class',
+  'method',
+];
+
+async function getColumnSet(tableName) {
+  const result = await pool.query(
+    `SELECT column_name
+     FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = $1`,
+    [tableName],
+  );
+
+  return new Set(result.rows.map((row) => String(row.column_name)));
+}
+
+async function hasUpdatedAtTrigger(tableName) {
+  const triggerName = `trg_${tableName}_updated_at`;
+  const result = await pool.query(
+    `SELECT 1
+     FROM pg_trigger tg
+     JOIN pg_class c ON c.oid = tg.tgrelid
+     JOIN pg_namespace n ON n.oid = c.relnamespace
+     WHERE n.nspname = 'public'
+       AND c.relname = $1
+       AND tg.tgname = $2
+       AND NOT tg.tgisinternal`,
+    [tableName, triggerName],
+  );
+
+  return result.rowCount > 0;
+}
+
 async function expectHardDeleteBlocked(fn, params = {}) {
   try {
     await fn(params);
@@ -187,6 +232,22 @@ describe('Phase 4 governance', () => {
     expect(new Date(after.rows[0].updated_at).getTime()).toBeGreaterThan(
       new Date(before.rows[0].updated_at).getTime(),
     );
+  });
+
+  test('entidades maestras objetivo exponen metacampos temporales homologados', async () => {
+    for (const tableName of TEMPORAL_MASTER_TABLES) {
+      const columns = await getColumnSet(tableName);
+      expect(columns.has('created_at')).toBe(true);
+      expect(columns.has('updated_at')).toBe(true);
+      expect(columns.has('deleted_at')).toBe(true);
+    }
+  });
+
+  test('entidades maestras objetivo tienen trigger set_updated_at activo', async () => {
+    for (const tableName of TEMPORAL_MASTER_TABLES) {
+      const triggerExists = await hasUpdatedAtTrigger(tableName);
+      expect(triggerExists).toBe(true);
+    }
   });
 
   test('Security.execute estandariza observabilidad y contrato de error', async () => {

@@ -108,9 +108,12 @@ Todo cambio BO debe verificar:
 3. backend/testing/utils/check-phase4-governance.mjs:
    - gate rapido sin DB para CI sobre whitelist de DELETE y claves que deben permanecer en soft-delete.
    - catalogo fuente unico en backend/testing/utils/phase4-governance-config.mjs.
+4. backend/testing/tests/bo/bo-phase4-governance.test.mjs (bloque temporal):
+   - valida metacampos created_at/updated_at/deleted_at en entidades maestras objetivo.
+   - valida trigger trg_tabla_updated_at en entidades maestras objetivo.
 
 ## 7. Pendientes para cierre total de Fase 4
 
 1. Obtener aprobacion formal negocio/arquitectura sobre la whitelist ya instrumentada tecnicamente en CI.
 2. Completar homogeneizacion de contratos en CRUD legacy fuera del camino publico BO.
-3. Expandir la matriz baseline publicada en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md hasta cobertura total de rutas legacy.
+3. Convertir progresivamente rutas legacy inventariadas (81) hacia rutas canonicas para reducir deuda de compatibilidad.
