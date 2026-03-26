@@ -14,7 +14,8 @@
     "test:bo:teardown-db": "docker compose -f ./testing/docker-compose.test.yml down -v",
     "test:bo:full": "npm run test:bo:setup-db && npm run test:bo && npm run test:bo:teardown-db",
     "test:session-sanitizer": "node test_session_sanitizer.js",
-    "test:session-http": "node test_session_http.js"
+    "test:session-http": "node test_session_http.js",
+    "test:dispatcher-report-http": "node test_dispatcher_report_http.js"
   },
   "repository": {
     "type": "git",
