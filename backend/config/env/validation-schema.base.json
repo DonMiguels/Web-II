@@ -43,6 +43,13 @@
     "required": true
   },
   {
+    "key": "MAX_ACTIVE_LOANS_GLOBAL",
+    "type": "integer",
+    "min": 1,
+    "max": 100,
+    "required": false
+  },
+  {
     "key": "CORS_ALLOWED_ORIGINS",
     "type": "csv",
     "required": true

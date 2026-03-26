@@ -247,6 +247,9 @@ const buildRuntimeEnv = (normalized) => ({
     bindPort: normalized.SERVER_BIND_PORT,
     messagesLanguage: normalized.SERVER_MESSAGES_LANGUAGE,
   },
+  limits: {
+    maxActiveLoansGlobal: normalized.MAX_ACTIVE_LOANS_GLOBAL,
+  },
   cors: {
     allowedOrigins: normalized.CORS_ALLOWED_ORIGINS,
     allowedMethods: normalized.CORS_ALLOWED_METHODS,

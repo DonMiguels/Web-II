@@ -139,4 +139,19 @@ COMMENT ON TABLE public."transaction" IS 'Transacciones del sistema de seguridad
 COMMENT ON TABLE public.menu IS 'Estructura de menús de la aplicación';
 COMMENT ON TABLE public."option" IS 'Opciones de menú y acciones del sistema';
 
+-- Sincronizacion incremental con esquema principal:
+-- traza devoluciones parciales contra detail de prestamo origen cuando exista la tabla.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+          AND table_name = 'movement_detail'
+    ) THEN
+        ALTER TABLE public.movement_detail
+        ADD COLUMN IF NOT EXISTS source_movement_detail_id BIGINT REFERENCES public.movement_detail(id) ON DELETE SET NULL;
+    END IF;
+END $$;
+
 COMMIT;

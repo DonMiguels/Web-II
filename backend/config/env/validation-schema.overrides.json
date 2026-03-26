@@ -7,6 +7,7 @@
     "SERVER_BIND_HOST": "127.0.0.1",
     "SERVER_BIND_PORT": 3000,
     "SERVER_MESSAGES_LANGUAGE": "es",
+    "MAX_ACTIVE_LOANS_GLOBAL": 5,
     "CORS_ALLOWED_ORIGINS": ["http://localhost:5173"],
     "CORS_ALLOWED_METHODS": [
       "GET",

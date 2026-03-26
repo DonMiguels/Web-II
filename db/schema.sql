@@ -234,6 +234,7 @@ CREATE TABLE IF NOT EXISTS movement_detail (
     observations TEXT,
     inventory_id BIGINT NOT NULL REFERENCES inventory(id) ON DELETE RESTRICT, -- evita borrar inventario con historial transaccional
     movement_id BIGINT NOT NULL REFERENCES movement(id) ON DELETE RESTRICT, -- evita cascada accidental en historial
+    source_movement_detail_id BIGINT REFERENCES movement_detail(id) ON DELETE SET NULL, -- traza devoluciones parciales contra detalle de prestamo origen
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT ck_movement_detail_amount_positive CHECK (amount > 0),
