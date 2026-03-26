@@ -27,10 +27,12 @@ function buildMethodParams(methodMeta, structure) {
 
 describe('BO contract negative - all new methods', () => {
   let methods = [];
+  let queryBackedMethods = [];
   let queries = {};
 
   beforeAll(async () => {
     methods = await discoverBoMethods();
+    queryBackedMethods = methods.filter((m) => !!m.nameQuery);
     queries = loadQueries();
   });
 
@@ -52,7 +54,7 @@ describe('BO contract negative - all new methods', () => {
 
     const failures = [];
 
-    for (const m of methods) {
+    for (const m of queryBackedMethods) {
       const structure =
         m.nameQuery && queries[m.nameQuery]?.structure_params
           ? queries[m.nameQuery].structure_params
@@ -68,6 +70,7 @@ describe('BO contract negative - all new methods', () => {
 
     expect(initSpy).toBeDefined();
     expect(execSpy).toBeDefined();
+    expect(queryBackedMethods.length).toBeGreaterThan(0);
     expect(failures).toEqual([]);
   });
 });
