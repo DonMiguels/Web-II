@@ -1,6 +1,6 @@
-import { createSanitizer } from './src/sanitizer/sanitizer.js';
-import Validator from './utils/validator.js';
-import { initializeRuntimeEnv } from './config/env/runtime.js';
+import { createSanitizer } from '../../../src/sanitizer/sanitizer.js';
+import Validator from '../../../utils/validator.js';
+import { initializeRuntimeEnv } from '../../../config/env/runtime.js';
 
 await initializeRuntimeEnv();
 

@@ -1,6 +1,6 @@
-import pool from '../../config/db.js';
-import { createLoanWithDetails } from '../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
-import { registerReturn } from '../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
+import pool from '../../../config/db.js';
+import { createLoanWithDetails } from '../../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
+import { registerReturn } from '../../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
 
 const nowIso = () => new Date().toISOString();
 const futureIso = (minutes = 60) =>
@@ -234,3 +234,4 @@ describe('Phase 1 return process closure hardening', () => {
     expect(status.rows[0].name).toBe('returned_late');
   });
 });
+

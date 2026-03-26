@@ -1,7 +1,7 @@
-import pool from '../../config/db.js';
-import { createReservation } from '../../src/bo/Reservations/Reservation/methods/createReservation.js';
-import { convertReservationToLoan } from '../../src/bo/Reservations/Reservation/methods/convertReservationToLoan.js';
-import { expireReservationJob } from '../../src/bo/Reservations/ReservationJob/methods/expireReservationJob.js';
+import pool from '../../../config/db.js';
+import { createReservation } from '../../../src/bo/Reservations/Reservation/methods/createReservation.js';
+import { convertReservationToLoan } from '../../../src/bo/Reservations/Reservation/methods/convertReservationToLoan.js';
+import { expireReservationJob } from '../../../src/bo/Reservations/ReservationJob/methods/expireReservationJob.js';
 
 const nowIso = () => new Date().toISOString();
 const futureIso = (minutes = 60) =>
@@ -166,3 +166,4 @@ describe('Phase 1 reservation and reservation job hardening', () => {
     expect(Number(afterJob.rows[0].amount)).toBe(3);
   });
 });
+

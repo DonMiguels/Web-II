@@ -2,7 +2,7 @@ import {
   discoverBoMethods,
   buildSampleParams,
   loadQueries,
-} from '../utils/discovery.mjs';
+} from '../../utils/discovery.mjs';
 
 describe('BO integration positive - SELECT methods on isolated test DB', () => {
   let selectMethods = [];
@@ -39,3 +39,4 @@ describe('BO integration positive - SELECT methods on isolated test DB', () => {
     expect(failures).toEqual([]);
   });
 });
+

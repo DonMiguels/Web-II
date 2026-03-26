@@ -1,10 +1,10 @@
-import DBMS from '../../src/dbms/dbms.js';
+import DBMS from '../../../src/dbms/dbms.js';
 import { jest } from '@jest/globals';
 import {
   discoverBoMethods,
   buildSampleParams,
   loadQueries,
-} from '../utils/discovery.mjs';
+} from '../../utils/discovery.mjs';
 
 function buildMethodParams(methodMeta, structure) {
   const params = buildSampleParams(structure);
@@ -25,7 +25,7 @@ function buildMethodParams(methodMeta, structure) {
   return params;
 }
 
-describe('BO contract negative - all new methods', () => {
+describe('BO contract positive - all new methods', () => {
   let methods = [];
   let queryBackedMethods = [];
   let queries = {};
@@ -40,17 +40,11 @@ describe('BO contract negative - all new methods', () => {
     jest.restoreAllMocks();
   });
 
-  test('discovery should find methods in new architecture', () => {
-    expect(methods.length).toBeGreaterThan(0);
-  });
-
-  test('all methods should reject when DBMS fails', async () => {
-    const initSpy = jest
-      .spyOn(DBMS.prototype, 'init')
-      .mockResolvedValue(undefined);
+  test('all methods should resolve with mocked DB success', async () => {
+    jest.spyOn(DBMS.prototype, 'init').mockResolvedValue(undefined);
     const execSpy = jest
       .spyOn(DBMS.prototype, 'executeNamedQuery')
-      .mockRejectedValue(new Error('forced-db-error'));
+      .mockResolvedValue({ rows: [{ ok: true }], rowCount: 1 });
 
     const failures = [];
 
@@ -62,15 +56,16 @@ describe('BO contract negative - all new methods', () => {
       const params = buildMethodParams(m, structure);
 
       try {
-        await expect(m.methodFn(params)).rejects.toThrow('forced-db-error');
+        const result = await m.methodFn(params);
+        expect(result).not.toBeUndefined();
       } catch (err) {
         failures.push(`${m.filePath} -> ${err.message}`);
       }
     }
 
-    expect(initSpy).toBeDefined();
-    expect(execSpy).toBeDefined();
+    expect(execSpy).toHaveBeenCalled();
     expect(queryBackedMethods.length).toBeGreaterThan(0);
     expect(failures).toEqual([]);
   });
 });
+

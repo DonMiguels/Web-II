@@ -1,5 +1,4 @@
-import Security from './src/security/security.js';
-import Config from './config/config.js';
+import Security from '../../../src/security/security.js';
 
 async function testExecuteAuthorized() {
   console.log('🧪 Probando executeAuthorized...\n');

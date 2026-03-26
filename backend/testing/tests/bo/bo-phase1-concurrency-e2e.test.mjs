@@ -1,9 +1,9 @@
-import pool from '../../config/db.js';
-import { createLoanWithDetails } from '../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
-import { createReservation } from '../../src/bo/Reservations/Reservation/methods/createReservation.js';
-import { convertReservationToLoan } from '../../src/bo/Reservations/Reservation/methods/convertReservationToLoan.js';
-import { expireReservationJob } from '../../src/bo/Reservations/ReservationJob/methods/expireReservationJob.js';
-import { registerReturn } from '../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
+import pool from '../../../config/db.js';
+import { createLoanWithDetails } from '../../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
+import { createReservation } from '../../../src/bo/Reservations/Reservation/methods/createReservation.js';
+import { convertReservationToLoan } from '../../../src/bo/Reservations/Reservation/methods/convertReservationToLoan.js';
+import { expireReservationJob } from '../../../src/bo/Reservations/ReservationJob/methods/expireReservationJob.js';
+import { registerReturn } from '../../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
 
 const nowIso = () => new Date().toISOString();
 const futureIso = (minutes = 60) =>
@@ -262,3 +262,4 @@ describe('Phase 1 E2E concurrency', () => {
     expect(Number(returnedAmount.rows[0].total)).toBe(1);
   });
 });
+

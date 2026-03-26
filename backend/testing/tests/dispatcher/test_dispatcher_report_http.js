@@ -1,11 +1,11 @@
-import { initializeRuntimeEnv } from './config/env/runtime.js';
+import { initializeRuntimeEnv } from '../../../config/env/runtime.js';
 import bcrypt from 'bcrypt';
 
 await initializeRuntimeEnv();
 
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:3000';
 const TEST_PASSWORD = 'Admin123Aa';
-const { default: pool } = await import('./config/db.js');
+const { default: pool } = await import('../../../config/db.js');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);

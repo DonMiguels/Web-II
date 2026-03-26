@@ -1,7 +1,7 @@
-import pool from '../../config/db.js';
-import { createLoanWithDetails } from '../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
-import { registerReturn } from '../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
-import { getPendingLoansByUser } from '../../src/bo/Reports/LoanReport/methods/getPendingLoansByUser.js';
+import pool from '../../../config/db.js';
+import { createLoanWithDetails } from '../../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
+import { registerReturn } from '../../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
+import { getPendingLoansByUser } from '../../../src/bo/Reports/LoanReport/methods/getPendingLoansByUser.js';
 
 const nowIso = () => new Date().toISOString();
 const futureIso = (minutes = 60) =>
@@ -219,3 +219,4 @@ describe('Loan report and simultaneous limits', () => {
     ).rejects.toThrow('403');
   });
 });
+

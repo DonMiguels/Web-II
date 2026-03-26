@@ -142,6 +142,7 @@ const sanitizeRules = {
         password: {
           trim: true,
           normalizeSpaces: false,
+          applyGlobalDenyPatterns: false,
           denyPatternKeys: ['control_chars'],
         },
       },
@@ -160,6 +161,7 @@ const sanitizeRules = {
         password: {
           trim: true,
           normalizeSpaces: false,
+          applyGlobalDenyPatterns: false,
           denyPatternKeys: ['control_chars'],
         },
       },
@@ -212,11 +214,13 @@ const sanitizeRules = {
         password: {
           trim: true,
           normalizeSpaces: false,
+          applyGlobalDenyPatterns: false,
           denyPatternKeys: ['control_chars'],
         },
         confirmPassword: {
           trim: true,
           normalizeSpaces: false,
+          applyGlobalDenyPatterns: false,
           denyPatternKeys: ['control_chars'],
         },
       },

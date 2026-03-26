@@ -1,11 +1,11 @@
-import pool from '../../config/db.js';
-import { createLoanWithDetails } from '../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
-import { registerReturn } from '../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
-import { createCompensationFromDamage } from '../../src/bo/Compensations/CompensationProcess/methods/createCompensationFromDamage.js';
-import { settleCompensation } from '../../src/bo/Compensations/CompensationProcess/methods/settleCompensation.js';
-import { getSolvencyReport } from '../../src/bo/Reports/SolvencyReport/methods/getSolvencyReport.js';
-import { getDelinquentUsers } from '../../src/bo/Reports/DelinquencyReport/methods/getDelinquentUsers.js';
-import { getLoanStatistics } from '../../src/bo/Reports/LoanStatsReport/methods/getLoanStatistics.js';
+import pool from '../../../config/db.js';
+import { createLoanWithDetails } from '../../../src/bo/Loans/LoanProcess/methods/createLoanWithDetails.js';
+import { registerReturn } from '../../../src/bo/Returns/ReturnProcess/methods/registerReturn.js';
+import { createCompensationFromDamage } from '../../../src/bo/Compensations/CompensationProcess/methods/createCompensationFromDamage.js';
+import { settleCompensation } from '../../../src/bo/Compensations/CompensationProcess/methods/settleCompensation.js';
+import { getSolvencyReport } from '../../../src/bo/Reports/SolvencyReport/methods/getSolvencyReport.js';
+import { getDelinquentUsers } from '../../../src/bo/Reports/DelinquencyReport/methods/getDelinquentUsers.js';
+import { getLoanStatistics } from '../../../src/bo/Reports/LoanStatsReport/methods/getLoanStatistics.js';
 
 const nowIso = () => new Date().toISOString();
 const futureIso = (minutes = 60) =>
@@ -240,3 +240,4 @@ describe('Phase 2 solvency, compensation and reports', () => {
     expect(nonSolventReport.users[0].is_solvency).toBe(false);
   });
 });
+

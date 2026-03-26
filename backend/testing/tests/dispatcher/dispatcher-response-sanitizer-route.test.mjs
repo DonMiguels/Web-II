@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import Dispatcher from '../../src/dispatcher/dispatcher.js';
+import Dispatcher from '../../../src/dispatcher/dispatcher.js';
 
 describe('Dispatcher response sanitizer routing', () => {
   beforeEach(() => {
@@ -92,3 +92,4 @@ describe('Dispatcher response sanitizer routing', () => {
     });
   });
 });
+
