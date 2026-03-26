@@ -93,7 +93,10 @@ export const registerReturn = async function (params = {}) {
     for (const detail of normalizedDetails) {
       const sourceId = Number(detail.movement_detail_id);
       const accumulated = requestedReturnedMap.get(sourceId) || 0;
-      requestedReturnedMap.set(sourceId, accumulated + Number(detail.returned_amount));
+      requestedReturnedMap.set(
+        sourceId,
+        accumulated + Number(detail.returned_amount),
+      );
     }
 
     const returnMovement = await client.query(
@@ -152,7 +155,8 @@ export const registerReturn = async function (params = {}) {
         );
       }
 
-      const priorReturned = priorReturnedMap.get(Number(detail.movement_detail_id)) || 0;
+      const priorReturned =
+        priorReturnedMap.get(Number(detail.movement_detail_id)) || 0;
       const requestedReturned = requestedReturnedMap.get(
         Number(detail.movement_detail_id),
       );

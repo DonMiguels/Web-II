@@ -6,7 +6,12 @@ export const DOMAIN_ERROR_CODES = {
   UNEXPECTED_ERROR: 'UNEXPECTED_ERROR',
 };
 
-export function throwDomainError({ statusCode, code, message, details = null }) {
+export function throwDomainError({
+  statusCode,
+  code,
+  message,
+  details = null,
+}) {
   throw new Error(
     JSON.stringify({
       statusCode,

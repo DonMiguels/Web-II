@@ -1,4 +1,7 @@
-import { DOMAIN_ERROR_CODES, throwDomainError } from '../../../_shared/domainError.js';
+import {
+  DOMAIN_ERROR_CODES,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
 
 export const deleteLoan = async function (params = {}) {
   throwDomainError({

@@ -67,14 +67,11 @@ export default class Dispatcher {
         return this.config.getMessage(lang, 'missing_required_fields'); // O 'unauthorized_action'
       }
 
-      const executionResult = await this.security.execute(
-        permissionRoute,
-        {
-          ...parameters,
-          _session_user_id: userId,
-          _session_profile: profile,
-        },
-      );
+      const executionResult = await this.security.execute(permissionRoute, {
+        ...parameters,
+        _session_user_id: userId,
+        _session_profile: profile,
+      });
 
       const executionStatusCode = Number(executionResult?.statusCode) || 200;
       const executionRouteKey =
@@ -82,10 +79,7 @@ export default class Dispatcher {
           ? 'dispatcher.response.error'
           : 'dispatcher.response.success';
 
-      return this.sanitizeReturnValue(
-        executionResult,
-        executionRouteKey,
-      );
+      return this.sanitizeReturnValue(executionResult, executionRouteKey);
     } catch (error) {
       console.error(error);
       return this.sanitizeReturnValue(

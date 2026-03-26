@@ -114,7 +114,9 @@ describe('Phase 3 notification scheduler', () => {
     });
 
     expect(firstRun.created_count).toBeGreaterThanOrEqual(1);
-    expect(firstRun.observability?.process_name).toBe('sendReturnReminderBatch');
+    expect(firstRun.observability?.process_name).toBe(
+      'sendReturnReminderBatch',
+    );
     expect(firstRun.observability?.status_code).toBe(200);
     expect(firstRun.observability?.transaction_id).toBeTruthy();
 
