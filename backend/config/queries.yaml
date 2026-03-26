@@ -1405,23 +1405,23 @@ insertEquipment:
     - acquisition_date
     - category_id
 getEquipmentById:
-  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.id = $1;
+  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.id = $1 AND i.deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getEquipmentByCode:
-  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.code = $1;
+  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.code = $1 AND i.deleted_at IS NULL;
   structure_params:
     code: string
   orderArray:
     - code
 getAllEquipment:
-  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id ORDER BY i.code;
+  query: SELECT i.id AS equipo_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.deleted_at IS NULL ORDER BY i.code;
   structure_params: {}
   orderArray: []
 updateEquipment:
-  query: UPDATE public.item SET name = $2, description = $3, condition_status_id = $4, cost = $5 WHERE id = $1 RETURNING id AS equipo_id;
+  query: UPDATE public.item SET name = $2, description = $3, condition_status_id = $4, cost = $5, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS equipo_id;
   structure_params:
     id: int
     name: string
@@ -1453,23 +1453,23 @@ insertLocation:
     - parent_id
     - type_id
 getLocationById:
-  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location WHERE id = $1;
+  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location WHERE id = $1 AND deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getLocationByName:
-  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location WHERE name = $1;
+  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location WHERE name = $1 AND deleted_at IS NULL;
   structure_params:
     name: string
   orderArray:
     - name
 getAllLocations:
-  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location ORDER BY name;
+  query: SELECT id AS ubicacion_id, name AS nombre, description, parent_id, type_id FROM public.location WHERE deleted_at IS NULL ORDER BY name;
   structure_params: {}
   orderArray: []
 updateLocation:
-  query: UPDATE public.location SET name = $2, description = $3, parent_id = $4, type_id = $5 WHERE id = $1 RETURNING id AS ubicacion_id;
+  query: UPDATE public.location SET name = $2, description = $3, parent_id = $4, type_id = $5, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS ubicacion_id;
   structure_params:
     id: int
     name: string
@@ -1497,23 +1497,23 @@ insertEquipmentStatus:
     - name
     - description
 getEquipmentStatusById:
-  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type WHERE id = $1;
+  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type WHERE id = $1 AND deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getEquipmentStatusByName:
-  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type WHERE name = $1;
+  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type WHERE name = $1 AND deleted_at IS NULL;
   structure_params:
     name: string
   orderArray:
     - name
 getAllEquipmentStatuses:
-  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type ORDER BY name;
+  query: SELECT id AS estado_id, name AS nombre, description FROM public.condition_status_type WHERE deleted_at IS NULL ORDER BY name;
   structure_params: {}
   orderArray: []
 updateEquipmentStatus:
-  query: UPDATE public.condition_status_type SET name = $2, description = $3 WHERE id = $1 RETURNING id AS estado_id;
+  query: UPDATE public.condition_status_type SET name = $2, description = $3, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS estado_id;
   structure_params:
     id: int
     name: string
@@ -1523,7 +1523,7 @@ updateEquipmentStatus:
     - name
     - description
 deleteEquipmentStatus:
-  query: DELETE FROM public.condition_status_type WHERE id = $1 RETURNING id AS estado_id;
+  query: UPDATE public.condition_status_type SET deleted_at = NOW(), updated_at = NOW(), is_active = FALSE WHERE id = $1 AND deleted_at IS NULL RETURNING id AS estado_id;
   structure_params:
     id: int
   orderArray:
@@ -1659,29 +1659,29 @@ insertComponent:
     - acquisition_date
     - category_id
 getComponentById:
-  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.id = $1;
+  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.id = $1 AND i.deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getComponentByCode:
-  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.code = $1;
+  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.code = $1 AND i.deleted_at IS NULL;
   structure_params:
     code: string
   orderArray:
     - code
 getAllComponents:
-  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE c.name ILIKE '%component%' OR c.name ILIKE '%part%' ORDER BY i.code;
+  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.deleted_at IS NULL AND (c.name ILIKE '%component%' OR c.name ILIKE '%part%') ORDER BY i.code;
   structure_params: {}
   orderArray: []
 getComponentsByCategoria:
-  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.category_id = $1 ORDER BY i.code;
+  query: SELECT i.id AS componente_id, i.code AS codigo, i.name AS nombre, i.description, i.cost AS costo, i.acquisition_date AS fecha_adquisicion, c.name AS categoria, cs.name AS estado FROM public.item i LEFT JOIN public.category c ON i.category_id = c.id LEFT JOIN public.condition_status_type cs ON i.condition_status_id = cs.id WHERE i.category_id = $1 AND i.deleted_at IS NULL ORDER BY i.code;
   structure_params:
     category_id: int
   orderArray:
     - category_id
 updateComponent:
-  query: UPDATE public.item SET name = $2, description = $3, condition_status_id = $4, cost = $5 WHERE id = $1 RETURNING id AS componente_id;
+  query: UPDATE public.item SET name = $2, description = $3, condition_status_id = $4, cost = $5, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS componente_id;
   structure_params:
     id: int
     name: string
@@ -1757,29 +1757,29 @@ insertInventory:
     - location_id
     - item_id
 getInventoryById:
-  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.id = $1;
+  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.id = $1 AND i.deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getInventoryByLocation:
-  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.location_id = $1 ORDER BY it.name;
+  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.location_id = $1 AND i.deleted_at IS NULL ORDER BY it.name;
   structure_params:
     location_id: int
   orderArray:
     - location_id
 getInventoryByItem:
-  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.item_id = $1 ORDER BY l.name;
+  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.item_id = $1 AND i.deleted_at IS NULL ORDER BY l.name;
   structure_params:
     item_id: int
   orderArray:
     - item_id
 getAllInventories:
-  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id ORDER BY l.name, it.name;
+  query: SELECT i.id AS inventario_id, i.amount AS cantidad, i.location_id AS ubicacion_id, l.name AS nombre_ubicacion, i.item_id, it.name AS nombre_item, it.code AS codigo_item FROM public.inventory i LEFT JOIN public.location l ON i.location_id = l.id LEFT JOIN public.item it ON i.item_id = it.id WHERE i.deleted_at IS NULL ORDER BY l.name, it.name;
   structure_params: {}
   orderArray: []
 updateInventory:
-  query: UPDATE public.inventory SET amount = $2, location_id = $3 WHERE id = $1 RETURNING id AS inventario_id;
+  query: UPDATE public.inventory SET amount = $2, location_id = $3, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS inventario_id;
   structure_params:
     id: int
     amount: number
@@ -1789,7 +1789,7 @@ updateInventory:
     - amount
     - location_id
 deleteInventory:
-  query: DELETE FROM public.inventory WHERE id = $1 RETURNING id AS inventario_id;
+  query: UPDATE public.inventory SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS inventario_id;
   structure_params:
     id: int
   orderArray:
@@ -1967,21 +1967,21 @@ insertAcademicPeriod:
     - type_id
     - is_active
 getAcademicPeriodById:
-  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id WHERE p.id = $1;
+  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id WHERE p.id = $1 AND p.deleted_at IS NULL;
   structure_params:
     id: int
   orderArray:
     - id
 getAllAcademicPeriods:
-  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id ORDER BY p.start_date DESC;
+  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id WHERE p.deleted_at IS NULL ORDER BY p.start_date DESC;
   structure_params: {}
   orderArray: []
 getAcademicPeriodsActive:
-  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id WHERE p.is_active = TRUE ORDER BY p.start_date DESC;
+  query: SELECT p.id AS periodo_id, p.name AS nombre, p.description, p.start_date AS fecha_inicio, p.end_date AS fecha_fin, p.type_id AS tipo_id, pt.name AS nombre_tipo, p.is_active AS esta_activo FROM public.period p LEFT JOIN public.period_type pt ON p.type_id = pt.id WHERE p.is_active = TRUE AND p.deleted_at IS NULL ORDER BY p.start_date DESC;
   structure_params: {}
   orderArray: []
 updateAcademicPeriod:
-  query: UPDATE public.period SET name = $2, description = $3, start_date = $4, end_date = $5, type_id = $6, is_active = $7 WHERE id = $1 RETURNING id AS periodo_id;
+  query: UPDATE public.period SET name = $2, description = $3, start_date = $4, end_date = $5, type_id = $6, is_active = $7, updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS periodo_id;
   structure_params:
     id: int
     name: string
@@ -1999,7 +1999,7 @@ updateAcademicPeriod:
     - type_id
     - is_active
 deleteAcademicPeriod:
-  query: DELETE FROM public.period WHERE id = $1 RETURNING id AS periodo_id;
+  query: UPDATE public.period SET deleted_at = NOW(), updated_at = NOW(), is_active = FALSE WHERE id = $1 AND deleted_at IS NULL RETURNING id AS periodo_id;
   structure_params:
     id: int
   orderArray:

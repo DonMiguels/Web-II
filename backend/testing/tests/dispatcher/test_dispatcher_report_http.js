@@ -57,7 +57,9 @@ async function ensureUserProfile({ username, profileName }) {
     [profileName, profileName],
   );
 
-  console.log(`Setup: ensure user_profile link '${username}' -> '${profileName}'`);
+  console.log(
+    `Setup: ensure user_profile link '${username}' -> '${profileName}'`,
+  );
   const res = await pool.query(
     `
       INSERT INTO public.user_profile (user_id, profile_id)
@@ -81,7 +83,9 @@ async function ensureUserProfile({ username, profileName }) {
 }
 
 async function ensureHttpTestUser(username, email, profiles = ['user']) {
-  const normalizedDoc = String(username).replace(/[^A-Za-z0-9-]/g, '').toUpperCase();
+  const normalizedDoc = String(username)
+    .replace(/[^A-Za-z0-9-]/g, '')
+    .toUpperCase();
   const personDoc = `DOC${normalizedDoc}`.slice(0, 30);
   const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
 
@@ -153,7 +157,10 @@ async function resolveReportTransactionId() {
     `,
   );
 
-  assert(tx.rowCount > 0, 'No se encontro transaction_id para Reports/LoanReport/getPendingLoansByUser');
+  assert(
+    tx.rowCount > 0,
+    'No se encontro transaction_id para Reports/LoanReport/getPendingLoansByUser',
+  );
   return Number(tx.rows[0].transaction_id);
 }
 
@@ -163,7 +170,10 @@ async function loginAndGetCookie(username, password) {
     password,
   });
 
-  assert(login.status === 200, `Login fallo para ${username}: ${JSON.stringify(login.body)}`);
+  assert(
+    login.status === 200,
+    `Login fallo para ${username}: ${JSON.stringify(login.body)}`,
+  );
   const cookie = extractSessionCookie(login.setCookie);
   assert(cookie, `No se obtuvo cookie de sesion para ${username}`);
 
@@ -181,13 +191,23 @@ async function run() {
     const txId = await resolveReportTransactionId();
 
     console.log('Setup: ensuring http_user_a');
-    const userA = await ensureHttpTestUser('http_user_a', 'http_user_a@mail.com', ['user']);
+    const userA = await ensureHttpTestUser(
+      'http_user_a',
+      'http_user_a@mail.com',
+      ['user'],
+    );
     console.log('Setup: ensuring http_user_b');
-    const userB = await ensureHttpTestUser('http_user_b', 'http_user_b@mail.com', ['user']);
+    const userB = await ensureHttpTestUser(
+      'http_user_b',
+      'http_user_b@mail.com',
+      ['user'],
+    );
     console.log('Setup: ensuring http_admin');
-    const adminUser = await ensureHttpTestUser('http_admin', 'http_admin@mail.com', [
-      'admin',
-    ]);
+    const adminUser = await ensureHttpTestUser(
+      'http_admin',
+      'http_admin@mail.com',
+      ['admin'],
+    );
     console.log('Setup: ensuring http_operator');
     const operatorUser = await ensureHttpTestUser(
       'http_operator',
@@ -196,7 +216,10 @@ async function run() {
     );
 
     tests.push(async () => {
-      const { cookie, user } = await loginAndGetCookie('http_admin', TEST_PASSWORD);
+      const { cookie, user } = await loginAndGetCookie(
+        'http_admin',
+        TEST_PASSWORD,
+      );
 
       const response = await postJson(
         '/',
@@ -211,8 +234,14 @@ async function run() {
         cookie,
       );
 
-      assert(response.status === 200, `Dispatcher admin report fallo: ${JSON.stringify(response.body)}`);
-      assert(response.body?.data?.summary, 'Dispatcher admin report debe devolver summary');
+      assert(
+        response.status === 200,
+        `Dispatcher admin report fallo: ${JSON.stringify(response.body)}`,
+      );
+      assert(
+        response.body?.data?.summary,
+        'Dispatcher admin report debe devolver summary',
+      );
     });
 
     tests.push(async () => {
@@ -231,11 +260,17 @@ async function run() {
         cookie,
       );
 
-      assert(response.status === 403, `Dispatcher user cross-user debe rechazar con 403. Recibido: ${response.status} ${JSON.stringify(response.body)}`);
+      assert(
+        response.status === 403,
+        `Dispatcher user cross-user debe rechazar con 403. Recibido: ${response.status} ${JSON.stringify(response.body)}`,
+      );
     });
 
     tests.push(async () => {
-      const { cookie } = await loginAndGetCookie('http_operator', TEST_PASSWORD);
+      const { cookie } = await loginAndGetCookie(
+        'http_operator',
+        TEST_PASSWORD,
+      );
 
       const response = await postJson(
         '/',
@@ -254,7 +289,10 @@ async function run() {
         response.status === 200,
         `Dispatcher operator report fallo: ${JSON.stringify(response.body)}`,
       );
-      assert(response.body?.data?.summary, 'Dispatcher operator report debe devolver summary');
+      assert(
+        response.body?.data?.summary,
+        'Dispatcher operator report debe devolver summary',
+      );
       assert(
         Number(response.body?.data?.summary?.user_id) === Number(userA.id),
         'Dispatcher operator report debe responder para el user_id consultado',
@@ -274,7 +312,9 @@ async function run() {
       }
     }
 
-    console.log(`\nResultado Dispatcher Report HTTP: ${passed}/${tests.length} pruebas exitosas.`);
+    console.log(
+      `\nResultado Dispatcher Report HTTP: ${passed}/${tests.length} pruebas exitosas.`,
+    );
   } catch (error) {
     console.error(`FAIL - setup: ${error.message}`);
     if (error?.detail) console.error(`detail: ${error.detail}`);

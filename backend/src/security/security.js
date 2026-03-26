@@ -3,6 +3,11 @@ import { fileURLToPath } from 'url';
 import Utils from '../utils/utils.js';
 import DBMS from '../dbms/dbms.js';
 import resolveExecutable from '../bo/method_resolver.js';
+import { DOMAIN_ERROR_CODES } from '../bo/_shared/domainError.js';
+import {
+  buildProcessMetadata,
+  startProcessContext,
+} from '../bo/_shared/processObservability.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,18 +31,35 @@ export default class Security {
   parseStructuredError(error) {
     const fallback = {
       statusCode: 500,
+      code: DOMAIN_ERROR_CODES.UNEXPECTED_ERROR,
       message: error?.message || 'Error interno',
-      error,
+      details: {
+        original_message: error?.message || null,
+      },
     };
 
     if (!error || typeof error.message !== 'string') return fallback;
 
     try {
       const parsed = JSON.parse(error.message);
+      const parsedStatusCode = Number(parsed?.statusCode) || 500;
+
+      let normalizedCode = parsed?.code;
+      if (!normalizedCode) {
+        if (parsedStatusCode === 404)
+          normalizedCode = DOMAIN_ERROR_CODES.NOT_FOUND;
+        else if (parsedStatusCode === 409)
+          normalizedCode = DOMAIN_ERROR_CODES.CONFLICT;
+        else if (parsedStatusCode === 422)
+          normalizedCode = DOMAIN_ERROR_CODES.VALIDATION_ERROR;
+        else normalizedCode = DOMAIN_ERROR_CODES.UNEXPECTED_ERROR;
+      }
+
       return {
-        statusCode: Number(parsed?.statusCode) || 500,
+        statusCode: parsedStatusCode,
+        code: normalizedCode,
         message: parsed?.message || fallback.message,
-        error: parsed?.error || error,
+        details: parsed?.details || parsed?.error || null,
       };
     } catch {
       return fallback;
@@ -246,6 +268,9 @@ export default class Security {
       class: className,
       method,
     } = this.normalizePermission(permission);
+    const processContext = startProcessContext(
+      `dispatcher:${subsystem}.${className}.${method}`,
+    );
 
     try {
       const actionInstance = await resolveExecutable({
@@ -253,16 +278,31 @@ export default class Security {
         className,
         method,
       });
+
+      if (!actionInstance || typeof actionInstance[method] !== 'function') {
+        return {
+          statusCode: 404,
+          code: DOMAIN_ERROR_CODES.NOT_FOUND,
+          message: `Metodo no disponible: ${subsystem}.${className}.${method}`,
+          observability: buildProcessMetadata(processContext, 404),
+        };
+      }
+
       const result = await this.reflect.apply(
         actionInstance[method],
         actionInstance,
         [reqBody],
       );
 
+      const resultObservability =
+        result && typeof result === 'object' ? result.observability : null;
+
       return {
         statusCode: 200,
         data: result,
         message: 'Ejecutado exitosamente',
+        observability:
+          resultObservability || buildProcessMetadata(processContext, 200),
         execution: {
           engine: 'bo',
           subsystem,
@@ -274,8 +314,16 @@ export default class Security {
       const parsedExecutionError = this.parseStructuredError(error);
       return {
         statusCode: parsedExecutionError.statusCode,
+        code: parsedExecutionError.code,
         message: parsedExecutionError.message,
-        error: parsedExecutionError.error,
+        error: {
+          code: parsedExecutionError.code,
+          details: parsedExecutionError.details,
+        },
+        observability: buildProcessMetadata(
+          processContext,
+          parsedExecutionError.statusCode,
+        ),
       };
     }
   }
