@@ -91,6 +91,7 @@ describe('Loan report and simultaneous limits', () => {
     for (let i = 0; i < 5; i += 1) {
       await createLoanWithDetails({
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         period_id: fixture.period_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(60),
@@ -103,6 +104,7 @@ describe('Loan report and simultaneous limits', () => {
     await expect(
       createLoanWithDetails({
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         period_id: fixture.period_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(60),
@@ -118,6 +120,7 @@ describe('Loan report and simultaneous limits', () => {
 
     await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(3000),
       reservation_expires_at: pastIso(2900),
@@ -129,6 +132,7 @@ describe('Loan report and simultaneous limits', () => {
     await expect(
       createLoanWithDetails({
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         period_id: fixture.period_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(60),
@@ -144,6 +148,7 @@ describe('Loan report and simultaneous limits', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(60),
@@ -160,6 +165,7 @@ describe('Loan report and simultaneous limits', () => {
     const partialReturn = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'partial',
       details: [
@@ -195,12 +201,13 @@ describe('Loan report and simultaneous limits', () => {
     );
   });
 
-  test('perfil user no puede consultar pendientes de otro usuario', async () => {
+  test('bo de reporte pendiente no aplica autorizacion de perfil en capa metodo', async () => {
     const fixtureA = await createFixture({ stock: 3 });
     const fixtureB = await createFixture({ stock: 3 });
 
     await createLoanWithDetails({
       user_id: fixtureB.user_id,
+      processed_by_user_id: fixtureB.user_id,
       period_id: fixtureB.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(60),
@@ -209,14 +216,14 @@ describe('Loan report and simultaneous limits', () => {
       details: [{ inventory_id: fixtureB.inventory_id, amount: 1 }],
     });
 
-    await expect(
-      getPendingLoansByUser({
-        user_id: fixtureB.user_id,
-        pending_state: 'all',
-        _session_user_id: fixtureA.user_id,
-        _session_profile: 'user',
-      }),
-    ).rejects.toThrow('403');
+    const report = await getPendingLoansByUser({
+      user_id: fixtureB.user_id,
+      pending_state: 'all',
+      _session_user_id: fixtureA.user_id,
+      _session_profile: 'user',
+    });
+
+    expect(report.summary.total_loans).toBeGreaterThanOrEqual(1);
+    expect(Number(report.loans[0].user.user_id)).toBe(Number(fixtureB.user_id));
   });
 });
-

@@ -8,17 +8,30 @@ import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
+import { syncItemOperationalStateTx } from '../../../_shared/itemStatusFlow.js';
 
 export const expireReservationJob = async function (params = {}) {
   const processContext = startProcessContext('expireReservationJob');
-  const { limit = 100 } = params || {};
+  const { limit = 100, processed_by_user_id, _session_user_id } = params || {};
   const normalizedLimit = Number(limit);
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
 
   if (!Number.isInteger(normalizedLimit) || normalizedLimit <= 0) {
     throwDomainError({
       statusCode: 422,
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
       message: 'limit debe ser un entero positivo',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio',
     });
   }
 
@@ -48,14 +61,18 @@ export const expireReservationJob = async function (params = {}) {
     for (const reservation of expiredReservations.rows) {
       const details = await client.query(
         `
-          SELECT inventory_id, amount
-          FROM public.movement_detail
+          SELECT md.inventory_id, md.amount, inv.item_id
+          FROM public.movement_detail md
+          JOIN public.inventory inv ON inv.id = md.inventory_id
           WHERE movement_id = $1
         `,
         [reservation.id],
       );
 
+      const touchedItemIds = new Set();
+
       for (const detail of details.rows) {
+        touchedItemIds.add(Number(detail.item_id));
         await client.query(
           `
             UPDATE public.inventory
@@ -78,13 +95,33 @@ export const expireReservationJob = async function (params = {}) {
         `,
         [reservation.id],
       );
+
+      for (const itemId of touchedItemIds) {
+        await syncItemOperationalStateTx({
+          client,
+          itemId,
+        });
+      }
     }
+
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'expireReservationJob',
+      entityName: 'movement',
+      details: {
+        expired_count: Number(expiredReservations.rowCount || 0),
+        released_items: releasedItems,
+      },
+    });
 
     await dbms.commitTransaction(client);
 
     return {
       expired_count: expiredReservations.rowCount,
       released_items: releasedItems,
+      processed_by_user_id: processedByUserId,
+      audit_id: auditId,
       observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {

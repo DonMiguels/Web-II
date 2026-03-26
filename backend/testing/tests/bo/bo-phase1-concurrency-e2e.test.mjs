@@ -92,6 +92,7 @@ describe('Phase 1 E2E concurrency', () => {
 
     const payload = {
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(20),
@@ -124,6 +125,7 @@ describe('Phase 1 E2E concurrency', () => {
 
     const reserve = await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -134,6 +136,7 @@ describe('Phase 1 E2E concurrency', () => {
 
     const payload = {
       reservation_id: reserve.reservation_id,
+      processed_by_user_id: fixture.user_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
       estimated_return_date: futureIso(120),
@@ -170,6 +173,7 @@ describe('Phase 1 E2E concurrency', () => {
 
     await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(180),
       reservation_expires_at: pastIso(120),
@@ -185,8 +189,14 @@ describe('Phase 1 E2E concurrency', () => {
     expect(Number(before.rows[0].amount)).toBe(0);
 
     const [j1, j2] = await Promise.allSettled([
-      expireReservationJob({ limit: 10 }),
-      expireReservationJob({ limit: 10 }),
+      expireReservationJob({
+        limit: 10,
+        processed_by_user_id: fixture.user_id,
+      }),
+      expireReservationJob({
+        limit: 10,
+        processed_by_user_id: fixture.user_id,
+      }),
     ]);
 
     const totalExpired = [j1, j2]
@@ -207,6 +217,7 @@ describe('Phase 1 E2E concurrency', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(20),
@@ -223,6 +234,7 @@ describe('Phase 1 E2E concurrency', () => {
     const payload = {
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'return-race',
       details: [
@@ -262,4 +274,3 @@ describe('Phase 1 E2E concurrency', () => {
     expect(Number(returnedAmount.rows[0].total)).toBe(1);
   });
 });
-

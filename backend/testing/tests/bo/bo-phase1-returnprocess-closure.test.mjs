@@ -89,6 +89,7 @@ describe('Phase 1 return process closure hardening', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -101,6 +102,7 @@ describe('Phase 1 return process closure hardening', () => {
       registerReturn({
         loan_id: loan.loan_id,
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         return_date: pastIso(300),
         observations: 'invalid-return-date',
       }),
@@ -112,6 +114,7 @@ describe('Phase 1 return process closure hardening', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -129,6 +132,7 @@ describe('Phase 1 return process closure hardening', () => {
       registerReturn({
         loan_id: loan.loan_id,
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         return_date: nowIso(),
         observations: 'period-inactive',
       }),
@@ -140,6 +144,7 @@ describe('Phase 1 return process closure hardening', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -156,6 +161,7 @@ describe('Phase 1 return process closure hardening', () => {
     const first = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'partial-1-2',
       details: [
@@ -172,6 +178,7 @@ describe('Phase 1 return process closure hardening', () => {
     const second = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'final-2-2',
       details: [
@@ -203,6 +210,7 @@ describe('Phase 1 return process closure hardening', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(240),
       reservation_expires_at: pastIso(180),
@@ -214,6 +222,7 @@ describe('Phase 1 return process closure hardening', () => {
     const returned = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'late',
     });
@@ -234,4 +243,3 @@ describe('Phase 1 return process closure hardening', () => {
     expect(status.rows[0].name).toBe('returned_late');
   });
 });
-

@@ -101,6 +101,7 @@ describe('Phase 2 solvency, compensation and reports', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(360),
       reservation_expires_at: pastIso(350),
@@ -135,6 +136,7 @@ describe('Phase 2 solvency, compensation and reports', () => {
     const returned = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'returned for settlement',
     });
@@ -171,6 +173,7 @@ describe('Phase 2 solvency, compensation and reports', () => {
 
     const overdueLoan = await createLoanWithDetails({
       user_id: overdueFixture.user_id,
+      processed_by_user_id: overdueFixture.user_id,
       period_id: overdueFixture.period_id,
       booking_date: pastIso(720),
       reservation_expires_at: pastIso(710),
@@ -192,6 +195,7 @@ describe('Phase 2 solvency, compensation and reports', () => {
 
     const closedLoan = await createLoanWithDetails({
       user_id: closedFixture.user_id,
+      processed_by_user_id: closedFixture.user_id,
       period_id: closedFixture.period_id,
       booking_date: pastIso(180),
       reservation_expires_at: pastIso(170),
@@ -203,6 +207,7 @@ describe('Phase 2 solvency, compensation and reports', () => {
     await registerReturn({
       loan_id: closedLoan.loan_id,
       user_id: closedFixture.user_id,
+      processed_by_user_id: closedFixture.user_id,
       return_date: nowIso(),
       observations: 'closed loan for stats',
     });
@@ -240,4 +245,3 @@ describe('Phase 2 solvency, compensation and reports', () => {
     expect(nonSolventReport.users[0].is_solvency).toBe(false);
   });
 });
-

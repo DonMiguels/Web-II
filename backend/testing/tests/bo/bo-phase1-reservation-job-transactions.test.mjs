@@ -96,6 +96,7 @@ describe('Phase 1 reservation and reservation job hardening', () => {
     await expect(
       createReservation({
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         period_id: fixture.period_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(30),
@@ -111,6 +112,7 @@ describe('Phase 1 reservation and reservation job hardening', () => {
 
     const reserve = await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(180),
       reservation_expires_at: pastIso(120),
@@ -122,6 +124,7 @@ describe('Phase 1 reservation and reservation job hardening', () => {
     await expect(
       convertReservationToLoan({
         reservation_id: reserve.reservation_id,
+        processed_by_user_id: fixture.user_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(30),
         estimated_return_date: futureIso(1440),
@@ -135,6 +138,7 @@ describe('Phase 1 reservation and reservation job hardening', () => {
 
     const reserve = await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(180),
       reservation_expires_at: pastIso(120),
@@ -149,7 +153,10 @@ describe('Phase 1 reservation and reservation job hardening', () => {
     );
     expect(Number(beforeJob.rows[0].amount)).toBe(1);
 
-    const job = await expireReservationJob({ limit: 20 });
+    const job = await expireReservationJob({
+      limit: 20,
+      processed_by_user_id: fixture.user_id,
+    });
     expect(job.expired_count).toBeGreaterThanOrEqual(1);
     expect(job.released_items).toBeGreaterThanOrEqual(2);
 
@@ -166,4 +173,3 @@ describe('Phase 1 reservation and reservation job hardening', () => {
     expect(Number(afterJob.rows[0].amount)).toBe(3);
   });
 });
-

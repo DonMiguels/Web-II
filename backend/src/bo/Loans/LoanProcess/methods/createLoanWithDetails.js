@@ -9,6 +9,9 @@ import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { recomputeUserSolvency } from '../../../_shared/solvency.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
+import { syncItemOperationalStateTx } from '../../../_shared/itemStatusFlow.js';
 
 function parseDateStrict(rawValue, fieldName) {
   const parsed = new Date(rawValue);
@@ -118,13 +121,27 @@ export const createLoanWithDetails = async function (params = {}) {
     estimated_return_date,
     observations,
     details,
+    processed_by_user_id,
+    _session_user_id,
   } = params || {};
+
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
 
   if (!user_id || !period_id || !booking_date || !reservation_expires_at) {
     throwDomainError({
       statusCode: 422,
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
       message: 'Faltan campos obligatorios para crear prestamo',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio',
     });
   }
 
@@ -284,6 +301,7 @@ export const createLoanWithDetails = async function (params = {}) {
     );
 
     const loanId = movementInsert.rows[0].id;
+    const touchedItemIds = new Set();
 
     for (const detail of normalizedDetails) {
       const inventoryId = Number(detail.inventory_id);
@@ -291,7 +309,7 @@ export const createLoanWithDetails = async function (params = {}) {
 
       const stockResult = await client.query(
         `
-          SELECT id, amount
+          SELECT id, amount, item_id
           FROM public.inventory
           WHERE id = $1
           FOR UPDATE
@@ -308,6 +326,7 @@ export const createLoanWithDetails = async function (params = {}) {
       }
 
       const stockRow = stockResult.rows[0];
+      touchedItemIds.add(Number(stockRow.item_id));
       if (Number(stockRow.amount) < amount) {
         throwDomainError({
           statusCode: 409,
@@ -349,11 +368,38 @@ export const createLoanWithDetails = async function (params = {}) {
       );
     }
 
+    for (const itemId of touchedItemIds) {
+      await syncItemOperationalStateTx({
+        client,
+        itemId,
+      });
+    }
+
+    const solvency = await recomputeUserSolvency({
+      client,
+      userId: user_id,
+    });
+
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'createLoanWithDetails',
+      entityName: 'movement',
+      details: {
+        loan_id: loanId,
+        borrower_user_id: Number(user_id),
+        detail_count: normalizedDetails.length,
+      },
+    });
+
     await dbms.commitTransaction(client);
 
     return {
       loan_id: loanId,
       detail_count: normalizedDetails.length,
+      processed_by_user_id: processedByUserId,
+      is_solvency: solvency.is_solvency,
+      audit_id: auditId,
       status: 'loan_created',
       observability: buildProcessMetadata(processContext, 200),
     };

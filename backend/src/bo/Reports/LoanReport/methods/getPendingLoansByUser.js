@@ -19,10 +19,6 @@ function normalizeState(value) {
   return state;
 }
 
-function normalizeProfile(value) {
-  return String(value || '').trim().toLowerCase();
-}
-
 function toRowsByLoan(rows) {
   const grouped = new Map();
 
@@ -81,25 +77,11 @@ export const getPendingLoansByUser = async function (params = {}) {
     pending_state,
     item_type,
     search_text,
-    _session_user_id,
-    _session_profile,
   } = params || {};
-
-  const sessionProfile = normalizeProfile(_session_profile);
-  const sessionUserId = Number(_session_user_id || 0);
   const targetUserId = Number(user_id || 0);
 
   if (!targetUserId || !Number.isInteger(targetUserId) || targetUserId <= 0) {
     throw new Error('user_id es obligatorio para el reporte');
-  }
-
-  if (sessionProfile === 'user' && targetUserId !== sessionUserId) {
-    throw new Error(
-      JSON.stringify({
-        statusCode: 403,
-        message: 'Perfil user solo puede consultar su propio reporte',
-      }),
-    );
   }
 
   const normalizedState = normalizeState(pending_state);
@@ -203,8 +185,9 @@ export const getPendingLoansByUser = async function (params = {}) {
       (acc, loan) => acc + loan.totals.total_pending_amount,
       0,
     ),
-    total_overdue: loans.filter((loan) => loan.pending_state === 'pending_overdue')
-      .length,
+    total_overdue: loans.filter(
+      (loan) => loan.pending_state === 'pending_overdue',
+    ).length,
   };
 
   return {

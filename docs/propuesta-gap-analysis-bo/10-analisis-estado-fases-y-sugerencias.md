@@ -19,17 +19,17 @@ Se realizo analisis funcional, tecnico y de pruebas sobre:
    - npm run test:bo:governance con verificacion automatizada de whitelist hard-delete y claves soft-delete obligatorias.
    - Homogeneizacion temporal transversal aplicada en schema para entidades maestras objetivo con trigger set_updated_at extendido.
    - Matriz legacy expandida al 100% de rutas heredadas (81) en docs/propuesta-gap-analysis-bo/13-matriz-trazabilidad-requerimiento-bo-query-test.md.
-   - APP_ENV=test npm run test:bo con resultado 13 suites, 46 tests, 100% PASS.
+   - APP_ENV=test npm run test:bo con resultado 13 suites, 48 tests, 100% PASS.
    - npm run test:session-sanitizer con resultado 7/7 pruebas exitosas tras ajuste de precedencia applyGlobalDenyPatterns.
 
 ## 2. Resultado global por fase
 
-| Fase                                        | Estado                                                | Cumplimiento de criterios de salida (Roadmap 07) | Veredicto                                                        |
-| ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------- |
-| Fase 1 - Procesos transaccionales core      | Implementada y validada                               | 3 de 3                                           | Completada exitosamente                                          |
-| Fase 2 - Solvencia, compensacion y reportes | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                                          |
-| Fase 3 - Notificaciones y automatizacion    | Implementada y validada                               | 2 de 2                                           | Completada exitosamente                                          |
-| Fase 4 - Estandarizacion y gobierno tecnico | Implementada parcialmente con hardening adicional     | 0 de 2 (criterio estricto de 07)                 | No completada exitosamente, con avance sustancial en cierre      |
+| Fase                                        | Estado                                            | Cumplimiento de criterios de salida (Roadmap 07) | Veredicto                                                   |
+| ------------------------------------------- | ------------------------------------------------- | ------------------------------------------------ | ----------------------------------------------------------- |
+| Fase 1 - Procesos transaccionales core      | Implementada y validada                           | 3 de 3                                           | Completada exitosamente                                     |
+| Fase 2 - Solvencia, compensacion y reportes | Implementada y validada                           | 2 de 2                                           | Completada exitosamente                                     |
+| Fase 3 - Notificaciones y automatizacion    | Implementada y validada                           | 2 de 2                                           | Completada exitosamente                                     |
+| Fase 4 - Estandarizacion y gobierno tecnico | Implementada parcialmente con hardening adicional | 0 de 2 (criterio estricto de 07)                 | No completada exitosamente, con avance sustancial en cierre |
 
 ## 3. Resultado detallado por fase
 
@@ -223,7 +223,7 @@ Estado general: alto cumplimiento funcional en procesos core y de soporte, con m
 3. Completar matriz de metacampos temporales por entidad maestra (created_at, updated_at, deleted_at, trigger) y cerrar brechas detectadas.
 4. Extender pruebas de Fase 4 para cubrir los casos residuales de gobernanza (hard delete no permitido, contratos de error, observabilidad).
 5. Usar la matriz legacy 100% como backlog de migracion incremental legacy -> canonico por dominio.
-6. Mantener como baseline de calidad: npm run test:bo:governance + APP_ENV=test npm run test:bo (13 suites/46 tests) + npm run test:session-sanitizer (7/7).
+6. Mantener como baseline de calidad: npm run test:bo:governance + APP_ENV=test npm run test:bo (13 suites/48 tests) + npm run test:session-sanitizer (7/7).
 
 ## 7. Estado final de implementacion (segun analisis actual)
 

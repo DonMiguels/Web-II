@@ -8,6 +8,12 @@ import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { recomputeUserSolvency } from '../../../_shared/solvency.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
+import {
+  syncItemOperationalStateTx,
+  transitionItemStatusTx,
+} from '../../../_shared/itemStatusFlow.js';
 
 function parseDateStrict(rawValue, fieldName) {
   const parsed = new Date(rawValue);
@@ -74,13 +80,33 @@ function normalizeReturnDetails(paramsDetails, loanDetails) {
 
 export const registerReturn = async function (params = {}) {
   const processContext = startProcessContext('registerReturn');
-  const { loan_id, user_id, return_date, details, observations } = params || {};
+  const {
+    loan_id,
+    user_id,
+    return_date,
+    details,
+    observations,
+    processed_by_user_id,
+    _session_user_id,
+  } = params || {};
+
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
 
   if (!loan_id || !return_date) {
     throwDomainError({
       statusCode: 422,
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
       message: 'loan_id y return_date son obligatorios',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio',
     });
   }
 
@@ -161,8 +187,9 @@ export const registerReturn = async function (params = {}) {
 
     const loanDetailsResult = await client.query(
       `
-        SELECT id, inventory_id, amount
-        FROM public.movement_detail
+        SELECT md.id, md.inventory_id, md.amount, inv.item_id
+        FROM public.movement_detail md
+        JOIN public.inventory inv ON inv.id = md.inventory_id
         WHERE movement_id = $1
         FOR UPDATE
       `,
@@ -242,6 +269,10 @@ export const registerReturn = async function (params = {}) {
     );
 
     const returnMovementId = returnMovement.rows[0].id;
+    const touchedItemIds = new Set();
+    const requestedItemState = params?.resulting_item_state
+      ? String(params.resulting_item_state).trim().toLowerCase()
+      : null;
     const isLate =
       loan.estimated_return_date &&
       new Date(return_date).getTime() >
@@ -293,6 +324,7 @@ export const registerReturn = async function (params = {}) {
         `,
         [original.inventory_id, detail.returned_amount],
       );
+      touchedItemIds.add(Number(original.item_id));
 
       const returnDetail = await client.query(
         `
@@ -377,12 +409,48 @@ export const registerReturn = async function (params = {}) {
       );
     }
 
+    for (const itemId of touchedItemIds) {
+      if (requestedItemState) {
+        await transitionItemStatusTx({
+          client,
+          itemId,
+          targetState: requestedItemState,
+          allowSameState: true,
+        });
+      } else {
+        await syncItemOperationalStateTx({
+          client,
+          itemId,
+        });
+      }
+    }
+
+    const solvency = await recomputeUserSolvency({
+      client,
+      userId: loan.user_id,
+    });
+
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'registerReturn',
+      entityName: 'movement',
+      details: {
+        loan_id: Number(loan_id),
+        return_movement_id: Number(returnMovementId),
+        closed: !hasPendingDetails,
+      },
+    });
+
     await dbms.commitTransaction(client);
 
     return {
       loan_id,
       return_movement_id: returnMovementId,
       closed: !hasPendingDetails,
+      processed_by_user_id: processedByUserId,
+      is_solvency: solvency.is_solvency,
+      audit_id: auditId,
       observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {

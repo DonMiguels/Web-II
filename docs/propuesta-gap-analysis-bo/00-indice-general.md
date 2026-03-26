@@ -40,6 +40,27 @@ Este paquete documenta el Gap Analysis completo entre los requerimientos del lab
 9. [09-anexos-diagramas-y-glosario.md](./09-anexos-diagramas-y-glosario.md)
    Diagramas adicionales, glosario y checklist de aceptacion final.
 
+10. [10-analisis-estado-fases-y-sugerencias.md](./10-analisis-estado-fases-y-sugerencias.md)
+    Diagnostico por fases del roadmap y estado de cumplimiento por criterio.
+
+11. [11-inventario-hard-delete-residual.md](./11-inventario-hard-delete-residual.md)
+    Inventario de DELETE residual, whitelist y avance de hardening.
+
+12. [12-estandar-bo-transversal.md](./12-estandar-bo-transversal.md)
+    Estandar transversal de contrato de error, observabilidad y borrado.
+
+13. [13-matriz-trazabilidad-requerimiento-bo-query-test.md](./13-matriz-trazabilidad-requerimiento-bo-query-test.md)
+    Trazabilidad ejecutable requerimiento -> BO -> query -> test.
+
+14. [14-gap-analysis-exhaustivo-requerimientos-vs-bo.md](./14-gap-analysis-exhaustivo-requerimientos-vs-bo.md)
+    Gap analysis exhaustivo consolidado y matriz de brechas remanentes.
+
+15. [15-preguntas-decision-y-aprobacion.md](./15-preguntas-decision-y-aprobacion.md)
+    Decisiones arquitectonicas aprobadas y cierre formal de gobernanza Q4.
+
+16. [16-matriz-y-plan-final-candidato.md](./16-matriz-y-plan-final-candidato.md)
+    Matriz y plan final candidato consolidado posterior a aprobaciones.
+
 ## Flujo de lectura recomendado
 
 1. Documento 01
@@ -51,6 +72,11 @@ Este paquete documenta el Gap Analysis completo entre los requerimientos del lab
 7. Documento 07
 8. Documento 08
 9. Documento 09
+10. Documento 10
+11. Documento 13
+12. Documento 14
+13. Documento 15
+14. Documento 16
 
 ## Referencias base del repositorio
 

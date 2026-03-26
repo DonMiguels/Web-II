@@ -1,10 +1,15 @@
 import DBMS from '../../../../dbms/dbms.js';
 import { buildOverdueAlertTemplate } from './templates.js';
-import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  DOMAIN_ERROR_CODES,
+  rethrowAsDomainError,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
 import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
 
 function toPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -14,14 +19,28 @@ function toPositiveInt(value, fallback) {
 
 export const sendOverdueAlertBatch = async function (params = {}) {
   const processContext = startProcessContext('sendOverdueAlertBatch');
-  const { dedup_hours, limit, reference_time } = params || {};
+  const { dedup_hours, limit, reference_time, processed_by_user_id } =
+    params || {};
 
   const dedupHours = toPositiveInt(dedup_hours, 24);
   const batchLimit = toPositiveInt(limit, 100);
   const referenceTime = reference_time ? new Date(reference_time) : new Date();
+  const processedByUserId = Number(processed_by_user_id || 0);
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio para ejecucion batch',
+    });
+  }
 
   if (Number.isNaN(referenceTime.getTime())) {
-    throw new Error('reference_time invalida');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'reference_time invalida',
+    });
   }
 
   const dbms = new DBMS();
@@ -34,7 +53,11 @@ export const sendOverdueAlertBatch = async function (params = {}) {
     );
 
     if (typeResult.rowCount === 0) {
-      throw new Error('No existe notification_type critical');
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: 'No existe notification_type critical',
+      });
     }
 
     const alertTypeId = Number(typeResult.rows[0].id);
@@ -112,14 +135,30 @@ export const sendOverdueAlertBatch = async function (params = {}) {
       createdCount += 1;
     }
 
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'sendOverdueAlertBatch',
+      entityName: 'notification_scheduler',
+      details: {
+        process: 'sendOverdueAlertBatch',
+        candidate_count: Number(candidates.rowCount),
+        created_count: createdCount,
+        skipped_dedup_count: skippedDedupCount,
+        dedup_hours: dedupHours,
+      },
+    });
+
     await dbms.commitTransaction(client);
 
     return {
       process: 'sendOverdueAlertBatch',
+      processed_by_user_id: processedByUserId,
       dedup_hours: dedupHours,
       candidate_count: candidates.rowCount,
       created_count: createdCount,
       skipped_dedup_count: skippedDedupCount,
+      audit_id: auditId,
       observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {

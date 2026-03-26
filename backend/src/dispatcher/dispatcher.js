@@ -69,6 +69,7 @@ export default class Dispatcher {
 
       const executionResult = await this.security.execute(permissionRoute, {
         ...parameters,
+        processed_by_user_id: userId,
         _session_user_id: userId,
         _session_profile: profile,
       });

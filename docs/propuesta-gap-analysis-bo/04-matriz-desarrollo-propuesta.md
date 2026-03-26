@@ -50,3 +50,23 @@
 3. Scheduler de notificaciones (alto).
 4. Uniformidad soft delete + auditoria temporal (alto).
 5. Refinamientos de seguridad y observabilidad (medio).
+
+## 5. Cierre de decisiones aprobadas (26-03-2026)
+
+### 5.1 Lineamientos congelados
+
+1. Ownership de reportes: enforced solo por middleware.
+2. Jobs batch: processed_by_user_id obligatorio, inyectado por scheduler externo.
+3. Auditoria de NotificationScheduler: obligatoria.
+4. AcademicPeriod: permitir multiples periodos activos.
+5. Usuarios: Users canonico, Security replica.
+6. Inventory: FSM dedicada para estados formales.
+7. DomainError: obligatorio en 100% de BO.
+8. Legacy Loan/Return: transicion de 30 dias y bloqueo final en favor de Process-first.
+
+### 5.2 Ajustes obligatorios sobre la matriz
+
+1. NotificationScheduler cambia a estado Modificacion (hardening de actor + auditoria).
+2. Se agrega bloque transversal DomainErrorPolicy/enforcement como trabajo obligatorio.
+3. Se agrega bloque de sincronizacion Users -> Security replica como trabajo obligatorio.
+4. Se ejecuta ventana de transicion de 30 dias para rutas legacy Loan/Return y posterior bloqueo definitivo.

@@ -9,6 +9,9 @@ import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { recomputeUserSolvency } from '../../../_shared/solvency.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
+import { syncItemOperationalStateTx } from '../../../_shared/itemStatusFlow.js';
 
 function parseDateStrict(rawValue, fieldName) {
   const parsed = new Date(rawValue);
@@ -65,7 +68,13 @@ export const convertReservationToLoan = async function (params = {}) {
     estimated_return_date,
     reservation_expires_at,
     observations,
+    processed_by_user_id,
+    _session_user_id,
   } = params || {};
+
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
 
   if (!reservation_id || !booking_date || !reservation_expires_at) {
     throwDomainError({
@@ -73,6 +82,14 @@ export const convertReservationToLoan = async function (params = {}) {
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
       message:
         'reservation_id, booking_date y reservation_expires_at son obligatorios',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio',
     });
   }
 
@@ -230,8 +247,9 @@ export const convertReservationToLoan = async function (params = {}) {
 
     const reserveDetails = await client.query(
       `
-        SELECT inventory_id, amount, observations
-        FROM public.movement_detail
+        SELECT md.inventory_id, md.amount, md.observations, inv.item_id
+        FROM public.movement_detail md
+        JOIN public.inventory inv ON inv.id = md.inventory_id
         WHERE movement_id = $1
       `,
       [reservation_id],
@@ -280,8 +298,10 @@ export const convertReservationToLoan = async function (params = {}) {
     );
 
     const loanId = loanInsert.rows[0].id;
+    const touchedItemIds = new Set();
 
     for (const detail of reserveDetails.rows) {
+      touchedItemIds.add(Number(detail.item_id));
       await client.query(
         `
           INSERT INTO public.movement_detail (
@@ -316,11 +336,38 @@ export const convertReservationToLoan = async function (params = {}) {
       [reservation_id, `Reservation converted to loan ${loanId}`],
     );
 
+    for (const itemId of touchedItemIds) {
+      await syncItemOperationalStateTx({
+        client,
+        itemId,
+      });
+    }
+
+    const solvency = await recomputeUserSolvency({
+      client,
+      userId: reserve.user_id,
+    });
+
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'convertReservationToLoan',
+      entityName: 'movement',
+      details: {
+        reservation_id: Number(reservation_id),
+        loan_id: Number(loanId),
+        borrower_user_id: Number(reserve.user_id),
+      },
+    });
+
     await dbms.commitTransaction(client);
 
     return {
       loan_id: loanId,
       reservation_id,
+      processed_by_user_id: processedByUserId,
+      is_solvency: solvency.is_solvency,
+      audit_id: auditId,
       status: 'reservation_converted',
       observability: buildProcessMetadata(processContext, 200),
     };

@@ -89,3 +89,19 @@ Unificar reglas transversales y endurecer calidad.
 2. Fase 2: pruebas de consistencia de reportes y recalculo.
 3. Fase 3: pruebas de scheduler, ventanas y deduplicacion.
 4. Fase 4: pruebas de regresion completa y contratos API.
+
+## 8. Decisiones aprobadas (26-03-2026)
+
+1. Ownership de reportes: solo middleware.
+2. Jobs batch: actor obligatorio por processed_by_user_id inyectado por scheduler externo.
+3. Auditoria de jobs de notificaciones: obligatoria.
+4. Rutas legacy Loan/Return: transicion de 30 dias y bloqueo final en favor de Process-first.
+5. Periodos academicos: permitir multiples periodos activos.
+6. Usuarios: Users canonico, Security replica.
+7. Estado de items: implementar FSM dedicada.
+8. Errores: domainError obligatorio en 100% de BO.
+
+## 9. Regla de cierre de gobernanza legacy
+
+1. Ventana de coexistencia legacy: 30 dias.
+2. Al dia 31: bloqueo funcional de rutas legacy Loan/Return y operacion exclusiva por LoanProcess/ReturnProcess.

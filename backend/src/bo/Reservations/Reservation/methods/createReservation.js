@@ -8,6 +8,8 @@ import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
+import { syncItemOperationalStateTx } from '../../../_shared/itemStatusFlow.js';
 
 function parseDateStrict(rawValue, fieldName) {
   const parsed = new Date(rawValue);
@@ -117,13 +119,27 @@ export const createReservation = async function (params = {}) {
     estimated_return_date,
     observations,
     details,
+    processed_by_user_id,
+    _session_user_id,
   } = params || {};
+
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
 
   if (!user_id || !period_id || !booking_date || !reservation_expires_at) {
     throwDomainError({
       statusCode: 422,
       code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
       message: 'Faltan campos obligatorios para crear reserva',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio',
     });
   }
 
@@ -228,6 +244,7 @@ export const createReservation = async function (params = {}) {
     );
 
     const reservationId = reservationInsert.rows[0].id;
+    const touchedItemIds = new Set();
 
     for (const detail of normalizedDetails) {
       const inventoryId = Number(detail.inventory_id);
@@ -235,7 +252,7 @@ export const createReservation = async function (params = {}) {
 
       const stockResult = await client.query(
         `
-          SELECT id, amount
+          SELECT id, amount, item_id
           FROM public.inventory
           WHERE id = $1
           FOR UPDATE
@@ -252,6 +269,7 @@ export const createReservation = async function (params = {}) {
       }
 
       const stock = Number(stockResult.rows[0].amount);
+      touchedItemIds.add(Number(stockResult.rows[0].item_id));
       if (stock < amount) {
         throwDomainError({
           statusCode: 409,
@@ -293,10 +311,31 @@ export const createReservation = async function (params = {}) {
       );
     }
 
+    for (const itemId of touchedItemIds) {
+      await syncItemOperationalStateTx({
+        client,
+        itemId,
+      });
+    }
+
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'createReservation',
+      entityName: 'movement',
+      details: {
+        reservation_id: reservationId,
+        borrower_user_id: Number(user_id),
+        detail_count: normalizedDetails.length,
+      },
+    });
+
     await dbms.commitTransaction(client);
     return {
       reservation_id: reservationId,
       detail_count: normalizedDetails.length,
+      processed_by_user_id: processedByUserId,
+      audit_id: auditId,
       status: 'reservation_created',
       observability: buildProcessMetadata(processContext, 200),
     };

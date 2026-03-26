@@ -1,24 +1,25 @@
 import DBMS from '../../../../dbms/dbms.js';
-import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  DOMAIN_ERROR_CODES,
+  rethrowAsDomainError,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
 import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
-
-function throwBusinessError(statusCode, message) {
-  throw new Error(
-    JSON.stringify({
-      statusCode,
-      message,
-    }),
-  );
-}
+import { recomputeUserSolvency } from '../../../_shared/solvency.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
 
 function toOptionalIso(value) {
   if (!value) return null;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    throw new Error('payment_date invalida');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'payment_date invalida',
+    });
   }
   return date.toISOString();
 }
@@ -28,21 +29,51 @@ export const settleCompensation = async function (params = {}) {
   const {
     compensation_id,
     processed_by_user_id,
+    _session_user_id,
     payment_method_type_id,
     amount_paid,
     payment_date,
     observations,
   } = params || {};
 
-  if (!compensation_id || !processed_by_user_id || !payment_method_type_id) {
-    throw new Error(
-      'compensation_id, processed_by_user_id y payment_method_type_id son obligatorios',
-    );
+  const processedByUserId = Number(
+    processed_by_user_id || _session_user_id || 0,
+  );
+  const compensationId = Number(compensation_id || 0);
+  const paymentMethodTypeId = Number(payment_method_type_id || 0);
+
+  if (!Number.isInteger(compensationId) || compensationId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'compensation_id es obligatorio y debe ser entero positivo',
+    });
+  }
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio y debe ser entero positivo',
+    });
+  }
+
+  if (!Number.isInteger(paymentMethodTypeId) || paymentMethodTypeId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message:
+        'payment_method_type_id es obligatorio y debe ser entero positivo',
+    });
   }
 
   const paidAmount = Number(amount_paid);
   if (!Number.isFinite(paidAmount) || paidAmount <= 0) {
-    throw new Error('amount_paid debe ser numerico y mayor a cero');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'amount_paid debe ser numerico y mayor a cero',
+    });
   }
 
   const normalizedPaymentDate = toOptionalIso(payment_date);
@@ -60,11 +91,15 @@ export const settleCompensation = async function (params = {}) {
           AND deleted_at IS NULL
         FOR UPDATE
       `,
-      [compensation_id],
+      [compensationId],
     );
 
     if (compensationResult.rowCount === 0) {
-      throw new Error('Compensacion no encontrada');
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: 'Compensacion no encontrada',
+      });
     }
 
     const compensation = compensationResult.rows[0];
@@ -82,60 +117,41 @@ export const settleCompensation = async function (params = {}) {
         WHERE id = $1
       `,
       [
-        compensation_id,
-        processed_by_user_id,
-        payment_method_type_id,
+        compensationId,
+        processedByUserId,
+        paymentMethodTypeId,
         paidAmount,
         normalizedPaymentDate,
         observations || null,
       ],
     );
 
-    const pendingCompensation = await client.query(
-      `
-        SELECT 1
-        FROM public.compensation
-        WHERE borrower_user_id = $1
-          AND deleted_at IS NULL
-          AND amount_paid <= 0
-        LIMIT 1
-      `,
-      [borrowerUserId],
-    );
+    const solvency = await recomputeUserSolvency({
+      client,
+      userId: borrowerUserId,
+    });
 
-    const overdueLoan = await client.query(
-      `
-        SELECT 1
-        FROM public.movement m
-        WHERE m.user_id = $1
-          AND m.type_id = (SELECT id FROM public.movement_type WHERE name = 'loan')
-          AND m.actual_return_date IS NULL
-          AND m.estimated_return_date < NOW()
-        LIMIT 1
-      `,
-      [borrowerUserId],
-    );
-
-    const isSolvent =
-      pendingCompensation.rowCount === 0 && overdueLoan.rowCount === 0;
-
-    await client.query(
-      `
-        UPDATE public."user"
-        SET is_solvency = $2,
-            updated_at = NOW()
-        WHERE id = $1
-      `,
-      [borrowerUserId, isSolvent],
-    );
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'settleCompensation',
+      entityName: 'compensation',
+      details: {
+        compensation_id: Number(compensation_id),
+        borrower_user_id: borrowerUserId,
+        amount_paid: paidAmount,
+      },
+    });
 
     await dbms.commitTransaction(client);
 
     return {
-      compensation_id: Number(compensation_id),
+      compensation_id: compensationId,
       borrower_user_id: borrowerUserId,
+      processed_by_user_id: processedByUserId,
       amount_paid: paidAmount,
-      is_solvency: isSolvent,
+      is_solvency: solvency.is_solvency,
+      audit_id: auditId,
       status: 'settled',
       observability: buildProcessMetadata(processContext, 200),
     };
@@ -146,7 +162,11 @@ export const settleCompensation = async function (params = {}) {
       typeof err.message === 'string' &&
       err.message.toLowerCase().includes('violates foreign key')
     ) {
-      throwBusinessError(422, 'payment_method_type_id invalido');
+      throwDomainError({
+        statusCode: 422,
+        code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+        message: 'payment_method_type_id invalido',
+      });
     }
 
     rethrowAsDomainError(err, 'Error ejecutando settleCompensation');

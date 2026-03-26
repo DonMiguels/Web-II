@@ -93,6 +93,7 @@ describe('Phase 1 core processes', () => {
 
     const payload = {
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -125,6 +126,7 @@ describe('Phase 1 core processes', () => {
 
     const created = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(15),
@@ -142,6 +144,7 @@ describe('Phase 1 core processes', () => {
 
     const renewed = await renewLoan({
       loan_id: created.loan_id,
+      processed_by_user_id: fixture.user_id,
       estimated_return_date: futureIso(720),
       observations: 'renewed',
     });
@@ -161,6 +164,7 @@ describe('Phase 1 core processes', () => {
     await expect(
       createLoanWithDetails({
         user_id: fixture.user_id,
+        processed_by_user_id: fixture.user_id,
         period_id: fixture.period_id,
         booking_date: nowIso(),
         reservation_expires_at: futureIso(20),
@@ -176,6 +180,7 @@ describe('Phase 1 core processes', () => {
 
     const created = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(30),
@@ -186,11 +191,13 @@ describe('Phase 1 core processes', () => {
 
     await renewLoan({
       loan_id: created.loan_id,
+      processed_by_user_id: fixture.user_id,
       estimated_return_date: futureIso(360),
       observations: 'renew-1',
     });
     await renewLoan({
       loan_id: created.loan_id,
+      processed_by_user_id: fixture.user_id,
       estimated_return_date: futureIso(540),
       observations: 'renew-2',
     });
@@ -198,6 +205,7 @@ describe('Phase 1 core processes', () => {
     await expect(
       renewLoan({
         loan_id: created.loan_id,
+        processed_by_user_id: fixture.user_id,
         estimated_return_date: futureIso(720),
         observations: 'renew-3',
       }),
@@ -209,6 +217,7 @@ describe('Phase 1 core processes', () => {
 
     const created = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(240),
       reservation_expires_at: pastIso(180),
@@ -220,6 +229,7 @@ describe('Phase 1 core processes', () => {
     await expect(
       renewLoan({
         loan_id: created.loan_id,
+        processed_by_user_id: fixture.user_id,
         estimated_return_date: futureIso(240),
         observations: 'renew-overdue-attempt',
       }),
@@ -231,6 +241,7 @@ describe('Phase 1 core processes', () => {
 
     const reserve = await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(20),
@@ -241,6 +252,7 @@ describe('Phase 1 core processes', () => {
 
     const converted = await convertReservationToLoan({
       reservation_id: reserve.reservation_id,
+      processed_by_user_id: fixture.user_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(20),
       estimated_return_date: futureIso(1440),
@@ -251,6 +263,7 @@ describe('Phase 1 core processes', () => {
 
     const reserveExpired = await createReservation({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: pastIso(120),
       reservation_expires_at: pastIso(60),
@@ -261,7 +274,10 @@ describe('Phase 1 core processes', () => {
 
     expect(reserveExpired.reservation_id).toBeDefined();
 
-    const job = await expireReservationJob({ limit: 20 });
+    const job = await expireReservationJob({
+      limit: 20,
+      processed_by_user_id: fixture.user_id,
+    });
     expect(job.expired_count).toBeGreaterThanOrEqual(1);
   });
 
@@ -270,6 +286,7 @@ describe('Phase 1 core processes', () => {
 
     const loan = await createLoanWithDetails({
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       period_id: fixture.period_id,
       booking_date: nowIso(),
       reservation_expires_at: futureIso(10),
@@ -281,6 +298,7 @@ describe('Phase 1 core processes', () => {
     const returned = await registerReturn({
       loan_id: loan.loan_id,
       user_id: fixture.user_id,
+      processed_by_user_id: fixture.user_id,
       return_date: nowIso(),
       observations: 'returned',
     });
@@ -300,4 +318,3 @@ describe('Phase 1 core processes', () => {
     expect(Number(stock.rows[0].amount)).toBe(1);
   });
 });
-

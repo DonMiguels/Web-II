@@ -749,7 +749,7 @@ updateDevolucion:
     - id
     - observaciones
 deleteDevolucion:
-  query: DELETE FROM public.movement WHERE id = $1 RETURNING id AS devolucion_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deleteDevolucion no permite hard delete en movement'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -903,7 +903,7 @@ markNotificacionAsRead:
   orderArray:
     - id
 deleteNotificacion:
-  query: DELETE FROM public.notification WHERE id = $1 RETURNING id AS notificacion_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deleteNotificacion no permite hard delete en notification'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -939,7 +939,7 @@ getAllAuditorias:
   structure_params: {}
   orderArray: []
 deleteAuditoria:
-  query: DELETE FROM public.audit WHERE id = $1 RETURNING id AS auditoria_id;
+  query: UPDATE public.audit SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS auditoria_id;
   structure_params:
     id: int
   orderArray:
@@ -1577,7 +1577,7 @@ updateLoan:
     - actual_return_date
     - observations
 deleteLoan:
-  query: DELETE FROM public.movement WHERE id = $1 AND type_id = (SELECT id FROM public.movement_type WHERE name = 'loan') RETURNING id AS loan_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deleteLoan no permite hard delete en movement'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -1593,7 +1593,7 @@ updatePrestamo:
     - fecha_devolucion_real
     - observaciones
 deletePrestamo:
-  query: DELETE FROM public.movement WHERE id = $1 AND type_id = (SELECT id FROM public.movement_type WHERE name = 'loan') RETURNING id AS prestamo_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deletePrestamo no permite hard delete en movement'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -1741,7 +1741,7 @@ updateReturn:
     - id
     - observations
 deleteReturn:
-  query: DELETE FROM public.movement WHERE id = $1 RETURNING id AS devolucion_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deleteReturn no permite hard delete en movement'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -1909,7 +1909,7 @@ markNotificationAsRead:
   orderArray:
     - id
 deleteNotification:
-  query: DELETE FROM public.notification WHERE id = $1 RETURNING id AS notificacion_id;
+  query: "DO $$ BEGIN RAISE EXCEPTION 'HARD_DELETE_BLOCKED: deleteNotification no permite hard delete en notification'; END $$;"
   structure_params:
     id: int
   orderArray:
@@ -1945,7 +1945,7 @@ getAllAudits:
   structure_params: {}
   orderArray: []
 deleteAudit:
-  query: DELETE FROM public.audit WHERE id = $1 RETURNING id AS auditoria_id;
+  query: UPDATE public.audit SET deleted_at = NOW(), updated_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id AS auditoria_id;
   structure_params:
     id: int
   orderArray:

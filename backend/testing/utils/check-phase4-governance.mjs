@@ -74,7 +74,9 @@ function main() {
 
   console.log('Phase 4 governance check passed.');
   console.log(` - Hard-delete keys in whitelist: ${currentDeleteKeys.length}`);
-  console.log(` - Soft-delete guarded keys: ${PHASE4_SOFT_DELETE_REQUIRED_KEYS.length}`);
+  console.log(
+    ` - Soft-delete guarded keys: ${PHASE4_SOFT_DELETE_REQUIRED_KEYS.length}`,
+  );
 }
 
 main();

@@ -1,10 +1,15 @@
 import DBMS from '../../../../dbms/dbms.js';
 import { buildReturnReminderTemplate } from './templates.js';
-import { rethrowAsDomainError } from '../../../_shared/domainError.js';
+import {
+  DOMAIN_ERROR_CODES,
+  rethrowAsDomainError,
+  throwDomainError,
+} from '../../../_shared/domainError.js';
 import {
   buildProcessMetadata,
   startProcessContext,
 } from '../../../_shared/processObservability.js';
+import { appendBusinessAudit } from '../../../_shared/auditTrail.js';
 
 function toPositiveInt(value, fallback) {
   const parsed = Number(value);
@@ -14,15 +19,34 @@ function toPositiveInt(value, fallback) {
 
 export const sendReturnReminderBatch = async function (params = {}) {
   const processContext = startProcessContext('sendReturnReminderBatch');
-  const { window_hours, dedup_hours, limit, reference_time } = params || {};
+  const {
+    window_hours,
+    dedup_hours,
+    limit,
+    reference_time,
+    processed_by_user_id,
+  } = params || {};
 
   const windowHours = toPositiveInt(window_hours, 24);
   const dedupHours = toPositiveInt(dedup_hours, 12);
   const batchLimit = toPositiveInt(limit, 100);
   const referenceTime = reference_time ? new Date(reference_time) : new Date();
+  const processedByUserId = Number(processed_by_user_id || 0);
+
+  if (!Number.isInteger(processedByUserId) || processedByUserId <= 0) {
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'processed_by_user_id es obligatorio para ejecucion batch',
+    });
+  }
 
   if (Number.isNaN(referenceTime.getTime())) {
-    throw new Error('reference_time invalida');
+    throwDomainError({
+      statusCode: 422,
+      code: DOMAIN_ERROR_CODES.VALIDATION_ERROR,
+      message: 'reference_time invalida',
+    });
   }
 
   const dbms = new DBMS();
@@ -35,7 +59,11 @@ export const sendReturnReminderBatch = async function (params = {}) {
     );
 
     if (typeResult.rowCount === 0) {
-      throw new Error('No existe notification_type warning');
+      throwDomainError({
+        statusCode: 404,
+        code: DOMAIN_ERROR_CODES.NOT_FOUND,
+        message: 'No existe notification_type warning',
+      });
     }
 
     const reminderTypeId = Number(typeResult.rows[0].id);
@@ -112,15 +140,32 @@ export const sendReturnReminderBatch = async function (params = {}) {
       createdCount += 1;
     }
 
+    const auditId = await appendBusinessAudit({
+      client,
+      actorUserId: processedByUserId,
+      method: 'sendReturnReminderBatch',
+      entityName: 'notification_scheduler',
+      details: {
+        process: 'sendReturnReminderBatch',
+        candidate_count: Number(candidates.rowCount),
+        created_count: createdCount,
+        skipped_dedup_count: skippedDedupCount,
+        dedup_hours: dedupHours,
+        window_hours: windowHours,
+      },
+    });
+
     await dbms.commitTransaction(client);
 
     return {
       process: 'sendReturnReminderBatch',
+      processed_by_user_id: processedByUserId,
       window_hours: windowHours,
       dedup_hours: dedupHours,
       candidate_count: candidates.rowCount,
       created_count: createdCount,
       skipped_dedup_count: skippedDedupCount,
+      audit_id: auditId,
       observability: buildProcessMetadata(processContext, 200),
     };
   } catch (err) {

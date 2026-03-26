@@ -17,7 +17,6 @@ const expectedSubsystems = [
   'Reservations',
   'Returns',
   'Security',
-  'Solvency',
   'Users',
 ];
 
@@ -56,7 +55,6 @@ const expectedClassPairs = [
   'Security/SecurityTransaction',
   'Security/SecurityUser',
   'Security/User',
-  'Solvency/SolvencyJob',
   'Users/User',
 ];
 
