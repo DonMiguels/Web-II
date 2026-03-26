@@ -29,3 +29,6 @@ id;subsystem;class;method;profile
 28;Loans;Loan;getActiveLoans;admin
 29;Loans;Loan;updateLoan;admin
 30;Loans;Loan;deleteLoan;admin
+31;Reports;LoanReport;getPendingLoansByUser;admin
+32;Reports;LoanReport;getPendingLoansByUser;operator
+33;Reports;LoanReport;getPendingLoansByUser;user

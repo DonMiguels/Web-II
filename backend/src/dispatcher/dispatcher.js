@@ -69,7 +69,11 @@ export default class Dispatcher {
 
       const executionResult = await this.security.execute(
         permissionRoute,
-        parameters,
+        {
+          ...parameters,
+          _session_user_id: userId,
+          _session_profile: profile,
+        },
       );
 
       return this.sanitizeReturnValue(
