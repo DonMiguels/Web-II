@@ -1,7 +1,7 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import Utils from '../utils/utils.js';
-import DBMS from '../dbms/dbms.js';
+import path from "path";
+import { fileURLToPath } from "url";
+import Utils from "../utils/utils.js";
+import DBMS from "../dbms/dbms.js";
 import resolveExecutable from "../bo/method_resolver.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,10 +24,10 @@ export default class Security {
   }
 
   normalizePermission(permission = {}) {
-    const normalize = (value) => String(value ?? '').trim();
+    const normalize = (value) => String(value ?? "").trim();
 
     return {
-      sub_system: normalize(permission.sub_system),
+      sub_system: normalize(permission.sub_system ?? permission.subsystem),
       class: normalize(permission.class ?? permission.class_name),
       method: normalize(permission.method ?? permission.method_name),
       profile: normalize(permission.profile ?? permission.profile_name),
@@ -42,13 +42,13 @@ export default class Security {
       normalized.class.toLowerCase(),
       normalized.method.toLowerCase(),
       normalized.profile.toLowerCase(),
-    ].join('::');
+    ].join("::");
   }
 
   async syncPermissions() {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
-      nameQuery: 'ensureTransactionSerial',
+      nameQuery: "ensureTransactionSerial",
     });
 
     const csvPermissions = await this.getPermissionsFile();
@@ -58,9 +58,9 @@ export default class Security {
       if (dbPermissions.has(key)) continue;
 
       await this.dbms.executeNamedQuery({
-        nameQuery: 'insertPermission',
+        nameQuery: "insertPermission",
         params: {
-          sub_system: csvPermission.sub_system,
+          subsystem: csvPermission.sub_system ?? csvPermission.subsystem,
           class_name: csvPermission.class,
           method_name: csvPermission.method,
           profile_name: csvPermission.profile,
@@ -79,7 +79,7 @@ export default class Security {
   }
 
   async getPermissionsFile() {
-    const csvPath = path.resolve(__dirname, '../../config/permission.csv');
+    const csvPath = path.resolve(__dirname, "../../config/permission.csv");
     const csvMap = await this.utils.readCSV(csvPath);
     const permissions = new Map();
 
@@ -95,7 +95,7 @@ export default class Security {
   async getPermissionsDB() {
     await this.dbmsReady;
     const res = await this.dbms.executeNamedQuery({
-      nameQuery: 'getPermissions',
+      nameQuery: "getPermissions",
     });
 
     const permissions = new Map();
@@ -116,15 +116,15 @@ export default class Security {
   async setPermission(permission) {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
-      nameQuery: 'ensureTransactionSerial',
+      nameQuery: "ensureTransactionSerial",
     });
 
     const normalized = this.normalizePermission(permission);
 
     await this.dbms.executeNamedQuery({
-      nameQuery: 'insertPermission',
+      nameQuery: "insertPermission",
       params: {
-        sub_system: normalized.sub_system,
+        subsystem: normalized.sub_system,
         class_name: normalized.class,
         method_name: normalized.method,
         profile_name: normalized.profile,
@@ -137,7 +137,7 @@ export default class Security {
   async syncUserProfiles() {
     await this.dbmsReady;
     const res = await this.dbms.executeNamedQuery({
-      nameQuery: 'getUsersProfiles',
+      nameQuery: "getUsersProfiles",
     });
 
     const profiles = new Map();
@@ -170,14 +170,14 @@ export default class Security {
   async setUserProfile(userId, profile) {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
-      nameQuery: 'ensureTransactionSerial',
+      nameQuery: "ensureTransactionSerial",
     });
 
     const normalizedUserId = String(userId).trim().toLowerCase();
     const normalizedProfile = String(profile).trim().toLowerCase();
 
     await this.dbms.executeNamedQuery({
-      nameQuery: 'insertUserProfile',
+      nameQuery: "insertUserProfile",
       params: {
         user_id: userId,
         profile_name: profile,
@@ -193,16 +193,23 @@ export default class Security {
   async syncTransactions() {
     await this.dbmsReady;
 
-    // Supongamos que esta query trae: id, sub_system, class_name, method_name
-    const res = await this.dbms.executeNamedQuery({ nameQuery: 'getTransactions' });
+    // Compatibilidad: soporta query legacy getTransactions y nueva getTransactionRoutes.
+    let res;
+    try {
+      res = await this.dbms.executeNamedQuery({
+        nameQuery: "getTransactionRoutes",
+      });
+    } catch {
+      res = await this.dbms.executeNamedQuery({ nameQuery: "getTransactions" });
+    }
 
     this.transactions.clear();
 
     for (const row of res?.rows ?? []) {
-      this.transactions.set(String(row.id), {
-        sub_system: row.sub_system,
+      this.transactions.set(String(row.id ?? row.transaction_id), {
+        sub_system: row.sub_system ?? row.subsystem,
         class: row.class_name,
-        method: row.method_name
+        method: row.method_name,
       });
     }
 
@@ -215,26 +222,29 @@ export default class Security {
 
   async execute(permission, reqBody = {}) {
     try {
-      const { sub_system, class: className, method } = this.normalizePermission(permission);
+      const {
+        sub_system,
+        class: className,
+        method,
+      } = this.normalizePermission(permission);
 
       const actionInstance = await resolveExecutable({
         subsystem: sub_system,
         className: className,
-        method: method
+        method: method,
       });
 
       const result = await Reflect.apply(
-          actionInstance[method],
-          actionInstance,
-          [reqBody]
+        actionInstance[method],
+        actionInstance,
+        [reqBody],
       );
 
       return {
         statusCode: 200,
         data: result,
-        message: 'Ejecutado exitosamente'
+        message: "Ejecutado exitosamente",
       };
-
     } catch (error) {
       console.error(`Error en executeAuthorized:`, error);
       throw error;
