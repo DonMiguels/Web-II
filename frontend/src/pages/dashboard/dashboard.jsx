@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Sun, Moon, Zap } from "lucide-react";
+import { LayoutDashboard, Sun, Moon, User, Mail, IdCard } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar, Inventory, Loan } from "@/components";
@@ -83,6 +83,11 @@ export const Dashboard = () => {
 
   const { title, component } = getRouteConfig();
   const isHome = location.pathname === "/dashboard";
+  const userDisplayName = user?.name || user?.username || "Usuario";
+  const userDisplayUsername = user?.username || "No disponible";
+  const userDisplayEmail = user?.email || "No disponible";
+  const userDisplayId = user?.id || "No disponible";
+  const userDisplayCi = user?.ci || "No disponible";
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden">
@@ -135,32 +140,6 @@ export const Dashboard = () => {
             </div>
           }
 
-          {isHome && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
-                <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
-                  Estado
-                </h3>
-                <p className="text-2xl font-semibold text-slate-900 dark:text-white">
-                  Sesión Activa
-                </p>
-              </div>
-
-              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
-                <h3 className="text-sm font-black uppercase text-blue-500 mb-2 tracking-widest">
-                  Usuario ID
-                </h3>
-                <p className="text-2xl font-semibold italic text-slate-900 dark:text-white">
-                  #{user?.id || "001"}
-                </p>
-              </div>
-
-              <div className="bg-white dark:bg-[#0f1115] p-6 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm flex items-center justify-center">
-                <LayoutDashboard size={40} className="text-blue-500/40" />
-              </div>
-            </div>
-          )}
-
           <div
             ref={contentRef}
             className="flex-1 overflow-y-scroll custom-scrollbar"
@@ -169,18 +148,71 @@ export const Dashboard = () => {
               {isHome ? (
                 <motion.div
                   key="home"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="min-h-full flex items-center justify-center px-1 py-2"
                 >
-                  <div className="bg-white dark:bg-[#0f1115] p-8 rounded-[32px] border border-slate-100 dark:border-white/5 shadow-sm">
-                    <Zap size={20} className="text-blue-500 mb-4" />
-                    <h3 className="text-2xl font-bold dark:text-white">
-                      Sistema Activo
-                    </h3>
-                    <p className="text-slate-500 text-sm mt-2">
-                      ID Acceso: #{user?.id || "001"}
-                    </p>
+                  <div className="relative w-full max-w-2xl overflow-hidden rounded-[34px] border border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-[#0f1115]/90 shadow-xl">
+                    <div className="p-7 md:p-9">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center justify-center">
+                            <User size={24} />
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                              Sesión iniciada
+                            </p>
+                            <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                              {userDisplayName}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-widest">
+                          <LayoutDashboard size={14} />
+                          Activo
+                        </div>
+                      </div>
+
+                      <div className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                            Usuario
+                          </p>
+                          <p className="mt-1 text-sm md:text-base font-semibold text-slate-800 dark:text-slate-200 break-all">
+                            {userDisplayUsername}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                            ID
+                          </p>
+                          <p className="mt-1 text-sm md:text-base font-semibold text-slate-800 dark:text-slate-200">
+                            {userDisplayId}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <Mail size={12} /> Correo
+                          </p>
+                          <p className="mt-1 text-sm md:text-base font-semibold text-slate-800 dark:text-slate-200 break-all">
+                            {userDisplayEmail}
+                          </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                            <IdCard size={12} /> Documento
+                          </p>
+                          <p className="mt-1 text-sm md:text-base font-semibold text-slate-800 dark:text-slate-200">
+                            {userDisplayCi}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               ) : (
