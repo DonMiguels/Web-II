@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, Moon, Sun } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
@@ -18,21 +18,6 @@ const Reports = ({ embedded = false }) => {
     fechaHasta: "",
     tipoReporte: "",
   });
-
-  useEffect(() => {
-    // Simulacion de objetos de negocio desde el backend
-    setPeriodos([
-      { id: "1", nombre: "2026-A" },
-      { id: "2", nombre: "2026-B" },
-      { id: "3", nombre: "2026-C" },
-    ]);
-
-    setTiposReporte([
-      { id: "inv", nombre: "Inventario de Equipos" },
-      { id: "pre", nombre: "Historial de Préstamos" },
-      { id: "usu", nombre: "Actividad de Usuarios" },
-    ]);
-  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

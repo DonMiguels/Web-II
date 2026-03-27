@@ -30,16 +30,8 @@ const Notifications = ({ embedded = false }) => {
     notifiedUsers.length > 0 &&
     checkedNotifiedUsers.length === notifiedUsers.length;
 
-  //Prueba
   useEffect(() => {
-    const mockUsers = [
-      { id: 1, name: "Carlos López", role: "Profesor" },
-      { id: 2, name: "María Fernández", role: "Estudiante" },
-      { id: 3, name: "Laura Gómez", role: "Estudiante" },
-      { id: 4, name: "José Martínez", role: "Administrativo" },
-      { id: 5, name: "Ana García", role: "Estudiante" },
-    ];
-    setUsers(mockUsers);
+    setUsers([]);
     setNotifiedUsers([]);
     setCheckedUsers([]);
     setCheckedNotifiedUsers([]);

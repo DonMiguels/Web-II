@@ -1,61 +1,8 @@
 import { useMemo, useState } from "react";
 
-const initialEquiposData = [
-  {
-    id: 101,
-    description: "Laptop Oficina",
-    modelo: "ThinkPad E14",
-    marca: "Lenovo",
-    condicion: "Bueno",
-    estatus: "Disponible",
-  },
-  {
-    id: 102,
-    description: "Osciloscopio Digital",
-    modelo: "DS1054Z",
-    marca: "Rigol",
-    condicion: "Bueno",
-    estatus: "Mantenimiento",
-  },
-  {
-    id: 103,
-    description: "Fuente de alimentación",
-    modelo: "KA3005P",
-    marca: "Korad",
-    condicion: "Dañado",
-    estatus: "Ocupado",
-  },
-];
+const initialEquiposData = [];
 
-const initialComponentesData = [
-  {
-    id: 501,
-    description: "Memoria RAM",
-    modelo: "Vengeance LPX 16GB",
-    marca: "Corsair",
-    condicion: "Nuevo",
-    estatus: "Stock",
-    cantidad: 20,
-  },
-  {
-    id: 502,
-    description: "Disco SSD",
-    modelo: "980 Pro 1TB",
-    marca: "Samsung",
-    condicion: "Nuevo",
-    estatus: "Disponible",
-    cantidad: 15,
-  },
-  {
-    id: 503,
-    description: "Microcontrolador",
-    modelo: "UNO R3",
-    marca: "Arduino",
-    condicion: "Nuevo",
-    estatus: "Stock",
-    cantidad: 8,
-  },
-];
+const initialComponentesData = [];
 
 export const useInventoryData = () => {
   const [activeCategory, setActiveCategory] = useState("equipos");

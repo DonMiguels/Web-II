@@ -6,6 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 import { useLocation } from "react-router-dom";
 import { MaintenanceCrudSection } from "./components/MaintenanceCrudSection.jsx";
+import { runDispatcherTransaction } from "@/Service/dispatcherService";
+
+const CREATE_PERSON_TRANSACTION_ID = 1;
+
+const splitPersonName = (fullName = "") => {
+  const cleaned = String(fullName || "").trim();
+  if (!cleaned) {
+    return { name: "", lastname: "" };
+  }
+
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return { name: parts[0], lastname: "" };
+  }
+
+  return {
+    name: parts[0],
+    lastname: parts.slice(1).join(" "),
+  };
+};
 
 const Permissions = ({ embedded = false }) => {
   const { user } = useAuth();
@@ -16,54 +36,7 @@ const Permissions = ({ embedded = false }) => {
   const [subSystem, setSubSystem] = useState("");
   const [moduleClass, setModuleClass] = useState("");
 
-  // Prueba
-  const [permissions, setPermissions] = useState([
-    {
-      id: "1",
-      name: "createUser",
-      description: "Permite la creación de nuevos usuarios en el sistema.",
-      checked: true,
-    },
-    {
-      id: "2",
-      name: "findUser",
-      description:
-        "Permite la búsqueda y lectura de la información de los usuarios.",
-      checked: true,
-    },
-    {
-      id: "3",
-      name: "deleteUser",
-      description: "Permite eliminar usuarios existentes de la base de datos.",
-      checked: false,
-    },
-    {
-      id: "4",
-      name: "updateUser",
-      description:
-        "Permite modificar la información y datos de usuarios existentes.",
-      checked: false,
-    },
-    {
-      id: "5",
-      name: "assignRole",
-      description: "Permite asignar o remover roles a los usuarios.",
-      checked: false,
-    },
-    {
-      id: "6",
-      name: "resetPassword",
-      description: "Permite reiniciar la contraseña de un usuario.",
-      checked: false,
-    },
-    {
-      id: "7",
-      name: "exportUsers",
-      description:
-        "Permite exportar la lista de usuarios en formato Excel o CSV.",
-      checked: false,
-    },
-  ]);
+  const [permissions, setPermissions] = useState([]);
 
   const togglePermission = (id) => {
     setPermissions(
@@ -104,26 +77,7 @@ const Permissions = ({ embedded = false }) => {
         direccion: "",
         edad: 18,
       },
-      initialItems: [
-        {
-          id: 1,
-          ci: "31005749",
-          nombre: "Marcelo Perozo",
-          correo: "marcelo@uru.edu",
-          telefono: "0414-0000001",
-          direccion: "Av. Universidad, Maracaibo",
-          edad: 24,
-        },
-        {
-          id: 2,
-          ci: "24123456",
-          nombre: "Miguel Sanchez",
-          correo: "miguel@uru.edu",
-          telefono: "0414-0000002",
-          direccion: "Urbanización Lago Azul",
-          edad: 27,
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "usuario",
@@ -140,20 +94,7 @@ const Permissions = ({ embedded = false }) => {
         password: "",
         persona: "",
       },
-      initialItems: [
-        {
-          id: 1,
-          nombre: "super_admin",
-          password: "Admin123!@#",
-          persona: "Marcelo Perozo",
-        },
-        {
-          id: 2,
-          nombre: "analista_uru",
-          password: "Analista2026*",
-          persona: "Miguel Sanchez",
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "grupo",
@@ -168,18 +109,7 @@ const Permissions = ({ embedded = false }) => {
         nombre: "",
         descripcion: "",
       },
-      initialItems: [
-        {
-          id: 1,
-          nombre: "Laboratorio A",
-          descripcion: "Grupo de electrónica básica",
-        },
-        {
-          id: 2,
-          nombre: "Investigación",
-          descripcion: "Equipo de pruebas avanzadas",
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "perfil",
@@ -194,18 +124,7 @@ const Permissions = ({ embedded = false }) => {
         nombre: "",
         descripcion: "",
       },
-      initialItems: [
-        {
-          id: 1,
-          nombre: "Administrador",
-          descripcion: "Control total del sistema",
-        },
-        {
-          id: 2,
-          nombre: "Docente",
-          descripcion: "Gestión académica y préstamos",
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "subsistema",
@@ -220,18 +139,7 @@ const Permissions = ({ embedded = false }) => {
         nombre: "",
         descripcion: "",
       },
-      initialItems: [
-        {
-          id: 1,
-          nombre: "Inventario",
-          descripcion: "Módulo de activos e insumos",
-        },
-        {
-          id: 2,
-          nombre: "Préstamos",
-          descripcion: "Gestión de préstamos de laboratorio",
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "clase",
@@ -246,14 +154,7 @@ const Permissions = ({ embedded = false }) => {
         nombre: "",
         descripcion: "",
       },
-      initialItems: [
-        { id: 1, nombre: "User", descripcion: "Operaciones CRUD de usuarios" },
-        {
-          id: 2,
-          nombre: "Profile",
-          descripcion: "Gestión de perfiles y permisos",
-        },
-      ],
+      initialItems: [],
     },
     {
       id: "metodo",
@@ -268,18 +169,7 @@ const Permissions = ({ embedded = false }) => {
         nombre: "",
         descripcion: "",
       },
-      initialItems: [
-        {
-          id: 1,
-          nombre: "createUser",
-          descripcion: "Crea usuarios del sistema",
-        },
-        {
-          id: 2,
-          nombre: "assignProfile",
-          descripcion: "Asigna perfiles a usuarios",
-        },
-      ],
+      initialItems: [],
     },
   ];
 
@@ -308,6 +198,33 @@ const Permissions = ({ embedded = false }) => {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [location.hash]);
+
+  const handleCreatePerson = async (itemDraft) => {
+    const { name, lastname } = splitPersonName(itemDraft?.nombre);
+
+    const response = await runDispatcherTransaction({
+      transactionId: CREATE_PERSON_TRANSACTION_ID,
+      data: {
+        ci: String(itemDraft?.ci || ""),
+        name,
+        lastname,
+        email: String(itemDraft?.correo || ""),
+        phone: String(itemDraft?.telefono || ""),
+      },
+      profile: user?.profile || user?.profile_name || "admin",
+      user,
+      lang: "es",
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.message || "No se pudo crear la persona");
+    }
+
+    return {
+      ...itemDraft,
+      id: response?.data?.person_id || itemDraft?.id,
+    };
+  };
 
   return (
     <div
@@ -559,6 +476,11 @@ const Permissions = ({ embedded = false }) => {
                     nameKey={selectedMaintenanceSection.nameKey}
                     initialItems={selectedMaintenanceSection.initialItems}
                     defaultValues={selectedMaintenanceSection.defaultValues}
+                    onCreateItem={
+                      selectedMaintenanceSection.id === "persona"
+                        ? handleCreatePerson
+                        : null
+                    }
                   />
                 ) : (
                   <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0a0c] p-5">
