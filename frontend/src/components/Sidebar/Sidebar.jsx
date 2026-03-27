@@ -214,7 +214,7 @@ export const Sidebar = () => {
       { icon: Bell, label: "Notificaciones", url: "/notifications" },
       { icon: BarChart3, label: "Reportes", url: "/reports" },
     ],
-    [],
+    []
   );
 
   const settingsMenuConfig = useMemo(
@@ -236,7 +236,7 @@ export const Sidebar = () => {
         ],
       },
     ],
-    [],
+    []
   );
 
   const menuConfig = isSettingsMode ? settingsMenuConfig : mainMenuConfig;
@@ -267,7 +267,7 @@ export const Sidebar = () => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(
         SIDEBAR_LAST_MAIN_ROUTE_KEY,
-        location.pathname,
+        location.pathname
       );
     }
 
