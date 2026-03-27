@@ -186,6 +186,10 @@ insertPerson:
     - lastname
     - email
     - phone
+getPersonsBasic:
+  query: SELECT p.id AS id, p.document_id AS ci, CONCAT_WS(' ', p.first_name, p.last_name) AS nombre, COALESCE(NULLIF(TRIM(u.email), ''), NULLIF(TRIM(p.address), '')) AS correo, p.phone AS telefono, p.address AS direccion, CASE WHEN p.birth_date IS NULL THEN NULL ELSE EXTRACT(YEAR FROM AGE(CURRENT_DATE, p.birth_date))::INT END AS edad FROM public.person p LEFT JOIN public."user" u ON u.person_id = p.id AND u.deleted_at IS NULL WHERE p.deleted_at IS NULL ORDER BY p.first_name, p.last_name, p.id;
+  structure_params: {}
+  orderArray: []
 insertUserProfile:
   query: INSERT INTO public.user_profile (user_id, profile_id) VALUES ($1, $2) RETURNING id AS user_profile_id;
   structure_params:

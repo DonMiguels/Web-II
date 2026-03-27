@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { Eye, Pencil, Search, X } from "lucide-react";
 import { Table } from "@/components";
 import { Input } from "@/components/ui/input";
@@ -215,6 +214,11 @@ export const MaintenanceCrudSection = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  useEffect(() => {
+    setItems(Array.isArray(initialItems) ? initialItems : []);
+    setSelectedIds([]);
+  }, [initialItems, sectionId]);
+
   const visibleColumns = columns.filter((column) => column.key !== "id");
 
   const filteredItems = useMemo(() => {
@@ -326,13 +330,7 @@ export const MaintenanceCrudSection = ({
   };
 
   return (
-    <motion.section
-      id={sectionId}
-      initial={{ opacity: 0, y: 10 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      className="scroll-mt-24 space-y-4"
-    >
+    <section id={sectionId} className="scroll-mt-24 space-y-4">
       <div className="relative w-full md:w-[340px]">
         <Search
           className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -436,6 +434,6 @@ export const MaintenanceCrudSection = ({
         onClose={closeDeleteModal}
         onDelete={handleDeleteSelected}
       />
-    </motion.section>
+    </section>
   );
 };

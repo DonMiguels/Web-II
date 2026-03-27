@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { ChevronDown, Sun, Moon } from "lucide-react";
 import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { MaintenanceCrudSection } from "./components/MaintenanceCrudSection.jsx"
 import { runDispatcherTransaction } from "@/Service/dispatcherService";
 
 const CREATE_PERSON_TRANSACTION_ID = 1;
+const GET_PERSONS_TRANSACTION_ID = 37;
 
 const splitPersonName = (fullName = "") => {
   const cleaned = String(fullName || "").trim();
@@ -37,6 +37,8 @@ const Permissions = ({ embedded = false }) => {
   const [moduleClass, setModuleClass] = useState("");
 
   const [permissions, setPermissions] = useState([]);
+  const [personItems, setPersonItems] = useState([]);
+  const [personsLoadError, setPersonsLoadError] = useState("");
 
   const togglePermission = (id) => {
     setPermissions(
@@ -77,7 +79,7 @@ const Permissions = ({ embedded = false }) => {
         direccion: "",
         edad: 18,
       },
-      initialItems: [],
+      initialItems: personItems,
     },
     {
       id: "usuario",
@@ -199,6 +201,56 @@ const Permissions = ({ embedded = false }) => {
     }
   }, [location.hash]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPersons = async () => {
+      const response = await runDispatcherTransaction({
+        transactionId: GET_PERSONS_TRANSACTION_ID,
+        data: {},
+        profile: user?.profile || user?.profile_name || "admin",
+        user,
+        lang: "es",
+      });
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!response?.ok) {
+        setPersonsLoadError(
+          response?.message || "No se pudo obtener la lista de personas",
+        );
+        return;
+      }
+
+      const rows = Array.isArray(response?.data) ? response.data : [];
+      const normalized = rows.map((row, index) => ({
+        id: Number(row?.id ?? row?.person_id ?? index + 1),
+        ci: String(row?.ci ?? row?.document_id ?? ""),
+        nombre: String(row?.nombre ?? row?.name ?? ""),
+        correo: String(row?.correo ?? row?.email ?? ""),
+        telefono: String(row?.telefono ?? row?.phone ?? ""),
+        direccion: String(row?.direccion ?? row?.address ?? ""),
+        edad:
+          row?.edad == null || row?.edad === ""
+            ? ""
+            : Number.isNaN(Number(row.edad))
+              ? ""
+              : Number(row.edad),
+      }));
+
+      setPersonsLoadError("");
+      setPersonItems(normalized);
+    };
+
+    loadPersons();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
   const handleCreatePerson = async (itemDraft) => {
     const { name, lastname } = splitPersonName(itemDraft?.nombre);
 
@@ -263,9 +315,7 @@ const Permissions = ({ embedded = false }) => {
         className={`flex-1 p-6 md:p-8 relative overflow-hidden flex flex-col min-h-0 ${embedded ? "w-full" : "h-screen pl-24 md:pl-28"}`}
       >
         {!embedded && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
+          <div
             className={`${embedded ? "w-full" : "w-full max-w-6xl mx-auto"} flex flex-col md:flex-row items-center justify-between mb-4 md:mb-6 shrink-0 relative z-10`}
           >
             <div className="flex items-center gap-5 w-full md:w-auto">
@@ -278,12 +328,10 @@ const Permissions = ({ embedded = false }) => {
                 </p>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div
           className={`${embedded ? "w-full" : "w-full max-w-6xl mx-auto"} flex-1 flex flex-col relative z-10 pb-4 h-full min-h-0`}
         >
           <div
@@ -466,22 +514,30 @@ const Permissions = ({ embedded = false }) => {
             ) : (
               <div id="mantenimiento" className="pt-2 scroll-mt-24">
                 {selectedMaintenanceSection ? (
-                  <MaintenanceCrudSection
-                    sectionId={selectedMaintenanceSection.id}
-                    title={selectedMaintenanceSection.title}
-                    searchPlaceholder={
-                      selectedMaintenanceSection.searchPlaceholder
-                    }
-                    columns={selectedMaintenanceSection.columns}
-                    nameKey={selectedMaintenanceSection.nameKey}
-                    initialItems={selectedMaintenanceSection.initialItems}
-                    defaultValues={selectedMaintenanceSection.defaultValues}
-                    onCreateItem={
-                      selectedMaintenanceSection.id === "persona"
-                        ? handleCreatePerson
-                        : null
-                    }
-                  />
+                  <>
+                    {selectedMaintenanceSection.id === "persona" &&
+                    personsLoadError ? (
+                      <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+                        {personsLoadError}
+                      </div>
+                    ) : null}
+                    <MaintenanceCrudSection
+                      sectionId={selectedMaintenanceSection.id}
+                      title={selectedMaintenanceSection.title}
+                      searchPlaceholder={
+                        selectedMaintenanceSection.searchPlaceholder
+                      }
+                      columns={selectedMaintenanceSection.columns}
+                      nameKey={selectedMaintenanceSection.nameKey}
+                      initialItems={selectedMaintenanceSection.initialItems}
+                      defaultValues={selectedMaintenanceSection.defaultValues}
+                      onCreateItem={
+                        selectedMaintenanceSection.id === "persona"
+                          ? handleCreatePerson
+                          : null
+                      }
+                    />
+                  </>
                 ) : (
                   <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0a0a0c] p-5">
                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -493,7 +549,7 @@ const Permissions = ({ embedded = false }) => {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -35,3 +35,4 @@ id;sub_system;class;method;profile
 34;Loans;Return;getReturnsByUser;admin
 35;Loans;Return;registerReturn;admin
 36;Loans;Return;updateReturn;admin
+37;Security;Person;getPersons;admin
