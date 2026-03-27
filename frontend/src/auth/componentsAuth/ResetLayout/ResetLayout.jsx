@@ -3,7 +3,7 @@ import { Lock, Sun, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { AuthForm } from "../AuthForm/AuthForm";
+import { AuthForm } from "../AuthForm/AuthForm.jsx";
 import { AlertMessage } from "@/components";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/context";

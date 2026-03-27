@@ -1,47 +1,50 @@
-# Scripts de Backup y Restore para PostgreSQL en Docker
+# db-win: solución de compatibilidad en Windows
 
-## Uso
+Este documento resume los cambios aplicados en este chat para resolver el fallo de respaldo al levantar los contenedores con Docker Compose en Windows.
 
-### Backup
-```bash
-# Backup completo (default)
-./backup.sh
+## Problema observado
 
-# Backup diferencial
-./backup.sh differential
+Al ejecutar `docker-compose up --build`, el contenedor `uni_pg_backups` no podía conectarse a PostgreSQL y fallaba `pg_dumpall`.
 
-# Backup de transacciones
-./backup.sh log
-```
+Se presentaron dos causas:
 
-### Restore
-```bash
-# Restore completo
-./restore.sh ./backups/webii_full_20240215_143022.sql full
+1. Desajuste de puertos entre host/contenedor y variables de backup.
+2. Regla faltante en `pg_hba.conf` para conexiones desde la red bridge de Docker.
 
-# Restore diferencial
-./restore.sh ./backups/webii_diff_20240215_150000.sql differential
+## Cambios realizados
 
-# Restore de transacciones
-./restore.sh ./backups/webii_log_20240215_160000.backup log
-```
+### 1) Ajuste de puertos en Compose
 
-## Tipos de Backup
+Archivo: `docker-compose.yml`
 
-1. **Full**: Backup completo de schema y datos
-2. **Differential**: Solo datos (sin schema)
-3. **Log**: Formato custom para restauración granular
+- Se corrigió el mapeo de puertos de PostgreSQL:
+  - de `127.0.0.1:5431:5431`
+  - a `127.0.0.1:5431:5432`
+- Se corrigió el puerto interno usado por backups:
+  - de `POSTGRES_PORT: 5431`
+  - a `POSTGRES_PORT: 5432`
 
-## Automatización
+### 2) Orden de arranque del servicio de backup
 
-Los backups se guardan en `./backups` y se eliminan automáticamente después de 7 días.
+Archivo: `docker-compose.yml`
 
-## Inicialización
+- Se cambió `depends_on` para que `backups` espere a que `postgres` esté `healthy`.
 
-Al iniciar el contenedor con `docker-compose up -d`, se ejecutan automáticamente:
-1. `schema.sql` - Estructura de tablas
-2. `initial_data.sql` - Datos iniciales de ejemplo
+### 3) Permitir acceso desde la red de Docker
 
-## Volumen Persistente
+Archivo: `pgdata/pg_hba.conf`
 
-Los datos de PostgreSQL persisten en el volumen `postgres_data` para evitar pérdida de datos al reiniciar el contenedor.
+- Se agregó la regla:
+
+`host    all    all    172.16.0.0/12    scram-sha-256`
+
+Esto permite que contenedores de la red bridge (por ejemplo, IPs `172.18.x.x`) se autentiquen con usuario/contraseña.
+
+## Resultado esperado
+
+- `uni_postgres` inicia correctamente.
+- `uni_pg_backups` logra ejecutar `pg_dumpall` sin error de `no pg_hba.conf entry`.
+
+## Nota importante de versionado
+
+Los datos de Postgres y los backups generados por Docker Compose no deben versionarse. Por eso se agregaron archivos `.gitignore` en `db` y `db-win` para ignorar contenido generado en tiempo de ejecución.

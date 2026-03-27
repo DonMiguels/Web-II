@@ -47,6 +47,10 @@ export default class Config {
     return this.MESSAGES;
   }
 
+  async getErrorCodes() {
+    return this.STATUS_CODES;
+  }
+
   async mapMessages() {
     const messagesDir = path.resolve(this.__dirname, './messages');
     this.MESSAGES = await this.readJSONFiles(messagesDir);
@@ -84,9 +88,10 @@ export default class Config {
 
   getMessage(language, messageName) {
     const lang = language || this.LANGUAGE;
-    return this.MESSAGES[lang] && this.MESSAGES[lang][messageName]
-      ? this.MESSAGES[lang][messageName]
-      : this.MESSAGES[this.LANGUAGE][messageName] || '_message_not_found_';
+    const requestedMessage = this.MESSAGES?.[lang]?.[messageName];
+    const defaultLanguageMessage = this.MESSAGES?.[this.LANGUAGE]?.[messageName];
+
+    return requestedMessage || defaultLanguageMessage || messageName || '_message_not_found_';
   }
 
   async getQueries() {
