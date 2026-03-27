@@ -12,58 +12,7 @@ const AssignProfile = ({ embedded = false }) => {
   const [profile, setProfile] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Prueba
-  const [users, setUsers] = useState([
-    {
-      id: "1",
-      name: "Marcelo Perozo",
-      document: "31.005.749",
-      email: "marceloperozo@gmail.com",
-      checked: false,
-    },
-    {
-      id: "2",
-      name: "Miguel Sanchez",
-      document: "24.123.456",
-      email: "miguel.s@gmail.com",
-      checked: true,
-    },
-    {
-      id: "3",
-      name: "María Fernández",
-      document: "28.987.654",
-      email: "maria.f@uru.edu",
-      checked: false,
-    },
-    {
-      id: "4",
-      name: "Luis Bustos",
-      document: "26.543.210",
-      email: "luis.b@gmail.com",
-      checked: false,
-    },
-    {
-      id: "5",
-      name: "Julio Moran",
-      document: "30.111.222",
-      email: "julio.p@uru.edu",
-      checked: false,
-    },
-    {
-      id: "6",
-      name: "Ana Martínez",
-      document: "29.333.444",
-      email: "ana.m@gmail.com",
-      checked: false,
-    },
-    {
-      id: "7",
-      name: "Andres Arrias",
-      document: "22.555.666",
-      email: "roberto.d@uru.edu",
-      checked: false,
-    },
-  ]);
+  const [users, setUsers] = useState([]);
 
   const toggleUser = (id) => {
     setUsers(

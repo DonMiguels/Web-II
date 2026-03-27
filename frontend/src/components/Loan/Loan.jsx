@@ -63,17 +63,8 @@ export const Loan = () => {
       return;
     }
 
-    setIsSearchingUser(true);
-
-    setTimeout(() => {
-      setSelectedUser({
-        name: "Marcelo Perozo",
-        ci: userSearchTerm.trim(),
-        profile: "Estudiante",
-        group: "Física 2",
-      });
-      setIsSearchingUser(false);
-    }, 700);
+    setIsSearchingUser(false);
+    setSelectedUser(null);
   };
 
   const handleCategoryChange = (category) => {

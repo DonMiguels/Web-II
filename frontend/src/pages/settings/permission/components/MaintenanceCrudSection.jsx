@@ -36,6 +36,8 @@ const CrudModal = ({
   title,
   columns,
   formData,
+  isSaving,
+  errorMessage,
   onClose,
   onChangeField,
   onSave,
@@ -113,9 +115,15 @@ const CrudModal = ({
 
             {!isViewMode ? (
               <div className="flex flex-wrap justify-end gap-3 border-t border-slate-100 dark:border-white/5 pt-6">
+                {errorMessage ? (
+                  <p className="mr-auto text-sm font-semibold text-red-500">
+                    {errorMessage}
+                  </p>
+                ) : null}
                 <button
                   type="button"
                   onClick={onClose}
+                  disabled={isSaving}
                   className="rounded-xl border border-slate-200 dark:border-white/10 px-5 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
                 >
                   Cancelar
@@ -123,9 +131,14 @@ const CrudModal = ({
                 <button
                   type="button"
                   onClick={onSave}
+                  disabled={isSaving}
                   className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm transition-colors hover:bg-blue-700"
                 >
-                  {isCreateMode ? "Guardar" : "Actualizar"}
+                  {isSaving
+                    ? "Guardando..."
+                    : isCreateMode
+                      ? "Guardar"
+                      : "Actualizar"}
                 </button>
               </div>
             ) : null}
@@ -191,6 +204,7 @@ export const MaintenanceCrudSection = ({
   nameKey,
   initialItems,
   defaultValues,
+  onCreateItem,
 }) => {
   const [items, setItems] = useState(initialItems);
   const [searchTerm, setSearchTerm] = useState("");
@@ -198,6 +212,8 @@ export const MaintenanceCrudSection = ({
   const [modalState, setModalState] = useState({ mode: null, item: null });
   const [formData, setFormData] = useState({});
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const visibleColumns = columns.filter((column) => column.key !== "id");
 
@@ -245,23 +261,40 @@ export const MaintenanceCrudSection = ({
     const draft = buildDefaultValues(visibleColumns, defaultValues, nextId);
 
     setFormData(draft);
+    setSaveError("");
     setModalState({ mode: "create", item: null });
   };
 
   const openModal = (mode, item) => {
     setFormData({ ...item });
+    setSaveError("");
     setModalState({ mode, item });
   };
 
   const closeModal = () => {
     setModalState({ mode: null, item: null });
     setFormData({});
+    setSaveError("");
+    setIsSaving(false);
   };
 
-  const saveModal = () => {
+  const saveModal = async () => {
     if (modalState.mode === "create") {
-      setItems((prev) => [...prev, formData]);
-      closeModal();
+      try {
+        setIsSaving(true);
+        setSaveError("");
+        const createdItem = onCreateItem
+          ? await onCreateItem(formData)
+          : formData;
+        setItems((prev) => [...prev, createdItem || formData]);
+        closeModal();
+      } catch (error) {
+        setSaveError(
+          error?.message || "No se pudo guardar el registro en el servidor",
+        );
+      } finally {
+        setIsSaving(false);
+      }
       return;
     }
 
@@ -385,6 +418,8 @@ export const MaintenanceCrudSection = ({
         title={title}
         columns={visibleColumns}
         formData={formData}
+        isSaving={isSaving}
+        errorMessage={saveError}
         onClose={closeModal}
         onChangeField={(field, value) =>
           setFormData((prev) => ({

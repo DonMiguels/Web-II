@@ -1,70 +1,8 @@
 import { useMemo, useState } from "react";
 
-const initialEquiposData = [
-  {
-    id: 2001,
-    descripcion: "Osciloscopio digital",
-    tipo: "Equipo de laboratorio",
-    condicion: "Excelente",
-    estatus: "Prestado",
-    fechaPrestamo: "2026-03-10",
-    fechaDevolucion: "2026-03-15",
-  },
-  {
-    id: 2002,
-    descripcion: "Multímetro Fluke",
-    tipo: "Equipo de medición",
-    condicion: "Bueno",
-    estatus: "Prestado",
-    fechaPrestamo: "2026-03-12",
-    fechaDevolucion: "2026-03-18",
-  },
-  {
-    id: 2003,
-    descripcion: "Laptop Lenovo ThinkPad",
-    tipo: "Equipo portátil",
-    condicion: "Usado",
-    estatus: "Devuelto",
-    fechaPrestamo: "2026-03-01",
-    fechaDevolucion: "2026-03-06",
-  },
-];
+const initialEquiposData = [];
 
-const initialInsumosData = [
-  {
-    id: 3001,
-    descripcion: "Resistencias 1kΩ",
-    tipo: "Insumo electrónico",
-    unidad: "Paquete",
-    cantidad: 5,
-    condicion: "Nuevo",
-    estatus: "Prestado",
-    fechaPrestamo: "2026-03-11",
-    fechaDevolucion: "2026-03-14",
-  },
-  {
-    id: 3002,
-    descripcion: "Protoboard",
-    tipo: "Insumo de montaje",
-    unidad: "Pieza",
-    cantidad: 1,
-    condicion: "Bueno",
-    estatus: "Devuelto",
-    fechaPrestamo: "2026-03-08",
-    fechaDevolucion: "2026-03-10",
-  },
-  {
-    id: 3003,
-    descripcion: "Cable Dupont",
-    tipo: "Insumo de conexión",
-    unidad: "Set",
-    cantidad: 10,
-    condicion: "Nuevo",
-    estatus: "Prestado",
-    fechaPrestamo: "2026-03-13",
-    fechaDevolucion: "2026-03-19",
-  },
-];
+const initialInsumosData = [];
 
 export const useLoansData = () => {
   const [activeCategory, setActiveCategory] = useState("equipos");
