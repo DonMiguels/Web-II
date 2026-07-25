@@ -5,7 +5,20 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import yaml from 'yaml';
 
+/**
+ * @file Configuración central del backend (singleton).
+ * @description Expone puerto, URL, códigos HTTP, mensajes i18n, consultas YAML y validaciones.
+ */
+
+/**
+ * @class Config
+ * @description Singleton de configuración de servidor, mensajes, queries y reglas de validación.
+ */
 export default class Config {
+  /**
+   * @description Crea o reutiliza la instancia singleton con valores de entorno y códigos de estado.
+   * @returns {Config} Instancia única de configuración.
+   */
   constructor() {
     if (!Config.instance) {
       this.PORT = process.env.PORT || 3050;
@@ -16,16 +29,20 @@ export default class Config {
       this.MESSAGES = {};
       this.LANGUAGE = process.env.LANGUAGE || 'en';
 
+      /**
+       * Códigos de estado HTTP usados en el backend.
+       * @type {Object.<string, number>}
+       */
       this.STATUS_CODES = {
-        OK: 200, // La solicitud se ha procesado correctamente
-        BAD_REQUEST: 400, // El servidor no pudo entender la solicitud debido a una sintaxis inválida
-        UNAUTHORIZED: 401, // La solicitud requiere autenticación del usuario
-        FORBIDDEN: 403, // El servidor entendió la solicitud, pero se niega a autorizarla
-        NOT_FOUND: 404, // El servidor no pudo encontrar el recurso solicitado
-        REQUEST_TIMEOUT: 408, // El servidor agotó el tiempo de espera esperando la solicitud
-        CONFLICT: 409, // La solicitud no se pudo completar debido a un conflicto con el estado actual del recurso. Por ejemplo, intentar registrar un usuario con un nombre de usuario o correo electrónico que ya existe
-        INTERNAL_SERVER_ERROR: 500, // El servidor encontró una condición inesperada que le impidió completar la solicitud
-        DB_ERROR: 503, // El servidor no está disponible actualmente (porque está sobrecargado o en mantenimiento). Generalmente, esto es temporal
+        OK: 200,
+        BAD_REQUEST: 400,
+        UNAUTHORIZED: 401,
+        FORBIDDEN: 403,
+        NOT_FOUND: 404,
+        REQUEST_TIMEOUT: 408,
+        CONFLICT: 409,
+        INTERNAL_SERVER_ERROR: 500,
+        DB_ERROR: 503,
       };
 
       this.__filename = fileURLToPath(import.meta.url);
@@ -36,10 +53,18 @@ export default class Config {
     return Config.instance;
   }
 
+  /**
+   * @description Inicializa recursos asíncronos de configuración (mensajes).
+   * @returns {Promise<void>}
+   */
   async init() {
     await this.getMessages();
   }
 
+  /**
+   * @description Obtiene el mapa de mensajes; lo carga desde disco si aún está vacío.
+   * @returns {Promise<Object>} Mensajes indexados por idioma.
+   */
   async getMessages() {
     if (!this.MESSAGES || Object.keys(this.MESSAGES).length === 0) {
       await this.mapMessages();
@@ -47,15 +72,28 @@ export default class Config {
     return this.MESSAGES;
   }
 
+  /**
+   * @description Devuelve los códigos de estado HTTP configurados.
+   * @returns {Promise<Object.<string, number>>} Mapa de códigos de estado.
+   */
   async getErrorCodes() {
     return this.STATUS_CODES;
   }
 
+  /**
+   * @description Carga los archivos JSON de mensajes desde el directorio `messages`.
+   * @returns {Promise<void>}
+   */
   async mapMessages() {
     const messagesDir = path.resolve(this.__dirname, './messages');
     this.MESSAGES = await this.readJSONFiles(messagesDir);
   }
 
+  /**
+   * @description Lee todos los archivos `.json` de un directorio y los parsea por idioma.
+   * @param {string} dirname - Ruta del directorio a leer.
+   * @returns {Promise<Object>} Objeto con claves de idioma y contenido JSON.
+   */
   async readJSONFiles(dirname) {
     const data = {};
     try {
@@ -86,14 +124,37 @@ export default class Config {
     return data;
   }
 
-  getMessage(language, messageName) {
+  /**
+   * @description Obtiene un mensaje localizado por idioma y clave, con interpolación opcional.
+   * @param {string} [language] - Código de idioma; usa el idioma por defecto si se omite.
+   * @param {string} messageName - Clave del mensaje en `config/messages`.
+   * @param {Object.<string, string|number|boolean>} [params={}] - Valores para reemplazar `{{clave}}` en el texto.
+   * @returns {string} Mensaje encontrado, mensaje del idioma por defecto, la clave, o `_message_not_found_`.
+   */
+  getMessage(language, messageName, params = {}) {
     const lang = language || this.LANGUAGE;
     const requestedMessage = this.MESSAGES?.[lang]?.[messageName];
     const defaultLanguageMessage = this.MESSAGES?.[this.LANGUAGE]?.[messageName];
 
-    return requestedMessage || defaultLanguageMessage || messageName || '_message_not_found_';
+    let message =
+      requestedMessage ||
+      defaultLanguageMessage ||
+      messageName ||
+      '_message_not_found_';
+
+    if (params && typeof params === 'object') {
+      for (const [key, value] of Object.entries(params)) {
+        message = message.replaceAll(`{{${key}}}`, String(value ?? ''));
+      }
+    }
+
+    return message;
   }
 
+  /**
+   * @description Obtiene el mapa de consultas nombradas; lo carga si aún no existe.
+   * @returns {Promise<Object|null>} Consultas definidas en `queries.yaml`.
+   */
   async getQueries() {
     if (!this.QUERIES) {
       await this.mapQueries();
@@ -101,6 +162,10 @@ export default class Config {
     return this.QUERIES;
   }
 
+  /**
+   * @description Carga y parsea `queries.yaml` (con fallback a JSON).
+   * @returns {Promise<void>}
+   */
   async mapQueries() {
     const queriesPath = path.resolve(this.__dirname, '../config/queries.yaml');
     try {
@@ -127,11 +192,18 @@ export default class Config {
     }
   }
 
+  /**
+   * @description Devuelve los tipos personalizados de validación registrados en la configuración.
+   * @returns {*} Tipos personalizados (`customTypes`).
+   */
   getCustomTypes() {
     return this.customTypes;
   }
 
-  // Cargar y exponer las reglas de validación desde config/validations.json
+  /**
+   * @description Carga y expone las reglas de validación desde `config/validations.json`.
+   * @returns {Object} Reglas de validación parseadas, o `{}` si falla la carga.
+   */
   getValidationValues() {
     try {
       if (!this.VALIDATIONS) {

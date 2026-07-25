@@ -8,6 +8,14 @@ const api = axios.create({
 
 const AuthContext = createContext();
 
+/**
+ * Proveedor de autenticación: sesión, login, logout y recuperación de contraseña.
+ * Al verificar la sesión, el backend puede devolver `{ loggedIn, user }` o el objeto usuario directamente.
+ *
+ * @param {Object} props - Props del proveedor.
+ * @param {React.ReactNode} props.children - Árbol de componentes hijos.
+ * @returns {JSX.Element} Contexto de autenticación.
+ */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +25,6 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       const res = await api.get("/me");
-      // Backend can return either { loggedIn, user } or the user object directly.
       const userFromSession = res.data?.user || res.data;
       if (userFromSession && typeof userFromSession === "object") {
         setUser(userFromSession);
@@ -135,6 +142,22 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+/**
+ * Hook para acceder al contexto de autenticación.
+ *
+ * @returns {{
+ *   user: Object|null,
+ *   loading: boolean,
+ *   isSubmitting: boolean,
+ *   authError: string|null,
+ *   login: Function,
+ *   logout: Function,
+ *   forgotPassword: Function,
+ *   resetPassword: Function,
+ *   checkAuth: Function
+ * }} Estado y acciones de autenticación.
+ * @throws {Error} Si se usa fuera de un `AuthProvider`.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

@@ -1,0 +1,32 @@
+meta {
+  name: TX 4 · getProfileByName
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 4,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "profile_name": "admin"
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Security.Profile.getProfileByName
+  transaction_id=4 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

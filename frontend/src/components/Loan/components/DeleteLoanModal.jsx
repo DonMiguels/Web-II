@@ -1,5 +1,15 @@
 import { ModalPortal } from "@/components/ui/modal-portal";
 
+/**
+ * Modal de confirmación para eliminar préstamos seleccionados.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} props.isOpen - Si el modal está visible.
+ * @param {Array} props.itemsToDelete - Ítems a eliminar.
+ * @param {Function} props.onClose - Cierra el modal.
+ * @param {Function} props.onDelete - Confirma la eliminación.
+ * @returns {JSX.Element|null} Modal de eliminación.
+ */
 export const DeleteLoanModal = ({
   isOpen,
   itemsToDelete,

@@ -2,6 +2,13 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const ThemeContext = createContext();
 
+/**
+ * Proveedor de tema claro/oscuro con persistencia en `localStorage`.
+ *
+ * @param {Object} props - Props del proveedor.
+ * @param {React.ReactNode} props.children - Árbol de componentes hijos.
+ * @returns {JSX.Element} Contexto de tema.
+ */
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const transitionTimeoutRef = useRef(null);
@@ -43,4 +50,9 @@ export const ThemeProvider = ({ children }) => {
   );
 };
 
+/**
+ * Hook para leer y alternar el tema actual.
+ *
+ * @returns {{theme: string, toggleTheme: Function}} Estado y acción de tema.
+ */
 export const useTheme = () => useContext(ThemeContext);

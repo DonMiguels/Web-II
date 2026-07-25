@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import LogoLight from "../../assets/img/uru-logo-white.png";
 import LogoDark from "../../assets/img/uru-logo-dark.png";
 
+/**
+ * Página de restablecimiento de contraseña con fondo temático.
+ *
+ * @returns {JSX.Element} Página de reset de contraseña.
+ */
 export const ResetPassword = () => {
   const { theme, toggleTheme } = useTheme();
 

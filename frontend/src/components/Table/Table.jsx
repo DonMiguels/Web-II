@@ -1,5 +1,21 @@
 import { Trash2, Plus } from "lucide-react";
 
+/**
+ * Tabla reutilizable con cabecera, selección múltiple y acciones de alta/baja.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {React.ReactNode} props.children - Filas del cuerpo de la tabla.
+ * @param {string} props.title - Título mostrado en la barra superior.
+ * @param {Function} [props.onSelectAll] - Callback al marcar/desmarcar todos.
+ * @param {boolean} [props.isAllSelected] - Indica si todas las filas están seleccionadas.
+ * @param {Array<{label: string, align?: string, width?: string}>} [props.headers=[]] - Cabeceras de columnas.
+ * @param {Function} [props.onAddClick] - Callback del botón agregar.
+ * @param {Function} [props.onDeleteClick] - Callback del botón eliminar.
+ * @param {boolean} [props.showId=true] - Muestra la columna ID.
+ * @param {boolean} [props.showSelection=true] - Muestra la columna de selección.
+ * @param {boolean} [props.showToolbarActions=true] - Muestra botones de la barra.
+ * @returns {JSX.Element} Contenedor de tabla.
+ */
 export const Table = ({
   children,
   title,

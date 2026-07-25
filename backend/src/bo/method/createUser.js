@@ -1,6 +1,15 @@
 import DBMS from "../../dbms/dbms.js";
 import Validator from "../../../utils/validator.js";
 
+/**
+ * Crea User.
+ *
+ * @param {string} [username] - Valor de `username`.
+ * @param {string} [password] - Valor de `password`.
+ * @param {number} [person_id] - Valor de `person_id`.
+ * @returns {Promise<Object|null>}
+ * @throws {Error} Si la operación falla o los datos son inválidos.
+ */
 export const createUser = async function({username, password, person_id}) {
     const validator = new Validator();
     const registerSchema = {

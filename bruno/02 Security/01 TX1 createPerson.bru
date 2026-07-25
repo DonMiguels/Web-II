@@ -1,0 +1,36 @@
+meta {
+  name: TX 1 · createPerson
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 1,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "ci": "V87654321",
+      "name": "Ana",
+      "lastname": "Pérez",
+      "email": "ana.perez@example.com",
+      "phone": "+580412000000"
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Security.Person.createPerson
+  transaction_id=1 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

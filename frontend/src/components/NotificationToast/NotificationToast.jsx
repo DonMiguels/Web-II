@@ -2,6 +2,16 @@ import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 
+/**
+ * Toast de notificación temporal (éxito o error) en la esquina inferior derecha.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.message - Texto a mostrar; si está vacío no se renderiza.
+ * @param {"error"|"success"|string} props.type - Tipo visual del toast.
+ * @param {Function} props.onClose - Callback al cerrar o al expirar el temporizador.
+ * @param {number} [props.duration=3000] - Duración en milisegundos antes de cerrar.
+ * @returns {JSX.Element} Toast animado.
+ */
 export const NotificationToast = ({
   message,
   type,

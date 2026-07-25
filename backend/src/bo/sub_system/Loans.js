@@ -1,9 +1,14 @@
-import {Loan as LoanClass} from "../class/Loan.js";
-import {Return} from "../class/Return.js";
+import { Loan } from "../class/Loan.js";
 
+/**
+ * Subsistema de préstamos (Loan).
+ * Agrupa las clases BO descubiertas por el method_registry.
+ *
+ * @class
+ */
 export class Loans {
-    constructor() {
-        this.loan = LoanClass;
-        this.return = Return;
-    }
+  /** Registra las operaciones expuestas por esta entidad. */
+  constructor() {
+    this.loan = Loan;
+  }
 }

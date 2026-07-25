@@ -14,6 +14,20 @@ const fieldLabels = {
 
 const renderValue = (value) => value || "—";
 
+/**
+ * Modal para crear, ver o editar un ítem de inventario.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {"create"|"view"|"edit"|string|null} props.mode - Modo del modal.
+ * @param {string} props.category - Categoría (`equipos` o `componentes`).
+ * @param {Object|null} props.selectedItem - Ítem seleccionado (vista/edición).
+ * @param {Object} props.formData - Datos del formulario.
+ * @param {Object} props.selectOptions - Opciones de selects.
+ * @param {Function} props.onClose - Cierra el modal.
+ * @param {Function} props.onChangeField - Actualiza un campo del formulario.
+ * @param {Function} props.onSave - Guarda los cambios.
+ * @returns {JSX.Element|null} Modal de gestión de inventario.
+ */
 export const InventoryManageModal = ({
   mode,
   category,

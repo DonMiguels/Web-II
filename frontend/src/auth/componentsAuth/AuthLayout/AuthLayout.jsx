@@ -14,6 +14,11 @@ import { loginSchema } from "@/auth/schemasAuth";
 
 import "./AuthLayout.css";
 
+/**
+ * Formulario de autenticación (usuario y contraseña) con validación Zod y toasts.
+ *
+ * @returns {JSX.Element} Layout de inicio de sesión.
+ */
 export const AuthLayout = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);

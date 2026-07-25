@@ -1,0 +1,42 @@
+meta {
+  name: TX 28 · createLoan
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 28,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "borrower_user_id": 1,
+      "processed_by_user_id": 1,
+      "due_at": "2026-08-15T18:00:00.000Z",
+      "status": "active",
+      "observations": "Préstamo Bruno demo",
+      "items": [
+        {
+          "stock_id": 1,
+          "quantity": 1
+        }
+      ]
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Loans.Loan.createLoan
+  transaction_id=28 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

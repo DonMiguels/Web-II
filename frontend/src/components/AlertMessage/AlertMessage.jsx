@@ -2,6 +2,17 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowRight, AlertTriangle, XCircle } from "lucide-react";
 
+/**
+ * Mensaje de alerta modal con título, descripción y acción de confirmación.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.title - Título del mensaje.
+ * @param {string} props.message - Texto descriptivo.
+ * @param {string} props.buttonText - Etiqueta del botón de acción.
+ * @param {Function} props.onConfirm - Callback al confirmar.
+ * @param {"success"|"warning"|"error"} [props.type="success"] - Variante visual.
+ * @returns {JSX.Element} Tarjeta de alerta animada.
+ */
 export const AlertMessage = ({
   title,
   message,

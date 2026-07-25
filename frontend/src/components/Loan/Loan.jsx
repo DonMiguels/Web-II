@@ -9,6 +9,11 @@ import { CreateLoanModal } from "./components/CreateLoanModal.jsx";
 import { DeleteLoanModal } from "./components/DeleteLoanModal.jsx";
 import { ManageLoanModal } from "./components/ManageLoanModal.jsx";
 
+/**
+ * Vista principal de control de préstamos: búsqueda de usuario, tabla y modales.
+ *
+ * @returns {JSX.Element} Módulo de préstamos.
+ */
 export const Loan = () => {
   const {
     activeCategory,

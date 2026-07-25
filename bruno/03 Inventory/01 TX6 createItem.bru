@@ -1,0 +1,33 @@
+meta {
+  name: TX 6 · createItem
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 6,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "code": "ITM-DEMO-001",
+      "name": "Proyector Epson",
+      "description": "Item de prueba Bruno",
+      "category_id": 1,
+      "condition_id": 1,
+      "status_id": 1
+    }
+  }
+}
+
+docs {
+  Inventory.Item.createItem
+  transaction_id=6 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

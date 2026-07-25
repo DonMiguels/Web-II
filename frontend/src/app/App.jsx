@@ -4,6 +4,12 @@ import { AuthProvider } from "@/context";
 import { SidebarProvider } from "@/context";
 import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
 
+/**
+ * Componente raíz de rutas de la aplicación.
+ * Envuelve la app en proveedores de autenticación y sidebar, y define las rutas públicas y protegidas.
+ *
+ * @returns {JSX.Element} Árbol de rutas de React Router.
+ */
 function App() {
   return (
     <AuthProvider>
@@ -35,4 +41,7 @@ function App() {
   );
 }
 
+/**
+ * Exportación por defecto del componente raíz de la aplicación.
+ */
 export default App;

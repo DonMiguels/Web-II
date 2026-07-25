@@ -1,0 +1,33 @@
+meta {
+  name: TX 41 · updateKit
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 41,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "id": 1,
+      "name": "Kit audiovisual actualizado"
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Support.Kit.updateKit
+  transaction_id=41 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

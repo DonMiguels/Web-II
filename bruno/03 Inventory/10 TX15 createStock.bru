@@ -1,0 +1,34 @@
+meta {
+  name: TX 15 · createStock
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 15,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "item_id": 1,
+      "location_id": 1,
+      "quantity": 10
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Inventory.Stock.createStock
+  transaction_id=15 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

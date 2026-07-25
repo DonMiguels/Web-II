@@ -9,6 +9,11 @@ import { AlertMessage } from "@/components";
 import LogoLight from "../../assets/img/uru-logo-white.png";
 import LogoDark from "../../assets/img/uru-logo-dark.png";
 
+/**
+ * Página 404 cuando la ruta solicitada no existe.
+ *
+ * @returns {JSX.Element} Vista de error no encontrado.
+ */
 export const NotFound = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();

@@ -1,0 +1,34 @@
+meta {
+  name: TX 7 · updateItem
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 7,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "id": 1,
+      "name": "Item actualizado Bruno",
+      "description": "Actualizado desde Bruno"
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Inventory.Item.updateItem
+  transaction_id=7 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

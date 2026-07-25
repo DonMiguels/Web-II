@@ -1,5 +1,17 @@
 import { Eye, Pencil } from "lucide-react";
 
+/**
+ * Fila de tabla para un ítem de inventario (equipo o componente).
+ *
+ * @param {Object} props - Props del componente.
+ * @param {Object} props.item - Datos del ítem (id, descripción, modelo, etc.).
+ * @param {string} props.category - Categoría (`equipos` o `componentes`).
+ * @param {boolean} props.selected - Si la fila está seleccionada.
+ * @param {Function} props.onSelect - Callback al cambiar la selección (recibe id).
+ * @param {Function} [props.onView] - Callback al ver detalle.
+ * @param {Function} [props.onEdit] - Callback al editar.
+ * @returns {JSX.Element} Fila `<tr>` del ítem.
+ */
 export const ItemTable = ({
   item,
   category,

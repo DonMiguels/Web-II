@@ -16,6 +16,11 @@ const defaultCreateForm = (category) => ({
   ...(category === "componentes" ? { cantidad: 1 } : {}),
 });
 
+/**
+ * Vista principal de inventario de laboratorio (equipos y componentes).
+ *
+ * @returns {JSX.Element} Módulo de inventario.
+ */
 export const Inventory = () => {
   const {
     activeCategory,

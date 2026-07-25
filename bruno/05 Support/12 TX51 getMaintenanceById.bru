@@ -1,0 +1,32 @@
+meta {
+  name: TX 51 · getMaintenanceById
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 51,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "id": 1
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Support.Maintenance.getMaintenanceById
+  transaction_id=51 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

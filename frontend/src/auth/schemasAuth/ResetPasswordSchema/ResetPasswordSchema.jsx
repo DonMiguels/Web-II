@@ -3,6 +3,10 @@ import { SecurityRules } from "@/service/securityService";
 
 const specialCharRegex = /[^a-zA-Z0-9]/;
 
+/**
+ * Esquema Zod de validación del formulario de restablecimiento de contraseña.
+ * Exige longitud mínima, un carácter especial, seguridad básica y coincidencia de confirmación.
+ */
 export const resetPasswordSchema = z
   .object({
     password: z

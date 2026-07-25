@@ -165,6 +165,11 @@ const SidebarItem = ({
 
 const SIDEBAR_LAST_MAIN_ROUTE_KEY = "uru-sidebar-last-main-route";
 
+/**
+ * Barra lateral de navegación con menú expandible y cierre de sesión.
+ *
+ * @returns {JSX.Element} Sidebar de la aplicación.
+ */
 export const Sidebar = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();

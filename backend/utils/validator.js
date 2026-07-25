@@ -1,43 +1,52 @@
 import Config from '../config/config.js';
+import { msg } from './messages.js';
 
+/**
+ * @file Validador genérico de campos basado en reglas de configuración.
+ * @description Valida tipos, longitudes, patrones y reglas de seguridad (XSS/SQLi).
+ */
+
+/**
+ * @class Validator
+ * @description Validador de datos de entrada según `validations.json` y reglas de seguridad.
+ */
 class Validator {
+  /**
+   * @description Inicializa el validador cargando las reglas desde la configuración.
+   */
   constructor() {
     this.config = new Config();
     this.validationRules = this.config.getValidationValues();
   }
 
   /**
-   * Método de validación genérico
-   * @param {*} value - Valor a validar
-   * @param {string} type - Tipo de dato (string, number, email)
-   * @param {string} category - Categoría (username, email, password, etc.)
-   * @param {Object} options - Opciones adicionales
-   * @returns {Object} - { isValid: boolean, message: string }
+   * @description Método de validación genérico por tipo, categoría y opciones.
+   * @param {*} value - Valor a validar.
+   * @param {string} type - Tipo de dato (`string`, `number`, `email`).
+   * @param {string} category - Categoría del campo (`username`, `email`, `password`, etc.).
+   * @param {Object} [options={}] - Opciones adicionales (`required`, mensajes personalizados, etc.).
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación.
    */
   validate(value, type, category, options = {}) {
     try {
-      // Validación de tipo básico
       if (!this.validateType(value, type)) {
         return {
           isValid: false,
-          message: `El campo ${category} debe ser de tipo ${type}`,
+          message: msg('field_type_invalid', { category, type }),
         };
       }
 
-      // Validación de requerido
       if (options.required && (!value || value.toString().trim() === '')) {
         return {
           isValid: false,
-          message: `El campo ${category} es obligatorio`,
+          message: msg('field_required', { category }),
         };
       }
 
-      // Si no hay valor y no es requerido, es válido
       if (!value && !options.required) {
         return { isValid: true, message: '' };
       }
 
-      // Validaciones específicas por categoría
       const categoryValidation = this.validateCategory(
         value,
         category,
@@ -47,7 +56,6 @@ class Validator {
         return categoryValidation;
       }
 
-      // Validaciones de seguridad
       const securityValidation = this.validateSecurity(value, category);
       if (!securityValidation.isValid) {
         return securityValidation;
@@ -57,13 +65,19 @@ class Validator {
     } catch (error) {
       return {
         isValid: false,
-        message: `Error en validación de ${category}: ${error.message}`,
+        message: msg('field_validation_error', {
+          category,
+          detail: error.message,
+        }),
       };
     }
   }
 
   /**
-   * Valida el tipo de dato básico
+   * @description Valida el tipo de dato básico del valor.
+   * @param {*} value - Valor a comprobar.
+   * @param {string} type - Tipo esperado (`string`, `number`, `email`).
+   * @returns {boolean} `true` si el tipo es válido o no se especifica tipo.
    */
   validateType(value, type) {
     switch (type) {
@@ -74,22 +88,25 @@ class Validator {
       case 'email':
         return this.isValidEmail(value);
       default:
-        return true; // Si no se especifica tipo, no se valida
+        return true;
     }
   }
 
   /**
-   * Valida según las reglas del archivo validations.json
+   * @description Valida el valor según las reglas de longitud y categoría de `validations.json`.
+   * @param {*} value - Valor a validar.
+   * @param {string} category - Categoría del campo.
+   * @param {Object} [options={}] - Mensajes u opciones personalizadas.
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación por categoría.
    */
   validateCategory(value, category, options = {}) {
     const stringValue = value.toString().trim();
     const rules = this.getCategoryRules(category);
 
     if (!rules) {
-      return { isValid: true, message: '' }; // Si no hay reglas, es válido
+      return { isValid: true, message: '' };
     }
 
-    // Validación de longitud mínima
     if (rules.min && stringValue.length < rules.min) {
       return {
         isValid: false,
@@ -99,7 +116,6 @@ class Validator {
       };
     }
 
-    // Validación de longitud máxima
     if (rules.max && stringValue.length > rules.max) {
       return {
         isValid: false,
@@ -109,7 +125,6 @@ class Validator {
       };
     }
 
-    // Validaciones específicas por categoría
     switch (category) {
       case 'username':
         return this.validateUsername(stringValue, options);
@@ -123,10 +138,11 @@ class Validator {
   }
 
   /**
-   * Obtiene las reglas de validación para una categoría
+   * @description Obtiene las reglas de validación para una categoría en todas las secciones.
+   * @param {string} category - Nombre de la categoría.
+   * @returns {Object|null} Reglas encontradas o `null` si no existen.
    */
   getCategoryRules(category) {
-    // Buscar en todas las secciones del validations.json
     for (const section of Object.keys(this.validationRules)) {
       if (this.validationRules[section][category]) {
         return this.validationRules[section][category];
@@ -136,7 +152,10 @@ class Validator {
   }
 
   /**
-   * Validación específica para username
+   * @description Validación específica para nombre de usuario (letras, números, puntos y guiones bajos).
+   * @param {string} username - Nombre de usuario a validar.
+   * @param {Object} [options={}] - Opciones con mensajes personalizados.
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación.
    */
   validateUsername(username, options = {}) {
     const usernameRegex = /^[a-zA-Z0-9._]+$/;
@@ -154,7 +173,10 @@ class Validator {
   }
 
   /**
-   * Validación específica para email
+   * @description Validación específica para correo electrónico.
+   * @param {string} email - Correo a validar.
+   * @param {Object} [options={}] - Opciones con mensajes personalizados.
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación.
    */
   validateEmail(email, options = {}) {
     if (!this.isValidEmail(email)) {
@@ -170,10 +192,12 @@ class Validator {
   }
 
   /**
-   * Validación específica para password
+   * @description Validación específica para contraseña (mínimo 8 caracteres y fortaleza opcional).
+   * @param {string} password - Contraseña a validar.
+   * @param {Object} [options={}] - Opciones (`requireSpecialChars`, mensajes personalizados).
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación.
    */
   validatePassword(password, options = {}) {
-    // Mínimo 8 caracteres (sobrescribe el validations.json si es menor)
     if (password.length < 8) {
       return {
         isValid: false,
@@ -183,7 +207,6 @@ class Validator {
       };
     }
 
-    // Validación de caracteres especiales para seguridad
     if (options.requireSpecialChars !== false) {
       const hasUpperCase = /[A-Z]/.test(password);
       const hasLowerCase = /[a-z]/.test(password);
@@ -204,12 +227,14 @@ class Validator {
   }
 
   /**
-   * Validaciones de seguridad
+   * @description Validaciones de seguridad contra patrones XSS y SQL Injection básicos.
+   * @param {*} value - Valor a inspeccionar.
+   * @param {string} category - Nombre del campo (para el mensaje de error).
+   * @returns {{isValid: boolean, message: string}} Resultado de la validación de seguridad.
    */
   validateSecurity(value, category) {
     const stringValue = value.toString();
 
-    // Prevención de XSS
     const xssPatterns = [
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
       /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
@@ -222,12 +247,11 @@ class Validator {
       if (pattern.test(stringValue)) {
         return {
           isValid: false,
-          message: `El campo ${category} contiene caracteres no permitidos por seguridad`,
+          message: msg('field_security_chars', { category }),
         };
       }
     }
 
-    // Prevención básica de SQL Injection
     const sqlPatterns = [
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)/gi,
       /(--|\*|;|'|")/g,
@@ -237,7 +261,7 @@ class Validator {
       if (pattern.test(stringValue)) {
         return {
           isValid: false,
-          message: `El campo ${category} contiene caracteres sospechosos`,
+          message: msg('field_suspicious_chars', { category }),
         };
       }
     }
@@ -246,7 +270,9 @@ class Validator {
   }
 
   /**
-   * Valida formato de email
+   * @description Comprueba si un valor tiene formato de correo electrónico válido.
+   * @param {string} email - Correo a comprobar.
+   * @returns {boolean} `true` si el formato es válido.
    */
   isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -254,10 +280,10 @@ class Validator {
   }
 
   /**
-   * Valida un objeto completo con múltiples campos
-   * @param {Object} data - Objeto con datos a validar
-   * @param {Object} schema - Schema de validación
-   * @returns {Object} - { isValid: boolean, errors: Object }
+   * @description Valida un objeto completo con múltiples campos según un schema.
+   * @param {Object} data - Objeto con datos a validar.
+   * @param {Object} schema - Schema de validación por campo (`type`, `options`).
+   * @returns {{isValid: boolean, errors: Object}} Resultado global y errores por campo.
    */
   validateObject(data, schema) {
     const safeData = data || {};

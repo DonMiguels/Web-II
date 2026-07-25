@@ -1,0 +1,19 @@
+meta {
+  name: Logout
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/user/logout
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Cierra sesión. Auto-login al pulsar Send y luego logout.
+}

@@ -4,6 +4,23 @@ const initialEquiposData = [];
 
 const initialInsumosData = [];
 
+/**
+ * Hook de estado para listados de préstamos (equipos e insumos).
+ * Gestiona categoría activa, búsqueda, filtrado y mutaciones locales.
+ *
+ * @returns {{
+ *   activeCategory: string,
+ *   setActiveCategory: Function,
+ *   searchTerm: string,
+ *   setSearchTerm: Function,
+ *   currentData: Array,
+ *   filteredData: Array,
+ *   handleSetChanges: Function,
+ *   handleDeleteLoans: Function,
+ *   setEquiposData: Function,
+ *   setInsumosData: Function
+ * }} Estado y acciones del listado de préstamos.
+ */
 export const useLoansData = () => {
   const [activeCategory, setActiveCategory] = useState("equipos");
   const [searchTerm, setSearchTerm] = useState("");

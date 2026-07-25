@@ -13,18 +13,26 @@ import { NotificationToast, AlertMessage } from "@/components";
 import { forgotSchema } from "@/auth/schemasAuth";
 import { useAuth } from "@/context";
 
+/**
+ * Formulario de recuperación de acceso por correo electrónico.
+ *
+ * @returns {JSX.Element} Layout de "olvidé mi contraseña".
+ */
 export const ForgotLayout = () => {
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    type: "error",
-  });
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [toast, setToast] = useState({ message: "", type: "" });
   const navigate = useNavigate();
+  const { forgotPassword } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(forgotSchema),
+  });
 
   const onSubmit = async (data) => {
-    setLoading(true);
     try {
       await forgotPassword({ email: data.email });
 
@@ -40,12 +48,10 @@ export const ForgotLayout = () => {
         message: err.message || "Error al intentar enviar el correo",
         type: "error",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
-  if (sent) {
+  if (isSuccess) {
     return (
       <AlertMessage
         type="success"
@@ -57,33 +63,26 @@ export const ForgotLayout = () => {
     );
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut", staggerChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 },
+  };
+
   return (
     <>
-      <AuthForm
-        title="Recuperar Clave"
-        subtitle="Ingresa tu correo para enviarte un token"
-        schema={forgotSchema}
-        fields={[
-          {
-            name: "email",
-            label: "Correo Electrónico",
-            type: "email",
-            placeholder: "tu@correo.com",
-            icon: <Mail size={14} />,
-          },
-        ]}
-        onSubmit={onSubmit}
-        submitText="Enviar Enlace"
-        isLoading={loading}
-        footer={
-          <button
-            type="button"
-            onClick={() => navigate("/login")}
-            className="w-full text-[10px] mt-4 flex items-center justify-center gap-2 text-muted-foreground hover:text-blue-500 transition-colors cursor-pointer bg-transparent border-none"
-          >
-            <ArrowLeft size={12} /> Volver al Login
-          </button>
-        }
+      <NotificationToast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ message: "", type: "" })}
       />
 
       <motion.div

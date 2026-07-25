@@ -1,3 +1,7 @@
+/**
+ * Punto de entrada de la aplicación React.
+ * Monta el árbol con StrictMode, BrowserRouter y ThemeProvider.
+ */
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ThemeProvider } from "@/context";

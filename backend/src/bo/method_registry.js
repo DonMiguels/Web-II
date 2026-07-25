@@ -2,9 +2,22 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
+/**
+ * @file Registro de métodos de negocio por subsistema.
+ * @description Escanea `sub_system` y construye un mapa de métodos disponibles.
+ */
+
+/**
+ * @class Method_registry
+ * @description Singleton que indexa subsistemas → clases → métodos para resolución dinámica.
+ */
 export default class Method_registry {
   static instance;
 
+  /**
+   * @description Crea o reutiliza la instancia con la ruta raíz de `bo`.
+   * @returns {Method_registry} Instancia única del registro.
+   */
   constructor() {
     if (Method_registry.instance) return Method_registry.instance;
     const filename = path.dirname(fileURLToPath(import.meta.url));
@@ -13,6 +26,10 @@ export default class Method_registry {
     Method_registry.instance = this;
   }
 
+  /**
+   * @description Escanea la carpeta `sub_system` e indexa clases y métodos de cada módulo.
+   * @returns {Promise<void>}
+   */
   async initialize() {
     const subSystemsPath = path.join(this.rootPath, 'sub_system');
     let subSystemFiles = [];
@@ -55,10 +72,20 @@ export default class Method_registry {
     }
   }
 
+  /**
+   * @description Alias de `initialize` para inicializar el registro.
+   * @returns {Promise<void>}
+   */
   async init() {
     await this.initialize();
   }
 
+  /**
+   * @description Busca una clave en un objeto ignorando mayúsculas/minúsculas.
+   * @param {Object} target - Objeto donde buscar.
+   * @param {string} requestedKey - Clave solicitada.
+   * @returns {string|undefined} Clave real encontrada o `undefined`.
+   */
   findKeyIgnoreCase(target, requestedKey) {
     if (!target || typeof requestedKey !== 'string') return undefined;
     return Object.keys(target).find(
@@ -66,6 +93,13 @@ export default class Method_registry {
     );
   }
 
+  /**
+   * @description Indica si existe un método en el mapa para el subsistema y clase dados.
+   * @param {string} subSystem - Nombre del subsistema.
+   * @param {string} className - Nombre de la clase.
+   * @param {string} functionName - Nombre del método.
+   * @returns {boolean} `true` si el método está registrado.
+   */
   hasMethod(subSystem, className, functionName) {
     const subsystemKey = this.findKeyIgnoreCase(this.mapFiles, subSystem);
     const classMap = subsystemKey ? this.mapFiles[subsystemKey] : undefined;
@@ -77,6 +111,10 @@ export default class Method_registry {
     return !!methodKey;
   }
 
+  /**
+   * @description Devuelve el mapa completo de métodos indexados.
+   * @returns {Object} Mapa `subsistema` → `clase` → `método` → `true`.
+   */
   getMap() {
     return this.mapFiles;
   }

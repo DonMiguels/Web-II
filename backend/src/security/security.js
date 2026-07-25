@@ -1,15 +1,29 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import Utils from "../utils/utils.js";
+import Utils from "../../utils/utils.js";
+import Config from "../../config/config.js";
 import DBMS from "../dbms/dbms.js";
 import resolveExecutable from "../bo/method_resolver.js";
+
+/**
+ * @file Capa de seguridad: permisos, perfiles y ejecución autorizada.
+ * @description Sincroniza permisos (CSV/BD), perfiles de usuario y rutas de transacción.
+ */
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * @class Security
+ * @description Singleton de autorización y ejecución de métodos de negocio permitidos.
+ */
 export default class Security {
   static instance;
 
+  /**
+   * @description Crea o reutiliza la instancia con mapas de permisos, perfiles y transacciones.
+   * @returns {Security} Instancia única de seguridad.
+   */
   constructor() {
     if (Security.instance) return Security.instance;
 
@@ -17,12 +31,18 @@ export default class Security {
     this.userProfiles = new Map();
     this.transactions = new Map();
     this.utils = new Utils();
+    this.config = new Config();
     this.dbms = new DBMS();
     this.dbmsReady = this.dbms.init();
     this.reflect = Reflect;
     Security.instance = this;
   }
 
+  /**
+   * @description Normaliza un objeto de permiso a claves canónicas (`sub_system`, `class`, `method`, `profile`).
+   * @param {Object} [permission={}] - Permiso con posibles alias de campos.
+   * @returns {{sub_system: string, class: string, method: string, profile: string, parameter: *}} Permiso normalizado.
+   */
   normalizePermission(permission = {}) {
     const normalize = (value) => String(value ?? "").trim();
 
@@ -35,6 +55,11 @@ export default class Security {
     };
   }
 
+  /**
+   * @description Construye la clave única de un permiso (`subsystem::class::method::profile`).
+   * @param {Object} [permission={}] - Permiso a indexar.
+   * @returns {string} Clave en minúsculas unida por `::`.
+   */
   buildPermissionKey(permission = {}) {
     const normalized = this.normalizePermission(permission);
     return [
@@ -45,6 +70,10 @@ export default class Security {
     ].join("::");
   }
 
+  /**
+   * @description Sincroniza permisos desde CSV hacia la BD y recarga el mapa en memoria; también sincroniza perfiles.
+   * @returns {Promise<Map<string, Object>>} Mapa de permisos actualizado.
+   */
   async syncPermissions() {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
@@ -72,12 +101,15 @@ export default class Security {
 
     this.permissions = new Map(dbPermissions);
 
-    // Sincronizar perfiles de usuario
     await this.syncUserProfiles();
 
     return this.permissions;
   }
 
+  /**
+   * @description Lee y normaliza permisos desde `config/permission.csv`.
+   * @returns {Promise<Map<string, Object>>} Mapa de permisos del archivo.
+   */
   async getPermissionsFile() {
     const csvPath = path.resolve(__dirname, "../../config/permission.csv");
     const csvMap = await this.utils.readCSV(csvPath);
@@ -92,6 +124,10 @@ export default class Security {
     return permissions;
   }
 
+  /**
+   * @description Obtiene y normaliza permisos desde la base de datos.
+   * @returns {Promise<Map<string, Object>>} Mapa de permisos en BD.
+   */
   async getPermissionsDB() {
     await this.dbmsReady;
     const res = await this.dbms.executeNamedQuery({
@@ -108,11 +144,21 @@ export default class Security {
     return permissions;
   }
 
+  /**
+   * @description Comprueba si un permiso existe en el mapa en memoria.
+   * @param {Object} permission - Permiso a verificar.
+   * @returns {boolean} `true` si el permiso está autorizado.
+   */
   hasPermission(permission) {
     const key = this.buildPermissionKey(permission);
     return this.permissions.has(key);
   }
 
+  /**
+   * @description Inserta un permiso en BD y lo añade al mapa en memoria.
+   * @param {Object} permission - Permiso a registrar.
+   * @returns {Promise<void>}
+   */
   async setPermission(permission) {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
@@ -134,6 +180,10 @@ export default class Security {
     this.permissions.set(this.buildPermissionKey(normalized), normalized);
   }
 
+  /**
+   * @description Sincroniza el mapa de perfiles asignados a usuarios desde la BD.
+   * @returns {Promise<Map<string, Set<string>>>} Mapa `userId` → conjunto de perfiles.
+   */
   async syncUserProfiles() {
     await this.dbmsReady;
     const res = await this.dbms.executeNamedQuery({
@@ -159,6 +209,12 @@ export default class Security {
     return this.userProfiles;
   }
 
+  /**
+   * @description Indica si un usuario tiene asignado un perfil concreto.
+   * @param {string|number} userId - Identificador del usuario.
+   * @param {string} profile - Nombre del perfil.
+   * @returns {boolean} `true` si el perfil está asignado al usuario.
+   */
   hasUserProfile(userId, profile) {
     const normalizedUserId = String(userId).trim().toLowerCase();
     const normalizedProfile = String(profile).trim().toLowerCase();
@@ -167,6 +223,12 @@ export default class Security {
     return userProfiles ? userProfiles.has(normalizedProfile) : false;
   }
 
+  /**
+   * @description Asigna un perfil a un usuario en BD y en el mapa en memoria.
+   * @param {string|number} userId - Identificador del usuario.
+   * @param {string} profile - Nombre del perfil.
+   * @returns {Promise<void>}
+   */
   async setUserProfile(userId, profile) {
     await this.dbmsReady;
     await this.dbms.executeNamedQuery({
@@ -190,10 +252,13 @@ export default class Security {
     this.userProfiles.get(normalizedUserId).add(normalizedProfile);
   }
 
+  /**
+   * @description Carga las rutas de transacción desde BD (`getTransactionRoutes` o fallback `getTransactions`).
+   * @returns {Promise<Map<string, Object>>} Mapa `transactionId` → ruta (`sub_system`, `class`, `method`).
+   */
   async syncTransactions() {
     await this.dbmsReady;
 
-    // Compatibilidad: soporta query legacy getTransactions y nueva getTransactionRoutes.
     let res;
     try {
       res = await this.dbms.executeNamedQuery({
@@ -216,11 +281,24 @@ export default class Security {
     return this.transactions;
   }
 
+  /**
+   * @description Resuelve la ruta de ejecución asociada a un ID de transacción.
+   * @param {string|number} transactionId - Identificador de la transacción.
+   * @returns {Object|undefined} Ruta (`sub_system`, `class`, `method`) o `undefined`.
+   */
   resolveTransaction(transactionId) {
     return this.transactions.get(String(transactionId));
   }
 
-  async execute(permission, reqBody = {}) {
+  /**
+   * @description Resuelve e invoca el método de negocio autorizado con el cuerpo de la petición.
+   * @param {Object} permission - Permiso/ruta con `sub_system`, `class` y `method`.
+   * @param {Object} [reqBody={}] - Parámetros a pasar al método.
+   * @param {string} [lang] - Idioma para el mensaje de éxito.
+   * @returns {Promise<{statusCode: number, data: *, message: string}>} Resultado de la ejecución.
+   * @throws {Error} Si falla la resolución o la invocación del método.
+   */
+  async execute(permission, reqBody = {}, lang) {
     try {
       const {
         sub_system,
@@ -243,7 +321,7 @@ export default class Security {
       return {
         statusCode: 200,
         data: result,
-        message: "Ejecutado exitosamente",
+        message: this.config.getMessage(lang, 'execution_success'),
       };
     } catch (error) {
       console.error(`Error en executeAuthorized:`, error);

@@ -4,6 +4,22 @@ const initialEquiposData = [];
 
 const initialComponentesData = [];
 
+/**
+ * Hook de estado para el inventario (equipos y componentes).
+ * Gestiona categoría, búsqueda, filtrado y operaciones CRUD locales.
+ *
+ * @returns {{
+ *   activeCategory: string,
+ *   setActiveCategory: Function,
+ *   searchTerm: string,
+ *   setSearchTerm: Function,
+ *   currentData: Array,
+ *   filteredData: Array,
+ *   handleCreateItem: Function,
+ *   handleSetChanges: Function,
+ *   handleDeleteItems: Function
+ * }} Estado y acciones del inventario.
+ */
 export const useInventoryData = () => {
   const [activeCategory, setActiveCategory] = useState("equipos");
   const [searchTerm, setSearchTerm] = useState("");

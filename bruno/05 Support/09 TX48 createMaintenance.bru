@@ -1,0 +1,38 @@
+meta {
+  name: TX 48 · createMaintenance
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 48,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "item_id": 1,
+      "stock_id": 1,
+      "processed_by_user_id": 1,
+      "start_at": "2026-07-25T10:00:00.000Z",
+      "end_at": "",
+      "description": "Mantenimiento Bruno demo",
+      "cost": 0
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Support.Maintenance.createMaintenance
+  transaction_id=48 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import LogoLight from "../../assets/img/uru-logo-white.png";
 import LogoDark from "../../assets/img/uru-logo-dark.png";
 
+/**
+ * Página de inicio de sesión con fondo temático y selector de tema.
+ *
+ * @returns {JSX.Element} Página de login.
+ */
 export const Login = () => {
   const { theme, toggleTheme } = useTheme();
 

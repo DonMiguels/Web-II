@@ -2,6 +2,15 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Campo de entrada de texto estilizado.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @param {string} [props.type] - Tipo HTML del input.
+ * @param {React.Ref} ref - Referencia al elemento `<input>`.
+ * @returns {JSX.Element} Input estilizado.
+ */
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
     <input
@@ -16,4 +25,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
 })
 Input.displayName = "Input"
 
+/**
+ * Exporta el componente `Input`.
+ */
 export { Input }

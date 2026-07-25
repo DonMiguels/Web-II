@@ -195,6 +195,20 @@ const DeleteModal = ({ isOpen, names, onClose, onDelete }) => {
   );
 };
 
+/**
+ * Sección CRUD genérica de mantenimiento (listado, alta y búsqueda).
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.sectionId - Identificador de la sección (ancla).
+ * @param {string} props.title - Título visible de la sección.
+ * @param {string} props.searchPlaceholder - Placeholder del buscador.
+ * @param {Array} props.columns - Definición de columnas de la tabla.
+ * @param {string} props.nameKey - Clave del nombre en cada ítem.
+ * @param {Array} props.initialItems - Datos iniciales del listado.
+ * @param {Object} props.defaultValues - Valores por defecto del formulario de alta.
+ * @param {Function} [props.onCreateItem] - Callback al crear un ítem.
+ * @returns {JSX.Element} Sección CRUD de mantenimiento.
+ */
 export const MaintenanceCrudSection = ({
   sectionId,
   title,

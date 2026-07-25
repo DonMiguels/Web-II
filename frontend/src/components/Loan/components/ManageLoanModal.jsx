@@ -16,6 +16,20 @@ const fieldLabels = {
 
 const renderValue = (value) => value || "—";
 
+/**
+ * Modal para ver o editar un préstamo existente.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {"view"|"edit"|string|null} props.mode - Modo del modal.
+ * @param {Object|null} props.selectedItem - Préstamo seleccionado.
+ * @param {string} props.category - Categoría del ítem.
+ * @param {Object} props.formData - Datos del formulario.
+ * @param {Object} props.selectOptions - Opciones de selects (condición, estatus, etc.).
+ * @param {Function} props.onClose - Cierra el modal.
+ * @param {Function} props.onChangeField - Actualiza un campo del formulario.
+ * @param {Function} props.onSave - Guarda los cambios.
+ * @returns {JSX.Element|null} Modal de gestión.
+ */
 export const ManageLoanModal = ({
   mode,
   selectedItem,

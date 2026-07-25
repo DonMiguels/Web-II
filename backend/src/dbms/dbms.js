@@ -1,18 +1,31 @@
 import pool from '../../config/db.js';
 import Config from '../../config/config.js';
-import Utils from '../utils/utils.js';
-import Formatter from '../formatter/formatter.js';
-import parseMOP from '../_business/atx/parse-mop.js';
-import Debugger from '../debugger/debugger.js';
+import Utils from '../../utils/utils.js';
+import Formatter from '../../utils/formatter.js';
+import Debugger from '../../utils/debugger.js';
+import { msg } from '../../utils/messages.js';
 
+/**
+ * @file Capa de acceso a base de datos (singleton).
+ * @description Pool, consultas nombradas, transacciones y CRUD genérico sobre tablas.
+ */
+
+/**
+ * @class DBMS
+ * @description Fachada sobre PostgreSQL: conexión, queries nombradas y operaciones CRUD.
+ */
 export default class DBMS {
+  /**
+   * @description Crea o reutiliza la instancia singleton; permite inyectar un validador.
+   * @param {Object|null} [validatorInstance=null] - Instancia de validador estructural opcional.
+   * @returns {DBMS} Instancia única de DBMS.
+   */
   constructor(validatorInstance = null) {
     this.utils = new Utils();
     this.config = new Config();
     this.validator = validatorInstance;
     this.formatter = new Formatter();
     this.dbgr = new Debugger();
-    this.parseMOP = parseMOP;
 
     if (!DBMS.instance) {
       this.pool = pool;
@@ -23,10 +36,19 @@ export default class DBMS {
     return DBMS.instance;
   }
 
+  /**
+   * @description Carga las consultas nombradas desde la configuración.
+   * @returns {Promise<void>}
+   */
   async init() {
     this.queries = await this.config.getQueries();
   }
 
+  /**
+   * @description Obtiene un cliente del pool de conexiones.
+   * @returns {Promise<import('pg').PoolClient>} Cliente conectado.
+   * @throws {Error} Si falla la conexión al pool.
+   */
   async connection() {
     const activePool = this.pool || pool;
     return await activePool
@@ -34,17 +56,23 @@ export default class DBMS {
       .then((cli) => cli)
       .catch((err) => {
         this.utils.handleError({
-          message: 'Error de conexión al cliente de base de datos',
+          message: msg('db_connection_error'),
           statusCode: this.STATUS_CODES.DB_ERROR,
           error: err,
         });
       });
   }
 
+  /**
+   * @description Libera un cliente de vuelta al pool.
+   * @param {import('pg').PoolClient} client - Cliente a liberar.
+   * @returns {void}
+   * @throws {Error} Si no se proporciona cliente o falla el release.
+   */
   disconnection(client) {
     if (!client) {
       this.utils.handleError({
-        message: 'No se proporcionó cliente para la desconexión',
+        message: msg('db_disconnect_client_missing'),
         statusCode: this.STATUS_CODES.BAD_REQUEST,
       });
       return;
@@ -54,17 +82,20 @@ export default class DBMS {
       client.release();
     } catch (err) {
       this.utils.handleError({
-        message: 'Error cerrando la conexión del cliente a la base de datos',
+        message: msg('db_disconnect_error'),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error: err,
       });
     }
   }
 
+  /**
+   * @description Finaliza el pool de conexiones (idempotente si ya está cerrado).
+   * @returns {Promise<void>}
+   */
   async poolDisconnection() {
     try {
       const activePool = this.pool || pool;
-      // Evitar finalizar más de una vez
       if (!activePool || activePool.ended || activePool.ending) {
         return;
       }
@@ -78,8 +109,15 @@ export default class DBMS {
     }
   }
 
+  /**
+   * @description Ejecuta una consulta SQL.
+   * Acepta `(queryString, paramsArray)` o `({ query, params })` por compatibilidad.
+   * @param {string|Object} arg1 - SQL como string u objeto `{ query, params }`.
+   * @param {Array} [arg2] - Parámetros si `arg1` es string.
+   * @returns {Promise<import('pg').QueryResult|undefined>} Resultado de la consulta.
+   * @throws {Error} Si la consulta es nula o falla la ejecución.
+   */
   async query(arg1, arg2) {
-    // Compatibilidad: acepta (queryString, paramsArray) o ({ query, params })
     let queryString = null;
     let params = [];
 
@@ -93,7 +131,7 @@ export default class DBMS {
 
     if (!queryString) {
       this.utils.handleError({
-        message: 'Client was passed a null or undefined query',
+        message: msg('db_null_query'),
         statusCode: this.STATUS_CODES.DB_ERROR,
       });
       return;
@@ -103,8 +141,6 @@ export default class DBMS {
     try {
       return await client.query(queryString, params);
     } catch (error) {
-      // Global instrumentation: if a transaction-related unique violation occurs,
-      // print detailed context to help locate the call-site.
       try {
         if (
           (error && error.code === '23505') ||
@@ -119,11 +155,10 @@ export default class DBMS {
             params,
             stack: new Error().stack,
           };
-          // suppressed debug output in normal runs
         }
       } catch (e) {}
       this.utils.handleError({
-        message: error.message || 'Error ejecutando la consulta',
+        message: error.message || msg('server_error'),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
@@ -131,18 +166,26 @@ export default class DBMS {
       this.disconnection(client);
     }
   }
-  //
+
+  /**
+   * @description Ejecuta una consulta nombrada definida en `queries.yaml`, con validación y formateo de parámetros.
+   * Soporta definición string o `{ query, structure_params, orderArray }`.
+   * @param {Object} options - Opciones de ejecución.
+   * @param {string} options.nameQuery - Nombre de la consulta en el mapa de queries.
+   * @param {Array|Object|string|number|boolean} [options.params=[]] - Parámetros de la consulta.
+   * @returns {Promise<import('pg').QueryResult|undefined>} Resultado de la consulta.
+   * @throws {Error} Si la consulta no existe, los parámetros son inválidos o falla la ejecución.
+   */
   async executeNamedQuery({ nameQuery, params = [] }) {
     if (!this.queries || !this.queries[nameQuery]) {
       this.utils.handleError({
-        message: `Consulta nombrada '${nameQuery}' no encontrada`,
+        message: msg('named_query_not_found', { nameQuery }),
         statusCode: this.STATUS_CODES.BAD_REQUEST,
       });
       return;
     }
     const queryDef = this.queries[nameQuery];
 
-    // Compatibilidad retro: permitir string plano o el nuevo objeto { query, structure_params }
     const queryString =
       typeof queryDef === 'string' ? queryDef : queryDef.query;
     const structure =
@@ -154,14 +197,11 @@ export default class DBMS {
         ? queryDef.orderArray
         : null;
 
-    // Soporte de nuevo convenio: si structure_params es por campo (sin root), y llega objeto + orderArray,
-    // validar y transformar a arreglo en el orden indicado.
     const isFieldSchema =
       structure && typeof structure === 'object' && !structure.root;
     const isObjectParams =
       params && !Array.isArray(params) && typeof params === 'object';
     if (isFieldSchema && orderArray !== null) {
-      // Caso A: params es objeto -> validar y transformar a array ordenado
       if (isObjectParams) {
         if (
           this.validator &&
@@ -173,29 +213,24 @@ export default class DBMS {
           );
           if (errors && errors.length > 0) {
             this.utils.handleError({
-              message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                '. ',
-              )}`,
+              message: msg('named_query_invalid_params', { nameQuery, detail: errors.join('. ') }),
               statusCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
           }
         }
-        // Transformación usando Formatter
         params = this.formatter.formatObjectParams(
           params,
           orderArray,
           structure,
         );
       }
-      // Caso B: params es array -> validar mapeándolo contra el esquema usando orderArray
       else if (Array.isArray(params)) {
         if (orderArray.length === 0 && params.length === 0) {
-          // sin parámetros requeridos
         } else {
           if (params.length !== orderArray.length) {
             this.utils.handleError({
-              message: `Cantidad de parámetros inválida para '${nameQuery}': se esperaban ${orderArray.length} y se recibieron ${params.length}`,
+              message: msg('named_query_param_count', { nameQuery, expected: orderArray.length, received: params.length }),
               statusCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
@@ -212,9 +247,7 @@ export default class DBMS {
             );
             if (errors && errors.length > 0) {
               this.utils.handleError({
-                message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                  '. ',
-                )}`,
+                message: msg('named_query_invalid_params', { nameQuery, detail: errors.join('. ') }),
                 statusCode: this.STATUS_CODES.BAD_REQUEST,
               });
               return;
@@ -222,7 +255,6 @@ export default class DBMS {
           }
         }
       }
-      // Caso C: params primitivo y se espera 1 parámetro
       else if (
         orderArray.length === 1 &&
         (typeof params === 'string' ||
@@ -237,9 +269,7 @@ export default class DBMS {
           const errors = this.validator.validateStructuredData(obj, structure);
           if (errors && errors.length > 0) {
             this.utils.handleError({
-              message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-                '. ',
-              )}`,
+              message: msg('named_query_invalid_params', { nameQuery, detail: errors.join('. ') }),
               statusCode: this.STATUS_CODES.BAD_REQUEST,
             });
             return;
@@ -247,7 +277,6 @@ export default class DBMS {
         }
         params = [params];
       }
-      // Caso D: sin params
       else if (
         (params == null ||
           (typeof params === 'object' && Object.keys(params).length === 0)) &&
@@ -259,13 +288,12 @@ export default class DBMS {
         orderArray.length > 0
       ) {
         this.utils.handleError({
-          message: `Parámetros requeridos para '${nameQuery}' no fueron proporcionados`,
+          message: msg('named_query_params_required', { nameQuery }),
           statusCode: this.STATUS_CODES.BAD_REQUEST,
         });
         return;
       }
     } else if (
-      // Validación retro: si hay root, validar params directamente
       structure &&
       this.validator &&
       typeof this.validator.validateStructuredData === 'function'
@@ -273,9 +301,7 @@ export default class DBMS {
       const errors = this.validator.validateStructuredData(params, structure);
       if (errors && errors.length > 0) {
         this.utils.handleError({
-          message: `Parámetros inválidos para '${nameQuery}': ${errors.join(
-            '. ',
-          )}`,
+          message: msg('named_query_invalid_params', { nameQuery, detail: errors.join('. ') }),
           statusCode: this.STATUS_CODES.BAD_REQUEST,
         });
         return;
@@ -287,13 +313,19 @@ export default class DBMS {
       return res;
     } catch (error) {
       return this.utils.handleError({
-        message: `Error ejecutando la consulta nombrada '${nameQuery}'`,
+        message: msg('named_query_exec_error', { nameQuery }),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
   }
 
+  /**
+   * @description Ejecuta varias consultas nombradas a partir de un objeto clave → parámetros.
+   * @param {Object.<string, *>} jsonParams - Mapa de nombre de consulta a parámetros.
+   * @returns {Promise<Array>} Resultados de cada consulta nombrada.
+   * @throws {Error} Si no hay parámetros o faltan parámetros requeridos.
+   */
   async executeJsonNamedQuery(jsonParams) {
     if (!jsonParams || Object.keys(jsonParams).length === 0) {
       this.utils.handleError({
@@ -318,7 +350,7 @@ export default class DBMS {
           value = {};
         } else {
           this.utils.handleError({
-            message: `No se proporcionaron parámetros para la consulta '${key}'`,
+            message: msg('named_query_params_missing_key', { key }),
             statusCode: this.STATUS_CODES.BAD_REQUEST,
           });
           continue;
@@ -332,6 +364,11 @@ export default class DBMS {
     return result;
   }
 
+  /**
+   * @description Inicia una transacción SQL (`BEGIN`) y retorna el cliente.
+   * @returns {Promise<import('pg').PoolClient|undefined>} Cliente con transacción abierta.
+   * @throws {Error} Si falla el inicio de la transacción.
+   */
   beginTransaction = async () => {
     try {
       const client = await this.connection();
@@ -339,13 +376,20 @@ export default class DBMS {
       return client;
     } catch (error) {
       this.utils.handleError({
-        message: 'Error iniciando la transacción',
+        message: msg('db_transaction_begin_error'),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
   };
 
+  /**
+   * @description Ejecuta consultas nombradas dentro de una transacción con commit/rollback.
+   * @param {Object.<string, *>} jsonParams - Mapa de consultas a ejecutar.
+   * @param {string} [errorMessage='Error ejecutando la transacción'] - Mensaje si falla.
+   * @returns {Promise<Array|undefined>} Resultados de las consultas.
+   * @throws {Error} Si falla la ejecución (tras rollback).
+   */
   async executeJsonTransaction(
     jsonParams,
     errorMessage = 'Error ejecutando la transacción',
@@ -367,34 +411,58 @@ export default class DBMS {
     }
   }
 
+  /**
+   * @description Confirma una transacción (`COMMIT`).
+   * @param {import('pg').PoolClient} client - Cliente con transacción abierta.
+   * @returns {Promise<void>}
+   * @throws {Error} Si falla el commit.
+   */
   commitTransaction = async (client) => {
     try {
       await client.query('COMMIT');
     } catch (error) {
       this.utils.handleError({
-        message: 'Error confirmando la transacción',
+        message: msg('db_transaction_commit_error'),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
   };
 
+  /**
+   * @description Revierte una transacción (`ROLLBACK`).
+   * @param {import('pg').PoolClient} client - Cliente con transacción abierta.
+   * @returns {Promise<void>}
+   * @throws {Error} Si falla el rollback.
+   */
   rollbackTransaction = async (client) => {
     try {
       await client.query('ROLLBACK');
     } catch (error) {
       this.utils.handleError({
-        message: 'Error revirtiendo la transacción',
+        message: msg('db_transaction_rollback_error'),
         statusCode: this.STATUS_CODES.DB_ERROR,
         error,
       });
     }
   };
 
+  /**
+   * @description Finaliza el uso del cliente liberándolo al pool.
+   * @param {import('pg').PoolClient} client - Cliente a liberar.
+   * @returns {Promise<void>}
+   */
   endTransaction = async (client) => {
     this.disconnection(client);
   };
 
+  /**
+   * @description Selecciona todos los registros de una tabla.
+   * @param {Object} options - Opciones de consulta.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{data: Object[]}|{statusCode: number, message: string}>} Filas o respuesta de error/vacío.
+   */
   get = async ({ tableName, dbSchema = 'public' }) => {
     const queryString = `SELECT * FROM ${dbSchema}.${tableName}`;
     const values = [];
@@ -409,21 +477,29 @@ export default class DBMS {
       else
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
-          message: 'No se encontraron registros',
+          message: msg('db_records_not_found'),
         };
     } catch (error) {
       this.utils.handleError({
-        message: `Error fetching ${tableName} on getAllFrom`,
+        message: msg('db_fetch_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
       };
     }
   };
 
+  /**
+   * @description Selecciona registros filtrados por pares clave-valor.
+   * @param {Object} options - Opciones de consulta.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Debe incluir `keyValueData` con filtros.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{data: Object[]}|{statusCode: number, message: string, error?: *}>} Filas o error.
+   */
   getWhere = async ({ tableName, data, dbSchema = 'public' }) => {
     const keys = Object.keys(data.keyValueData || {});
     const values = Object.values(data.keyValueData || {});
@@ -434,7 +510,7 @@ export default class DBMS {
     if (values.length === 0 || keys.length === 0) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
 
@@ -448,22 +524,30 @@ export default class DBMS {
       else
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
-          message: 'No se encontraron registros',
+          message: msg('db_records_not_found'),
         };
     } catch (error) {
       this.utils.handleError({
-        message: `Error fetching ${tableName} on getWhere`,
+        message: msg('db_fetch_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Inserta un registro en una tabla a partir de `keyValueData`.
+   * @param {Object} options - Opciones de inserción.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Debe incluir `keyValueData` con columnas y valores.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la inserción.
+   */
   insert = async ({ tableName, data, dbSchema = 'public' }) => {
     const keys = Object.keys(data.keyValueData || {});
     const values = Object.values(data.keyValueData || {});
@@ -475,7 +559,7 @@ export default class DBMS {
     if (values.length === 0 || keys.length === 0) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
 
@@ -486,7 +570,7 @@ export default class DBMS {
       }).then((res) => res);
 
       if (result && result.rowCount > 0) {
-        return { message: 'Registro insertado correctamente' };
+        return { message: msg('db_insert_success') };
       } else {
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
@@ -496,18 +580,26 @@ export default class DBMS {
       }
     } catch (error) {
       this.utils.handleError({
-        message: `Error inserting into ${tableName}`,
+        message: msg('db_insert_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Actualiza un registro por `id` (`data.userId`).
+   * @param {Object} options - Opciones de actualización.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Incluye `userId` y `keyValueData`.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la actualización.
+   */
   updateById = async ({ tableName, data, dbSchema = 'public' }) => {
     const { userId } = data;
     const keys = Object.keys(data.keyValueData || {});
@@ -521,7 +613,7 @@ export default class DBMS {
     if (values.length === 0 || keys.length === 0 || !userId) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
 
@@ -531,7 +623,7 @@ export default class DBMS {
         params: [...values, userId],
       }).then((res) => res);
       if (result && result.rowCount > 0) {
-        return { message: 'Registro actualizado correctamente' };
+        return { message: msg('db_update_success') };
       } else {
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
@@ -541,18 +633,26 @@ export default class DBMS {
       }
     } catch (error) {
       this.utils.handleError({
-        message: `Error updating ${tableName} by id`,
+        message: msg('db_update_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Actualiza un registro por `username`.
+   * @param {Object} options - Opciones de actualización.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Incluye `username` y `keyValueData`.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la actualización.
+   */
   updateByUsername = async ({ tableName, data, dbSchema = 'public' }) => {
     const { username } = data;
     const keys = Object.keys(data.keyValueData || {});
@@ -566,7 +666,7 @@ export default class DBMS {
     if (values.length === 0 || keys.length === 0 || !username) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
 
@@ -576,7 +676,7 @@ export default class DBMS {
         params: [...values, username],
       }).then((res) => res);
       if (result && result.rowCount > 0) {
-        return { message: 'Registro actualizado correctamente' };
+        return { message: msg('db_update_success') };
       } else {
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
@@ -586,18 +686,26 @@ export default class DBMS {
       }
     } catch (error) {
       this.utils.handleError({
-        message: `Error updating ${tableName} by username`,
+        message: msg('db_update_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Elimina un registro por `username`; exige confirmación en tablas join (`_`).
+   * @param {Object} options - Opciones de eliminación.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Incluye `username` y, si aplica, `confirmDelete`.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la eliminación.
+   */
   deleteByUsername = async ({ tableName, data, dbSchema = 'public' }) => {
     const { username } = data;
     const queryString = `DELETE FROM ${dbSchema}.${tableName} WHERE username = $1;`;
@@ -605,7 +713,7 @@ export default class DBMS {
     if (!username) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
     if (tableName.includes('_')) {
@@ -613,7 +721,7 @@ export default class DBMS {
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
           statusCode: this.STATUS_CODES.BAD_REQUEST,
-          message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
+          message: msg('db_confirm_required', { expected, tableName }),
         };
       }
     }
@@ -624,7 +732,7 @@ export default class DBMS {
         params: [username],
       }).then((res) => res);
       if (result && result.rowCount > 0) {
-        return { message: 'Registro eliminado correctamente' };
+        return { message: msg('db_delete_success') };
       } else {
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
@@ -634,18 +742,26 @@ export default class DBMS {
       }
     } catch (error) {
       this.utils.handleError({
-        message: `Error deleting from ${tableName} by username`,
+        message: msg('db_delete_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Elimina un registro por `id` (`data.userId`); exige confirmación en tablas join.
+   * @param {Object} options - Opciones de eliminación.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Incluye `userId` y, si aplica, `confirmDelete`.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la eliminación.
+   */
   deleteById = async ({ tableName, data, dbSchema = 'public' }) => {
     const { userId } = data;
     const queryString = `DELETE FROM ${dbSchema}.${tableName} WHERE id = $1;`;
@@ -653,7 +769,7 @@ export default class DBMS {
     if (!userId) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
     if (tableName.includes('_')) {
@@ -661,7 +777,7 @@ export default class DBMS {
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
           statusCode: this.STATUS_CODES.BAD_REQUEST,
-          message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
+          message: msg('db_confirm_required', { expected, tableName }),
         };
       }
     }
@@ -672,7 +788,7 @@ export default class DBMS {
         params: [userId],
       }).then((res) => res);
       if (result && result.rowCount > 0) {
-        return { message: 'Registro eliminado correctamente' };
+        return { message: msg('db_delete_success') };
       } else {
         return {
           statusCode: this.STATUS_CODES.NOT_FOUND,
@@ -682,18 +798,26 @@ export default class DBMS {
       }
     } catch (error) {
       this.utils.handleError({
-        message: `Error deleting from ${tableName} by id`,
+        message: msg('db_delete_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Elimina todos los registros de una tabla (requiere confirmación `DELETE_ALL_<TABLA>`).
+   * @param {Object} options - Opciones de eliminación.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Debe incluir `confirmDelete` válido.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la eliminación.
+   */
   deleteAll = async ({ tableName, data, dbSchema = 'public' }) => {
     if (
       !data.confirmDelete ||
@@ -701,7 +825,7 @@ export default class DBMS {
     ) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: `Confirmación no válida para eliminar toda la tabla ${tableName}`,
+        message: msg('db_confirm_invalid', { tableName }),
       };
     }
 
@@ -712,7 +836,7 @@ export default class DBMS {
       );
       if (result && result.rowCount > 0)
         return {
-          message: `Todos los ${tableName} han sido eliminados correctamente`,
+          message: msg('db_delete_all_success', { tableName }),
         };
       else
         return {
@@ -722,18 +846,26 @@ export default class DBMS {
         };
     } catch (error) {
       this.utils.handleError({
-        message: `Error deleting all from ${tableName}`,
+        message: msg('db_delete_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }
   };
 
+  /**
+   * @description Elimina registros filtrados por `keyValueData`; exige confirmación en tablas join.
+   * @param {Object} options - Opciones de eliminación.
+   * @param {string} options.tableName - Nombre de la tabla.
+   * @param {Object} options.data - Incluye `keyValueData` y, si aplica, `confirmDelete`.
+   * @param {string} [options.dbSchema='public'] - Esquema de BD.
+   * @returns {Promise<{message: string}|{statusCode: number, message: string, error?: *}>} Resultado de la eliminación.
+   */
   deleteWhere = async ({ tableName, data, dbSchema = 'public' }) => {
     const keys = Object.keys(data.keyValueData || {});
     const values = Object.values(data.keyValueData || {});
@@ -744,7 +876,7 @@ export default class DBMS {
     if (values.length === 0 || keys.length === 0) {
       return {
         statusCode: this.STATUS_CODES.BAD_REQUEST,
-        message: 'No se proporcionaron datos necesarios para la consulta',
+        message: msg('db_missing_query_data'),
       };
     }
     if (tableName.includes('_')) {
@@ -752,7 +884,7 @@ export default class DBMS {
       if (!data.confirmDelete || data.confirmDelete !== expected) {
         return {
           statusCode: this.STATUS_CODES.BAD_REQUEST,
-          message: `Confirmación requerida '${expected}' para eliminar de tabla join ${tableName}`,
+          message: msg('db_confirm_required', { expected, tableName }),
         };
       }
     }
@@ -764,7 +896,7 @@ export default class DBMS {
       }).then((res) => res);
       if (result && result.rowCount > 0)
         return {
-          message: 'Registros eliminados correctamente',
+          message: msg('db_delete_where_success'),
         };
       else
         return {
@@ -774,13 +906,13 @@ export default class DBMS {
         };
     } catch (error) {
       this.utils.handleError({
-        message: `Error deleting from ${tableName} with where clause`,
+        message: msg('db_delete_error', { tableName }),
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
         error,
       });
       return {
         statusCode: this.STATUS_CODES.INTERNAL_SERVER_ERROR,
-        message: 'Error del servidor',
+        message: msg('server_error'),
         error,
       };
     }

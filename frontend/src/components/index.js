@@ -1,5 +1,8 @@
+/**
+ * Barril de componentes compartidos de la interfaz.
+ * Reexporta toasts, rutas protegidas, tablas, inventario, préstamos y sidebar.
+ */
 export * from "./NotificationToast/NotificationToast.jsx";
-export * from "./ThemeToggle/ThemeToggle.jsx";
 export * from "./ProtectedRoute/ProtectedRoute.jsx";
 export * from "./AlertMessage/AlertMessage.jsx";
 export * from "./Inventory/Inventory.jsx";

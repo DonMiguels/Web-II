@@ -8,6 +8,11 @@ import { Button } from '@/components/ui/button';
 import LogoLight from '../../assets/img/uru-logo-white.png';
 import LogoDark from '../../assets/img/uru-logo-dark.png';
 
+/**
+ * Página de recuperación de contraseña con fondo temático.
+ *
+ * @returns {JSX.Element} Página de "olvidé mi contraseña".
+ */
 export const Forgot = () => {
   const { theme, toggleTheme } = useTheme();
 

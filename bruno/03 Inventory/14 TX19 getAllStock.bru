@@ -1,0 +1,30 @@
+meta {
+  name: TX 19 · getAllStock
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 19,
+    "profile": "admin",
+    "lang": "es",
+    "data": {}
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Inventory.Stock.getAllStock
+  transaction_id=19 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { SecurityRules } from "@/service/securityService";
 
+/**
+ * Esquema Zod de validación del formulario de inicio de sesión.
+ * Exige usuario y contraseña, y aplica reglas de seguridad básicas.
+ */
 export const loginSchema = z.object({
   username: z
     .string()

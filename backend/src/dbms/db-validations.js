@@ -1,3 +1,14 @@
+/**
+ * @file Validaciones de unicidad de usuario en base de datos.
+ * @description Comprueba si un email o username ya están registrados mediante consultas nombradas.
+ */
+
+/**
+ * @description Verifica si un correo electrónico ya está en uso.
+ * @param {string} email - Correo a comprobar.
+ * @param {Object} dbmsInstance - Instancia de DBMS con `executeNamedQuery` (e `init` opcional).
+ * @returns {Promise<string>} Mensaje de error si está en uso, o cadena vacía si está disponible.
+ */
 export async function checkEmailInUse(email, dbmsInstance) {
   let emailInUse = false;
   if (dbmsInstance && typeof dbmsInstance.executeNamedQuery === 'function') {
@@ -19,6 +30,12 @@ export async function checkEmailInUse(email, dbmsInstance) {
   return '';
 }
 
+/**
+ * @description Verifica si un nombre de usuario ya está en uso.
+ * @param {string} username - Nombre de usuario a comprobar.
+ * @param {Object} dbmsInstance - Instancia de DBMS con `executeNamedQuery` (e `init` opcional).
+ * @returns {Promise<string|undefined>} Mensaje de error si está en uso o si falla la validación; `undefined` si está disponible.
+ */
 export async function checkUsernameInUse(username, dbmsInstance) {
   if (dbmsInstance && typeof dbmsInstance.executeNamedQuery === 'function') {
     try {

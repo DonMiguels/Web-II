@@ -3,3 +3,6 @@ node_modules/
 db-win/
 *.env
 *.rar
+.idea/
+*.log
+.DS_Store

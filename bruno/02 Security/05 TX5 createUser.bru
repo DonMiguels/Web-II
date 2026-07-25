@@ -1,0 +1,34 @@
+meta {
+  name: TX 5 · createUser
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 5,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "username": "bruno_demo",
+      "password": "Bruno123!@#",
+      "person_id": 1
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Security.User.createUser
+  transaction_id=5 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

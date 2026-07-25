@@ -20,6 +20,22 @@ const getHeaders = (category) =>
         { label: "Estatus", align: "center" },
       ];
 
+/**
+ * Tabla de préstamos con selección, alta, baja y acciones por fila.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.currentCategory - Categoría actual del listado.
+ * @param {Array} props.filteredData - Filas filtradas a mostrar.
+ * @param {Array} props.selectedIds - IDs seleccionados.
+ * @param {boolean} props.isAllSelected - Si todas las filas visibles están seleccionadas.
+ * @param {Function} props.onSelectRow - Selecciona/deselecciona una fila.
+ * @param {Function} props.onSelectAll - Selecciona/deselecciona todas las visibles.
+ * @param {Function} props.onAddClick - Abre el alta de préstamo.
+ * @param {Function} props.onDeleteClick - Abre la eliminación.
+ * @param {Function} props.onView - Ver detalle de un ítem.
+ * @param {Function} props.onEdit - Editar un ítem.
+ * @returns {JSX.Element} Tabla de préstamos.
+ */
 export const LoansTable = ({
   currentCategory,
   filteredData,

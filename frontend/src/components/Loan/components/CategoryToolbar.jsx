@@ -1,5 +1,15 @@
 import { Search, Monitor, Package } from "lucide-react";
 
+/**
+ * Barra de categorías y búsqueda para el listado de préstamos.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.activeCategory - Categoría activa (`equipos` o `insumos`).
+ * @param {Function} props.onChangeCategory - Cambia la categoría activa.
+ * @param {string} props.searchTerm - Término de búsqueda actual.
+ * @param {Function} props.onSearchTermChange - Actualiza el término de búsqueda.
+ * @returns {JSX.Element} Toolbar de filtros.
+ */
 export const CategoryToolbar = ({
   activeCategory,
   onChangeCategory,

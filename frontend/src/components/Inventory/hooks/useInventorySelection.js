@@ -1,5 +1,16 @@
 import { useState } from "react";
 
+/**
+ * Hook de selección múltiple de filas visibles en inventario.
+ *
+ * @param {Array<{id: *}>} [visibleItems=[]] - Ítems actualmente visibles en la tabla.
+ * @returns {{
+ *   selectedIds: Array,
+ *   handleSelectRow: Function,
+ *   handleSelectAll: Function,
+ *   clearSelection: Function
+ * }} Estado y handlers de selección.
+ */
 export const useInventorySelection = (visibleItems = []) => {
   const [selectedIds, setSelectedIds] = useState([]);
 

@@ -62,6 +62,18 @@ const resolveProfile = ({ profile, user }) => {
   return "admin";
 };
 
+/**
+ * Ejecuta una transacción contra el API del dispatcher.
+ *
+ * @param {Object} params - Parámetros de la petición.
+ * @param {number|string} params.transactionId - Identificador de la transacción.
+ * @param {Object} [params.data={}] - Payload de datos enviado al backend.
+ * @param {string} [params.profile] - Perfil explícito para la petición.
+ * @param {Object} [params.user] - Usuario de sesión (se usa para inferir el perfil).
+ * @param {string} [params.lang="es"] - Idioma de la respuesta.
+ * @returns {Promise<{ok: boolean, statusCode: number, message: string, data: *, raw: *}>}
+ * Respuesta normalizada del dispatcher.
+ */
 export const runDispatcherTransaction = async ({
   transactionId,
   data = {},

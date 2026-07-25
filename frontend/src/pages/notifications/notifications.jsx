@@ -11,6 +11,13 @@ import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 
+/**
+ * Página de notificaciones: selección de usuarios y envío de mensajes.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} [props.embedded=false] - Si es `true`, se renderiza embebida en el dashboard.
+ * @returns {JSX.Element} Vista de notificaciones.
+ */
 const Notifications = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -338,4 +345,7 @@ const Notifications = ({ embedded = false }) => {
   );
 };
 
+/**
+ * Exportación por defecto de la página de notificaciones.
+ */
 export default Notifications;

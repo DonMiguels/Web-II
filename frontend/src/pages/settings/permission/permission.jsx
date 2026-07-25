@@ -27,6 +27,13 @@ const splitPersonName = (fullName = "") => {
   };
 };
 
+/**
+ * Página de configuración de permisos y secciones de mantenimiento.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} [props.embedded=false] - Si es `true`, se renderiza embebida en el dashboard.
+ * @returns {JSX.Element} Vista de permisos.
+ */
 const Permissions = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -555,4 +562,7 @@ const Permissions = ({ embedded = false }) => {
   );
 };
 
+/**
+ * Exportación por defecto de la página de permisos.
+ */
 export default Permissions;

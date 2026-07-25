@@ -1,0 +1,86 @@
+meta {
+  name: Web II Backend
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+auth {
+  mode: none
+}
+
+script:pre-request {
+  const baseUrl = bru.getEnvVar("baseUrl") || "http://localhost:3000";
+  const url = String(req.getUrl() || "");
+  const name = String(req.getName() || "");
+
+  const publicAuth =
+    url.includes("/user/login") ||
+    url.includes("/user/register") ||
+    url.includes("/user/forgot-password") ||
+    url.includes("/user/reset-password") ||
+    name === "Login" ||
+    name === "Register" ||
+    name === "Forgot Password" ||
+    name === "Reset Password";
+
+  if (publicAuth) {
+    return;
+  }
+
+  const username = bru.getEnvVar("username") || "super_admin";
+  const password = bru.getEnvVar("password") || "Admin123!@#";
+
+  const loginRes = await bru.sendRequest({
+    method: "POST",
+    url: baseUrl + "/user/login",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    data: { username, password },
+  });
+
+  const status = loginRes?.status || loginRes?.statusCode;
+  if (!loginRes || (status && status >= 400)) {
+    throw new Error(
+      "Auto-login falló (" +
+        status +
+        "). Arranca el backend y revisa username/password del environment local."
+    );
+  }
+
+  const headers = loginRes.headers || {};
+  const setCookie = headers["set-cookie"] || headers["Set-Cookie"];
+  let cookieHeader = "";
+
+  if (Array.isArray(setCookie)) {
+    cookieHeader = setCookie.map((c) => String(c).split(";")[0]).join("; ");
+  } else if (setCookie) {
+    cookieHeader = String(setCookie).split(";")[0];
+  }
+
+  if (cookieHeader) {
+    req.setHeader("Cookie", cookieHeader);
+    try {
+      const jar = bru.cookies.jar();
+      if (Array.isArray(setCookie)) {
+        for (const c of setCookie) {
+          jar.setCookie(baseUrl, c);
+        }
+      } else {
+        jar.setCookie(baseUrl, setCookie);
+      }
+    } catch (e) {}
+  }
+}
+
+docs {
+  Colección lista para probar con un solo Send.
+  Selecciona el environment `local` y pulsa Send en cualquier request.
+  Los bodies ya traen valores de ejemplo literales.
+  Auto-login con cookie de sesión (salvo Login/Register/Forgot/Reset).
+  Credenciales seed: super_admin / Admin123!@#
+}

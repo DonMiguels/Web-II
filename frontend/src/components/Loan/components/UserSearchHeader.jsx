@@ -8,6 +8,18 @@ import {
   X,
 } from "lucide-react";
 
+/**
+ * Cabecera de búsqueda y selección de usuario para préstamos.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} props.userSearchTerm - Término de búsqueda de usuario.
+ * @param {Function} props.onUserSearchTermChange - Actualiza el término.
+ * @param {Function} props.onUserSearch - Ejecuta la búsqueda.
+ * @param {boolean} props.isSearchingUser - Indica si la búsqueda está en curso.
+ * @param {Object|null} props.selectedUser - Usuario seleccionado.
+ * @param {Function} props.onClearUser - Limpia la selección de usuario.
+ * @returns {JSX.Element} Cabecera de búsqueda.
+ */
 export const UserSearchHeader = ({
   userSearchTerm,
   onUserSearchTermChange,

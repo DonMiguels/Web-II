@@ -1,0 +1,34 @@
+meta {
+  name: TX 45 · addKitItem
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 45,
+    "profile": "admin",
+    "lang": "es",
+    "data": {
+      "kit_id": 1,
+      "item_id": 1,
+      "quantity": 1
+    }
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Support.Kit.addKitItem
+  transaction_id=45 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

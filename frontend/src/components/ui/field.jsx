@@ -5,6 +5,13 @@ import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 
+/**
+ * Contenedor `<fieldset>` para agrupar campos de formulario.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Fieldset estilizado.
+ */
 function FieldSet({
   className,
   ...props
@@ -21,6 +28,14 @@ function FieldSet({
   );
 }
 
+/**
+ * Leyenda del fieldset (`legend` o estilo label).
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @param {string} [props.variant="legend"] - Variante visual.
+ * @returns {JSX.Element} Leyenda del grupo.
+ */
 function FieldLegend({
   className,
   variant = "legend",
@@ -40,6 +55,13 @@ function FieldLegend({
   );
 }
 
+/**
+ * Agrupa campos relacionados dentro de un formulario.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Contenedor de grupo.
+ */
 function FieldGroup({
   className,
   ...props
@@ -76,6 +98,13 @@ const fieldVariants = cva("group/field data-[invalid=true]:text-destructive flex
   },
 })
 
+/**
+ * Contenedor de un campo individual (label + control + mensajes).
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Campo de formulario.
+ */
 function Field({
   className,
   orientation = "vertical",
@@ -91,6 +120,13 @@ function Field({
   );
 }
 
+/**
+ * Contenedor del contenido principal de un campo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Contenido del campo.
+ */
 function FieldContent({
   className,
   ...props
@@ -103,6 +139,13 @@ function FieldContent({
   );
 }
 
+/**
+ * Etiqueta asociada a un control de formulario.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Label del campo.
+ */
 function FieldLabel({
   className,
   ...props
@@ -120,6 +163,13 @@ function FieldLabel({
   );
 }
 
+/**
+ * Título destacado dentro de un campo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Título del campo.
+ */
 function FieldTitle({
   className,
   ...props
@@ -135,6 +185,13 @@ function FieldTitle({
   );
 }
 
+/**
+ * Texto de ayuda o descripción bajo un campo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Descripción del campo.
+ */
 function FieldDescription({
   className,
   ...props
@@ -152,6 +209,13 @@ function FieldDescription({
   );
 }
 
+/**
+ * Separador visual entre campos, opcionalmente con contenido.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element} Separador de campos.
+ */
 function FieldSeparator({
   children,
   className,
@@ -178,6 +242,13 @@ function FieldSeparator({
   );
 }
 
+/**
+ * Mensaje(s) de error de validación del campo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {string} [props.className] - Clases CSS adicionales.
+ * @returns {JSX.Element|null} Error(es) del campo.
+ */
 function FieldError({
   className,
   children,
@@ -220,6 +291,9 @@ function FieldError({
   );
 }
 
+/**
+ * Exporta los componentes de composición de campos de formulario.
+ */
 export {
   Field,
   FieldLabel,

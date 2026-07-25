@@ -1,0 +1,30 @@
+meta {
+  name: TX 14 · getItemStatuses
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "transaction_id": 14,
+    "profile": "admin",
+    "lang": "es",
+    "data": {}
+  }
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:3000
+}
+
+docs {
+  Inventory.Item.getItemStatuses
+  transaction_id=14 | profile=admin
+  Auto-login al pulsar Send (environment local).
+}

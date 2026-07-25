@@ -5,6 +5,13 @@ import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 
+/**
+ * Página para asignar perfiles a usuarios.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} [props.embedded=false] - Si es `true`, se renderiza embebida en el dashboard.
+ * @returns {JSX.Element} Vista de asignación de perfiles.
+ */
 const AssignProfile = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -235,4 +242,7 @@ const AssignProfile = ({ embedded = false }) => {
   );
 };
 
+/**
+ * Exportación por defecto de la página de asignación de perfiles.
+ */
 export default AssignProfile;

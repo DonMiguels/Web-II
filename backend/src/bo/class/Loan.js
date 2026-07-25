@@ -1,27 +1,34 @@
-import {createLoan} from "../method/createLoan.js";
-import {deleteLoan} from "../method/deleteLoan.js";
-import {getActiveLoans} from "../method/getActiveLoans.js";
-import {getAllLoans} from "../method/getAllLoans.js";
-import {getLoanById} from "../method/getLoanById.js";
-import {getLoansByComponent} from "../method/getLoansByComponent.js";
-import {getLoansByEquipment} from "../method/getLoansByEquipment.js";
-import {getLoansByUser} from "../method/getLoansByUser.js";
-import {updateLoan} from "../method/updateLoan.js";
-import {createLoanWithDetails} from "../method/createLoanWithDetails.js";
-import {renewLoan} from "../method/renewLoan.js";
+import { createLoan } from "../method/createLoan.js";
+import { returnLoan } from "../method/returnLoan.js";
+import { renewLoan } from "../method/renewLoan.js";
+import { cancelLoan } from "../method/cancelLoan.js";
+import { updateLoan } from "../method/updateLoan.js";
+import { getLoanById } from "../method/getLoanById.js";
+import { getAllLoans } from "../method/getAllLoans.js";
+import { getLoansByUser } from "../method/getLoansByUser.js";
+import { getActiveLoans } from "../method/getActiveLoans.js";
+import { getLoanItems } from "../method/getLoanItems.js";
+import { getLoanStatuses } from "../method/getLoanStatuses.js";
 
+/**
+ * Fachada BO de préstamos y devoluciones.
+ * Expone los métodos de negocio registrados en el constructor.
+ *
+ * @class
+ */
 export class Loan {
-    constructor() {
-        this.createLoan = createLoan;
-        this.deleteLoan = deleteLoan;
-        this.getActiveLoans = getActiveLoans;
-        this.getAllLoans = getAllLoans;
-        this.getLoanById = getLoanById;
-        this.getLoansByComponent = getLoansByComponent;
-        this.getLoansByEquipment = getLoansByEquipment;
-        this.getLoansByUser = getLoansByUser;
-        this.updateLoan = updateLoan;
-        this.createLoanWithDetails = createLoanWithDetails;
-        this.renewLoan = renewLoan;
-    }
+  /** Registra las operaciones expuestas por esta entidad. */
+  constructor() {
+    this.createLoan = createLoan;
+    this.returnLoan = returnLoan;
+    this.renewLoan = renewLoan;
+    this.cancelLoan = cancelLoan;
+    this.updateLoan = updateLoan;
+    this.getLoanById = getLoanById;
+    this.getAllLoans = getAllLoans;
+    this.getLoansByUser = getLoansByUser;
+    this.getActiveLoans = getActiveLoans;
+    this.getLoanItems = getLoanItems;
+    this.getLoanStatuses = getLoanStatuses;
+  }
 }

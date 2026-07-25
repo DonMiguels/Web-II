@@ -5,6 +5,13 @@ import { useAuth, useTheme } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/Sidebar/Sidebar";
 
+/**
+ * Página de generación de reportes por periodo y tipo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} [props.embedded=false] - Si es `true`, se renderiza embebida en el dashboard.
+ * @returns {JSX.Element} Vista de reportes.
+ */
 const Reports = ({ embedded = false }) => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -186,4 +193,7 @@ const Reports = ({ embedded = false }) => {
   );
 };
 
+/**
+ * Exportación por defecto de la página de reportes.
+ */
 export default Reports;

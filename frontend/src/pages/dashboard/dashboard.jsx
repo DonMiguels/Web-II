@@ -10,6 +10,11 @@ import Reports from "../reports/reportes.jsx";
 import Permissions from "../settings/permission/permission.jsx";
 import AssignProfile from "../settings/assignprofile/assignprofile.jsx";
 
+/**
+ * Shell principal autenticado: sidebar, cabecera y contenido según la ruta.
+ *
+ * @returns {JSX.Element} Dashboard y vistas embebidas.
+ */
 export const Dashboard = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();

@@ -13,6 +13,11 @@ import { NotificationToast, AlertMessage } from '@/components';
 import { resetPasswordSchema } from '@/auth/schemasAuth';
 import { useAuth } from '@/context';
 
+/**
+ * Formulario para restablecer la contraseña usando el token de la URL.
+ *
+ * @returns {JSX.Element} Layout de restablecimiento de contraseña.
+ */
 export const ResetPasswordLayout = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });

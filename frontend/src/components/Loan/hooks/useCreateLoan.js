@@ -2,6 +2,15 @@ import { useMemo, useState } from "react";
 import { loanCatalog } from "../constants.js";
 import { addDays, toDateInput } from "../utils/date.js";
 
+/**
+ * Hook para el flujo de creación de un préstamo (modal, catálogo y fechas).
+ *
+ * @param {Object} params - Dependencias del hook.
+ * @param {Object|null} params.selectedUser - Usuario seleccionado para el préstamo.
+ * @param {Function} params.setEquiposData - Setter del listado de equipos.
+ * @param {Function} params.setInsumosData - Setter del listado de insumos.
+ * @returns {Object} Estado del modal de creación y handlers asociados.
+ */
 export const useCreateLoan = ({
   selectedUser,
   setEquiposData,

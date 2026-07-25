@@ -3,6 +3,11 @@ import { useNavigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/context";
 import { AlertMessage } from "@/components";
 
+/**
+ * Ruta protegida: verifica sesión y renderiza `<Outlet />` o avisos de acceso.
+ *
+ * @returns {JSX.Element} Contenedor de rutas autenticadas.
+ */
 export const ProtectedRoute = () => {
   const { user, loading } = useAuth();
   const [showWarning, setShowWarning] = useState(false);

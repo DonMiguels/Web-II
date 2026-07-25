@@ -33,6 +33,29 @@ const TransferItemCard = ({
   );
 };
 
+/**
+ * Modal para crear un préstamo seleccionando ítems del catálogo.
+ *
+ * @param {Object} props - Props del componente.
+ * @param {boolean} props.isOpen - Si el modal está visible.
+ * @param {Function} props.onClose - Cierra el modal.
+ * @param {string} props.createLoanType - Tipo/categoría del préstamo.
+ * @param {Function} props.onChangeCreateLoanType - Cambia el tipo.
+ * @param {string} props.createSearchTerm - Búsqueda dentro del catálogo.
+ * @param {Function} props.onChangeCreateSearchTerm - Actualiza la búsqueda.
+ * @param {Array} props.filteredCreateCatalog - Ítems del catálogo filtrados.
+ * @param {Function} props.onAddItem - Agrega un ítem al préstamo.
+ * @param {Array} props.selectedLoanItems - Ítems ya seleccionados.
+ * @param {Function} props.onChangeItemQuantity - Cambia la cantidad de un ítem.
+ * @param {Function} props.onRemoveItem - Quita un ítem del préstamo.
+ * @param {Object|null} props.selectedUser - Usuario destinatario.
+ * @param {string} props.loanDate - Fecha de préstamo.
+ * @param {Function} props.onChangeLoanDate - Actualiza la fecha de préstamo.
+ * @param {string} props.returnDate - Fecha de devolución.
+ * @param {Function} props.onChangeReturnDate - Actualiza la fecha de devolución.
+ * @param {Function} props.onCreateLoan - Confirma la creación.
+ * @returns {JSX.Element|null} Modal de creación.
+ */
 export const CreateLoanModal = ({
   isOpen,
   onClose,
